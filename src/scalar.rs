@@ -1,13 +1,57 @@
 use std::{
+    cmp::Ordering,
+    hash::{Hash, Hasher},
     iter::{Product, Sum},
     marker::PhantomData,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
 };
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, PartialOrd)]
+// TODO should forward all trait functions, not just those w/o defaults
+
+#[derive(Debug)] // TODO don't derive Debug
 pub struct Scalar<T, Unit> {
     t:    T,
     unit: PhantomData<Unit>,
+}
+
+impl<T: Default, Unit> Default for Scalar<T, Unit> {
+    fn default() -> Self {
+        T::default().into()
+    }
+}
+
+impl<T: Hash, Unit> Hash for Scalar<T, Unit> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.t.hash(state)
+    }
+}
+
+impl<T: Clone, Unit> Clone for Scalar<T, Unit> {
+    fn clone(&self) -> Self {
+        self.t.clone().into()
+    }
+}
+
+impl<T: Copy, Unit> Copy for Scalar<T, Unit> {}
+
+impl<T: Eq, Unit> Eq for Scalar<T, Unit> {}
+
+impl<T: PartialEq, Unit> PartialEq for Scalar<T, Unit> {
+    fn eq(&self, other: &Self) -> bool {
+        self.t.eq(&other.t)
+    }
+}
+
+impl<T: PartialOrd, Unit> PartialOrd for Scalar<T, Unit> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.t.partial_cmp(&other.t)
+    }
+}
+
+impl<T: Ord, Unit> Ord for Scalar<T, Unit> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.t.cmp(&other.t)
+    }
 }
 
 impl<T, Unit> From<T> for Scalar<T, Unit> {
