@@ -10,5 +10,5 @@ pub use self::point::*;
 mod size;
 pub use self::size::*;
 
-mod rectangle;
-pub use self::rectangle::*;
+mod rect;
+pub use self::rect::*;
