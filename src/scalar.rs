@@ -19,14 +19,17 @@ pub struct Scalar<T, Unit> {
 
 impl<T, Unit> Scalar<T, Unit> {
     pub fn new(t: T) -> Self {
-        Self::try_new(t).expect("`Scalar::new` received an unorderable value")
+        match Self::try_new(t) {
+            Ok(s) => s,
+            Err(_) => panic!("`Scalar::new` received an unorderable value"),
+        }
     }
 
-    pub fn try_new(t: T) -> Option<Self> {
+    pub fn try_new(t: T) -> Result<Self, T> {
         if !t.breaks_ord() {
-            Some(unsafe { Self::new_unchecked(t) })
+            Ok(unsafe { Self::new_unchecked(t) })
         } else {
-            None
+            Err(t)
         }
     }
 
