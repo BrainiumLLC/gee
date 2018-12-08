@@ -14,6 +14,17 @@ pub struct Scalar<T, Unit> {
     unit: PhantomData<Unit>,
 }
 
+impl<T, Unit> Scalar<T, Unit> {
+    pub fn new(t: T) -> Self {
+        Scalar {
+            t,
+            unit: PhantomData,
+        }
+    }
+}
+
+// TODO new implementation specialized for float-like types that'll assert not NaN/Infinity/...
+
 impl<T: Default, Unit> Default for Scalar<T, Unit> {
     fn default() -> Self {
         T::default().into()
@@ -34,7 +45,7 @@ impl<T: Clone, Unit> Clone for Scalar<T, Unit> {
 
 impl<T: Copy, Unit> Copy for Scalar<T, Unit> {}
 
-impl<T: Eq, Unit> Eq for Scalar<T, Unit> {}
+impl<T: PartialEq, Unit> Eq for Scalar<T, Unit> {}
 
 impl<T: PartialEq, Unit> PartialEq for Scalar<T, Unit> {
     fn eq(&self, other: &Self) -> bool {
@@ -48,9 +59,9 @@ impl<T: PartialOrd, Unit> PartialOrd for Scalar<T, Unit> {
     }
 }
 
-impl<T: Ord, Unit> Ord for Scalar<T, Unit> {
+impl<T: PartialOrd, Unit> Ord for Scalar<T, Unit> {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.t.cmp(&other.t)
+        self.t.partial_cmp(&other.t).unwrap()
     }
 }
 

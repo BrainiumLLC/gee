@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Vector<T, Unit> {
-    pub dx:   Scalar<T, Unit>,
-    pub dy:   Scalar<T, Unit>,
-    unit: PhantomData<Unit>,
+    pub dx: Scalar<T, Unit>,
+    pub dy: Scalar<T, Unit>,
+    unit:   PhantomData<Unit>,
 }
 
 impl<T, Unit> Vector<T, Unit> {
