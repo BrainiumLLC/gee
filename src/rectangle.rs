@@ -54,18 +54,30 @@ impl<T: PartialOrd + Clone, Unit> Rectangle<T, Unit> {
 
 impl<T: PartialOrd + Clone, Unit> Rectangle<T, Unit> {
     pub fn intersection(&self, other: &Self) -> Option<Self> {
-        let min_top = self.top().min(other.top());
+        let max_top = self.top().max(other.top());
         let max_left = self.left().max(other.left());
-        let max_bottom = self.bottom().max(other.bottom());
+        let min_bottom = self.bottom().min(other.bottom());
         let min_right = self.right().min(other.right());
 
-        if min_top >= max_bottom && min_right >= max_left {
+        if max_top <= min_bottom && max_left <= min_right {
             Some(Rectangle::new(
-                Point::new(max_left, min_top),
-                Point::new(min_right, max_bottom),
+                Point::new(max_left, max_top),
+                Point::new(min_right, min_bottom),
             ))
         } else {
             None
         }
+    }
+
+    pub fn union(&self, other: &Self) -> Self {
+        let min_top = self.top().min(other.top());
+        let min_left = self.left().min(other.left());
+        let max_bottom = self.bottom().max(other.bottom());
+        let max_right = self.right().max(other.right());
+
+        Rectangle::new(
+            Point::new(min_left, min_top),
+            Point::new(max_right, max_bottom),
+        )
     }
 }
