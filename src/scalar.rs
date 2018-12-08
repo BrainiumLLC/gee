@@ -1,7 +1,9 @@
-use std::borrow::Borrow;
+use super::BreaksOrd;
 use std::{
+    borrow::Borrow,
     cmp::Ordering,
     hash::{Hash, Hasher},
+    intrinsics,
     iter::{Product, Sum},
     marker::PhantomData,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
@@ -17,14 +19,28 @@ pub struct Scalar<T, Unit> {
 
 impl<T, Unit> Scalar<T, Unit> {
     pub fn new(t: T) -> Self {
+        Self::try_new(t).expect("`Scalar::new` received an unorderable value")
+    }
+
+    pub fn try_new(t: T) -> Option<Self> {
+        if !t.breaks_ord() {
+            Some(unsafe { Self::new_unchecked(t) })
+        } else {
+            None
+        }
+    }
+
+    pub unsafe fn new_unchecked(t: T) -> Self {
+        debug_assert!(
+            !t.breaks_ord(),
+            "`Scalar::new_unchecked` received an unorderable value"
+        );
         Scalar {
             t,
             unit: PhantomData,
         }
     }
 }
-
-// TODO new implementation specialized for float-like types that'll assert not NaN/Infinity/...
 
 impl<T: Default, Unit> Default for Scalar<T, Unit> {
     fn default() -> Self {
@@ -56,22 +72,34 @@ impl<T: PartialEq, Unit> PartialEq for Scalar<T, Unit> {
 
 impl<T: PartialOrd, Unit> PartialOrd for Scalar<T, Unit> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.t.partial_cmp(&other.t)
+        Some(self.cmp(other))
     }
 }
 
 impl<T: PartialOrd, Unit> Ord for Scalar<T, Unit> {
+    default fn cmp(&self, other: &Self) -> Ordering {
+        match self.t.partial_cmp(&other.t) {
+            Some(o) => o,
+            None => {
+                debug_assert!(
+                    false,
+                    "`Scalar::partial_cmp` returned `None`. Some `BreaksOrd` impl has a bug"
+                );
+                unsafe { intrinsics::unreachable() }
+            }
+        }
+    }
+}
+
+impl<T: Ord, Unit> Ord for Scalar<T, Unit> {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.t.partial_cmp(&other.t).unwrap()
+        self.t.cmp(&other.t)
     }
 }
 
 impl<T, Unit> From<T> for Scalar<T, Unit> {
     fn from(t: T) -> Self {
-        Scalar {
-            t,
-            unit: PhantomData,
-        }
+        Self::new(t)
     }
 }
 

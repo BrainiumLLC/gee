@@ -1,3 +1,5 @@
+#![feature(core_intrinsics, specialization)]
+
 mod scalar;
 pub use self::scalar::*;
 
@@ -12,3 +14,6 @@ pub use self::size::*;
 
 mod rect;
 pub use self::rect::*;
+
+mod breaks_ord;
+pub use self::breaks_ord::*;
