@@ -105,7 +105,7 @@ impl<T: Sum<A>, Unit, A> Sum<Scalar<A, Unit>> for Scalar<T, Unit> {
     }
 }
 
-macro_rules! op {
+macro_rules! op_term {
     ($uname: ident, $lname: ident, $uaname: ident, $laname: ident) => {
         impl<T: $uname<RHS, Output = Output>, Unit, Output, RHS> $uname<Scalar<RHS, Unit>>
             for Scalar<T, Unit>
@@ -141,8 +141,26 @@ macro_rules! op {
     };
 }
 
-op!(Sub, sub, SubAssign, sub_assign);
-op!(Rem, rem, RemAssign, rem_assign);
-op!(Div, div, DivAssign, div_assign);
-op!(Mul, mul, MulAssign, mul_assign);
-op!(Add, add, AddAssign, add_assign);
+macro_rules! op_factor {
+    ($uname: ident, $lname: ident, $uaname: ident, $laname: ident) => {
+        impl<T: $uname<RHS, Output = Output>, Unit, Output, RHS> $uname<RHS> for Scalar<T, Unit> {
+            type Output = Scalar<Output, Unit>;
+
+            fn $lname(self, rhs: RHS) -> Self::Output {
+                self.t.$lname(rhs).into()
+            }
+        }
+
+        impl<T: $uaname<RHS>, Unit, RHS> $uaname<RHS> for Scalar<T, Unit> {
+            fn $laname(&mut self, rhs: RHS) {
+                self.t.$laname(rhs)
+            }
+        }
+    };
+}
+
+op_term!(Add, add, AddAssign, add_assign);
+op_term!(Sub, sub, SubAssign, sub_assign);
+op_factor!(Rem, rem, RemAssign, rem_assign);
+op_factor!(Div, div, DivAssign, div_assign);
+op_factor!(Mul, mul, MulAssign, mul_assign);
