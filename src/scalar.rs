@@ -77,6 +77,22 @@ impl<T: PartialOrd, Unit> PartialOrd for Scalar<T, Unit> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
+
+    fn lt(&self, rhs: &Self) -> bool {
+        self.t.lt(&rhs.t)
+    }
+
+    fn le(&self, rhs: &Self) -> bool {
+        self.t.le(&rhs.t)
+    }
+
+    fn gt(&self, rhs: &Self) -> bool {
+        self.t.gt(&rhs.t)
+    }
+
+    fn ge(&self, rhs: &Self) -> bool {
+        self.t.ge(&rhs.t)
+    }
 }
 
 impl<T: PartialOrd, Unit> Ord for Scalar<T, Unit> {
