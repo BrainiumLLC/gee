@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::{
     cmp::Ordering,
     hash::{Hash, Hasher},
@@ -74,8 +75,8 @@ impl<T, Unit> From<T> for Scalar<T, Unit> {
     }
 }
 
-impl<T, Unit> AsRef<T> for Scalar<T, Unit> {
-    fn as_ref(&self) -> &T {
+impl<T, Unit> Borrow<T> for Scalar<T, Unit> {
+    fn borrow(&self) -> &T {
         &self.t
     }
 }
