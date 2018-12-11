@@ -21,6 +21,13 @@ impl<T, Unit> Vector<T, Unit> {
     }
 }
 
+impl<T: Neg<Output = Output>, Unit, Output> Neg for Vector<T, Unit> {
+    type Output = Vector<Output, Unit>;
+    fn neg(self) -> Self::Output {
+        Self::Output::new(-self.dx, -self.dy)
+    }
+}
+
 macro_rules! op_term {
     ($uname: ident, $lname: ident, $uaname: ident, $laname: ident) => {
         impl<T: $uname<RHS, Output = Output>, Unit, Output, RHS> $uname<Vector<RHS, Unit>>
@@ -28,7 +35,7 @@ macro_rules! op_term {
         {
             type Output = Vector<Output, Unit>;
             fn $lname(self, rhs: Vector<RHS, Unit>) -> Self::Output {
-                Vector::new(self.dx.$lname(rhs.dx), self.dy.$lname(rhs.dy))
+                Self::Output::new(self.dx.$lname(rhs.dx), self.dy.$lname(rhs.dy))
             } 
         }
 
@@ -37,7 +44,7 @@ macro_rules! op_term {
         {
             type Output = Vector<Output, Unit>;
             fn $lname(self, rhs: &'a Vector<RHS, Unit>) -> Self::Output {
-                Vector::new(self.dx.$lname(&rhs.dx), self.dy.$lname(&rhs.dy))
+                Self::Output::new(self.dx.$lname(&rhs.dx), self.dy.$lname(&rhs.dy))
             }
         }
 
