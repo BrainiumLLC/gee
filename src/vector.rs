@@ -1,4 +1,4 @@
-use crate::{op, scalar::Scalar};
+use crate::{scalar::Scalar};
 use std::{
     marker::PhantomData,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},

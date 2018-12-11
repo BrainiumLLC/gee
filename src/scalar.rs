@@ -6,8 +6,6 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
 };
 
-use crate::{op};
-
 // TODO should forward all trait functions, not just those w/o defaults
 
 #[derive(Debug)] // TODO don't derive Debug
