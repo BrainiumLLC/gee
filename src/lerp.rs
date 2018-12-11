@@ -8,9 +8,3 @@ where
 {
     (b - &a) * f + a
 }
-
-#[test]
-fn name() {
-    let x = lerp(0.0, 1.0, 0.25);
-    print!("{}", x);
-}
