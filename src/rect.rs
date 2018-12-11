@@ -1,5 +1,6 @@
-use crate::{lerp::lerp, point::Point, scalar::Scalar};
-use std::ops::{Add, Mul, Sub};
+use crate::{point::Point, scalar::Scalar};
+use num_traits::One;
+use std::ops::{Add, Div};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Rect<T, Unit> {
@@ -53,29 +54,23 @@ impl<T: PartialOrd + Clone, Unit> Rect<T, Unit> {
     }
 }
 
-impl<T, U, V, Unit> Rect<T, Unit>
-where
-    T: Sub<T, Output = U> + Add<V, Output = T> + Clone,
-    U: Mul<f32, Output = V>,
-{
-    pub fn center_x(&self) -> Scalar<T, Unit> {
-        lerp(self.a.x().clone(), self.b.x().clone(), 0.5)
+impl<T: Clone + One + Add<Output = U>, Unit, U: Div<Output = Output>, Output> Rect<T, Unit> {
+    pub fn center_x(&self) -> Scalar<Output, Unit> {
+        let two = T::one() + T::one();
+        (self.a.x().clone() + self.b.x().clone()) / two
     }
 
-    pub fn center_y(&self) -> Scalar<T, Unit> {
-        lerp(self.a.y().clone(), self.b.y().clone(), 0.5)
+    pub fn center_y(&self) -> Scalar<Output, Unit> {
+        let two = T::one() + T::one();
+        (self.a.y().clone() + self.b.y().clone()) / two
     }
 
-    pub fn center(&self) -> Point<T, Unit> {
+    pub fn center(&self) -> Point<Output, Unit> {
         Point::new(self.center_x(), self.center_y())
     }
 }
 
-impl<T, U, V, Unit> Rect<T, Unit>
-where
-    T: Sub<T, Output = U> + Add<V, Output = T> + Clone + PartialOrd,
-    U: Mul<f32, Output = V>,
-{
+impl<T: PartialOrd + Clone + One + Add<Output = U>, Unit, U: Div<Output = T>> Rect<T, Unit> {
     pub fn center_left(&self) -> Point<T, Unit> {
         Point::new(self.left(), self.center_y())
     }

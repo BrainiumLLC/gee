@@ -17,3 +17,5 @@ pub use self::rect::*;
 
 mod lerp;
 pub use self::lerp::*;
+
+extern crate num_traits;
