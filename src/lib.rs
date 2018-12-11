@@ -12,3 +12,6 @@ pub use self::size::*;
 
 mod rect;
 pub use self::rect::*;
+
+mod lerp;
+pub use self::lerp::*;
