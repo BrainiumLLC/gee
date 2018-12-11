@@ -3,7 +3,7 @@ use std::{
     borrow::Borrow,
     cmp::Ordering,
     hash::{Hash, Hasher},
-    intrinsics,
+    hint,
     iter::{Product, Sum},
     marker::PhantomData,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
@@ -104,7 +104,7 @@ impl<T: PartialOrd, Unit> Ord for Scalar<T, Unit> {
                     false,
                     "`Scalar::partial_cmp` returned `None`. Some `BreaksOrd` impl has a bug"
                 );
-                unsafe { intrinsics::unreachable() }
+                unsafe { hint::unreachable_unchecked() }
             }
         }
     }

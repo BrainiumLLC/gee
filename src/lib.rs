@@ -1,4 +1,4 @@
-#![feature(core_intrinsics, specialization)]
+#![feature(specialization)]
 
 mod scalar;
 pub use self::scalar::*;
