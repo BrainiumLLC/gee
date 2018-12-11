@@ -1,3 +1,5 @@
+#[macro_use] mod op;
+
 mod scalar;
 pub use self::scalar::*;
 

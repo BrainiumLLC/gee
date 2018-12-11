@@ -6,6 +6,8 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign},
 };
 
+use crate::{op};
+
 // TODO should forward all trait functions, not just those w/o defaults
 
 #[derive(Debug)] // TODO don't derive Debug
@@ -105,62 +107,8 @@ impl<T: Sum<A>, Unit, A> Sum<Scalar<A, Unit>> for Scalar<T, Unit> {
     }
 }
 
-macro_rules! op_term {
-    ($uname: ident, $lname: ident, $uaname: ident, $laname: ident) => {
-        impl<T: $uname<RHS, Output = Output>, Unit, Output, RHS> $uname<Scalar<RHS, Unit>>
-            for Scalar<T, Unit>
-        {
-            type Output = Scalar<Output, Unit>;
-            fn $lname(self, rhs: Scalar<RHS, Unit>) -> Self::Output {
-                self.t.$lname(rhs.t).into()
-            }
-        }
-
-        impl<'a, T: $uname<&'a RHS, Output = Output>, Unit, Output, RHS>
-            $uname<&'a Scalar<RHS, Unit>> for Scalar<T, Unit>
-        {
-            type Output = Scalar<Output, Unit>;
-            fn $lname(self, rhs: &'a Scalar<RHS, Unit>) -> Self::Output {
-                self.t.$lname(&rhs.t).into()
-            }
-        }
-
-        impl<T: $uaname<RHS>, Unit, RHS> $uaname<Scalar<RHS, Unit>> for Scalar<T, Unit> {
-            fn $laname(&mut self, rhs: Scalar<RHS, Unit>) {
-                self.t.$laname(rhs.t)
-            }
-        }
-
-        impl<'a, T: $uaname<&'a RHS>, Unit, RHS> $uaname<&'a Scalar<RHS, Unit>>
-            for Scalar<T, Unit>
-        {
-            fn $laname(&mut self, rhs: &'a Scalar<RHS, Unit>) {
-                self.t.$laname(&rhs.t)
-            }
-        }
-    };
-}
-
-macro_rules! op_factor {
-    ($uname: ident, $lname: ident, $uaname: ident, $laname: ident) => {
-        impl<T: $uname<RHS, Output = Output>, Unit, Output, RHS> $uname<RHS> for Scalar<T, Unit> {
-            type Output = Scalar<Output, Unit>;
-
-            fn $lname(self, rhs: RHS) -> Self::Output {
-                self.t.$lname(rhs).into()
-            }
-        }
-
-        impl<T: $uaname<RHS>, Unit, RHS> $uaname<RHS> for Scalar<T, Unit> {
-            fn $laname(&mut self, rhs: RHS) {
-                self.t.$laname(rhs)
-            }
-        }
-    };
-}
-
-op_term!(Add, add, AddAssign, add_assign);
-op_term!(Sub, sub, SubAssign, sub_assign);
-op_factor!(Rem, rem, RemAssign, rem_assign);
-op_factor!(Div, div, DivAssign, div_assign);
-op_factor!(Mul, mul, MulAssign, mul_assign);
+op_term!(Scalar, Add, add, AddAssign, add_assign, t);
+op_term!(Scalar, Sub, sub, SubAssign, sub_assign, t);
+op_factor!(Scalar, Rem, rem, RemAssign, rem_assign, t);
+op_factor!(Scalar, Div, div, DivAssign, div_assign, t);
+op_factor!(Scalar, Mul, mul, MulAssign, mul_assign, t);
