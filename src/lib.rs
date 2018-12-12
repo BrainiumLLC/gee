@@ -15,3 +15,6 @@ pub use self::partial_min::*;
 
 mod partial_max;
 pub use self::partial_max::*;
+
+mod lerp;
+pub use self::lerp::*;
