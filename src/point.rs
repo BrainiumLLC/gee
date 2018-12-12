@@ -1,22 +1,22 @@
-use crate::{scalar::Scalar, vector::Vector};
+use crate::vector::Vector;
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Point<T, Unit> {
-    vector: Vector<T, Unit>,
+pub struct Point<T> {
+    vector: Vector<T>,
 }
 
-impl<T, Unit> Point<T, Unit> {
-    pub fn new(x: Scalar<T, Unit>, y: Scalar<T, Unit>) -> Self {
+impl<T> Point<T> {
+    pub fn new(x: T, y: T) -> Self {
         Point {
             vector: Vector::new(x, y),
         }
     }
 
-    pub fn x(&self) -> &Scalar<T, Unit> {
+    pub fn x(&self) -> &T {
         &self.vector.dx
     }
 
-    pub fn y(&self) -> &Scalar<T, Unit> {
+    pub fn y(&self) -> &T {
         &self.vector.dy
     }
 }
