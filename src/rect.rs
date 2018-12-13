@@ -1,4 +1,5 @@
-use crate::{partial_max, partial_min, point::Point};
+use crate::{partial_max, partial_min, point::Point, vector::Vector};
+use std::ops::Add;
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Rect<T> {
@@ -74,5 +75,12 @@ impl<T: PartialOrd + Clone> Rect<T> {
             Point::new(min_left, min_top),
             Point::new(max_right, max_bottom),
         )
+    }
+}
+
+impl<'a, T: Add<&'a RHS, Output = Output>, RHS, Output> Add<&'a Vector<RHS>> for Rect<T> {
+    type Output = Rect<Output>;
+    fn add(self, rhs: &'a Vector<RHS>) -> Self::Output {
+        Rect::new(self.a + rhs, self.b + rhs)
     }
 }
