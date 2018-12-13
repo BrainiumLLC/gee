@@ -78,9 +78,36 @@ impl<T: PartialOrd + Clone> Rect<T> {
     }
 }
 
+impl<T: Add<RHS, Output = Output>, RHS: Clone, Output> Add<Vector<RHS>> for Rect<T> {
+    type Output = Rect<Output>;
+    fn add(self, rhs: Vector<RHS>) -> Self::Output {
+        Rect::new(self.a + rhs.clone(), self.b + rhs)
+    }
+}
+
 impl<'a, T: Add<&'a RHS, Output = Output>, RHS, Output> Add<&'a Vector<RHS>> for Rect<T> {
     type Output = Rect<Output>;
     fn add(self, rhs: &'a Vector<RHS>) -> Self::Output {
         Rect::new(self.a + rhs, self.b + rhs)
+    }
+}
+
+impl<'a, T, RHS: Clone, Output> Add<Vector<RHS>> for &'a Rect<T>
+where
+    &'a T: Add<RHS, Output = Output>,
+{
+    type Output = Rect<Output>;
+    fn add(self, rhs: Vector<RHS>) -> Self::Output {
+        Rect::new(&self.a + rhs.clone(), &self.b + rhs)
+    }
+}
+
+impl<'a, 'b, T, RHS, Output> Add<&'b Vector<RHS>> for &'a Rect<T>
+where
+    &'a T: Add<&'b RHS, Output = Output>,
+{
+    type Output = Rect<Output>;
+    fn add(self, rhs: &'b Vector<RHS>) -> Self::Output {
+        Rect::new(&self.a + rhs, &self.b + rhs)
     }
 }
