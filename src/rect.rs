@@ -44,9 +44,7 @@ impl<T: PartialOrd + Clone> Rect<T> {
     pub fn bottom_right(&self) -> Point<T> {
         Point::new(self.right(), self.bottom())
     }
-}
 
-impl<T: PartialOrd + Clone> Rect<T> {
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let max_top = partial_max(self.top(), other.top()).unwrap();
         let min_bottom = partial_min(self.bottom(), other.bottom()).unwrap();
