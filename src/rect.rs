@@ -1,7 +1,11 @@
-use crate::{partial_max, partial_min, point::Point, vector::Vector};
-use std::ops::Add;
+use crate::{point::Point, vector::Vector};
+use std::{
+    cmp::Ordering,
+    hash::{Hash, Hasher},
+    ops::{Add, AddAssign},
+};
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Rect<T> {
     a: Point<T>,
     b: Point<T>,
@@ -13,21 +17,52 @@ impl<T> Rect<T> {
     }
 }
 
-impl<T: PartialOrd + Clone> Rect<T> {
+impl<T: PartialOrd + PartialEq + Ord + Clone> Ord for Rect<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (&self.top_left(), &self.bottom_right()).cmp(&(&other.top_left(), &other.bottom_right()))
+    }
+}
+
+impl<T: PartialOrd + PartialEq + Ord + Clone> PartialOrd for Rect<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        (&self.top_left(), &self.bottom_right())
+            .partial_cmp(&(&other.top_left(), &other.bottom_right()))
+    }
+}
+
+impl<T: Eq + PartialEq + Ord + Clone> Eq for Rect<T> {}
+
+impl<T: PartialEq + Ord + Clone> PartialEq for Rect<T> {
+    fn eq(&self, rhs: &Self) -> bool {
+        self.top_left() == rhs.top_left() && self.bottom_right() == rhs.bottom_right()
+    }
+    fn ne(&self, rhs: &Self) -> bool {
+        self.top_left() != rhs.top_left() || self.bottom_right() != rhs.bottom_right()
+    }
+}
+
+impl<T: Hash + Ord + Clone> Hash for Rect<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.top_left().hash(state);
+        self.bottom_right().hash(state)
+    }
+}
+
+impl<T: Ord + Clone> Rect<T> {
     pub fn top(&self) -> T {
-        partial_min(self.a.y().clone(), self.b.y().clone()).unwrap()
+        self.a.y().clone().min(self.b.y().clone())
     }
 
     pub fn bottom(&self) -> T {
-        partial_max(self.a.y().clone(), self.b.y().clone()).unwrap()
+        self.a.y().clone().max(self.b.y().clone())
     }
 
     pub fn left(&self) -> T {
-        partial_min(self.a.x().clone(), self.b.x().clone()).unwrap()
+        self.a.x().clone().min(self.b.x().clone())
     }
 
     pub fn right(&self) -> T {
-        partial_max(self.a.x().clone(), self.b.x().clone()).unwrap()
+        self.a.x().clone().max(self.b.x().clone())
     }
 
     pub fn top_left(&self) -> Point<T> {
@@ -47,14 +82,14 @@ impl<T: PartialOrd + Clone> Rect<T> {
     }
 
     pub fn intersection(&self, other: &Self) -> Option<Self> {
-        let max_top = partial_max(self.top(), other.top()).unwrap();
-        let min_bottom = partial_min(self.bottom(), other.bottom()).unwrap();
+        let max_top = self.top().max(other.top());
+        let min_bottom = self.bottom().min(other.bottom());
         if max_top > min_bottom {
             return None;
         }
 
-        let max_left = partial_max(self.left(), other.left()).unwrap();
-        let min_right = partial_min(self.right(), other.right()).unwrap();
+        let max_left = self.left().max(other.left());
+        let min_right = self.right().min(other.right());
         if max_left > min_right {
             return None;
         }
@@ -66,10 +101,10 @@ impl<T: PartialOrd + Clone> Rect<T> {
     }
 
     pub fn union(&self, other: &Self) -> Self {
-        let min_top = partial_min(self.top(), other.top()).unwrap();
-        let min_left = partial_min(self.left(), other.left()).unwrap();
-        let max_bottom = partial_max(self.bottom(), other.bottom()).unwrap();
-        let max_right = partial_max(self.right(), other.right()).unwrap();
+        let min_top = self.top().min(other.top());
+        let min_left = self.left().min(other.left());
+        let max_bottom = self.bottom().max(other.bottom());
+        let max_right = self.right().max(other.right());
 
         Rect::new(
             Point::new(min_left, min_top),
@@ -78,10 +113,16 @@ impl<T: PartialOrd + Clone> Rect<T> {
     }
 }
 
-impl<T: Add<RHS, Output = Output>, RHS: Copy, Output> Add<Vector<RHS>> for Rect<T>
-{
+impl<T: Add<RHS, Output = Output>, RHS: Copy, Output> Add<Vector<RHS>> for Rect<T> {
     type Output = Rect<Output>;
     fn add(self, rhs: Vector<RHS>) -> Self::Output {
         Rect::new(self.a + rhs, self.b + rhs)
+    }
+}
+
+impl<T: AddAssign<RHS>, RHS: Copy> AddAssign<Vector<RHS>> for Rect<T> {
+    fn add_assign(&mut self, rhs: Vector<RHS>) {
+        self.a += rhs;
+        self.b += rhs
     }
 }

@@ -1,5 +1,5 @@
 use crate::vector::Vector;
-use std::ops::Add;
+use std::ops::{Add, AddAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Point<T> {
@@ -28,5 +28,11 @@ impl<T: Add<RHS, Output = Output>, RHS, Output> Add<Vector<RHS>> for Point<T> {
         Point {
             vector: self.vector + rhs,
         }
+    }
+}
+
+impl<T: AddAssign<RHS>, RHS> AddAssign<Vector<RHS>> for Point<T> {
+    fn add_assign(&mut self, rhs: Vector<RHS>) {
+        self.vector += rhs
     }
 }
