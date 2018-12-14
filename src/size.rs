@@ -22,6 +22,45 @@ impl<T> Size<T> {
     }
 }
 
+impl<T: Mul> Size<T> {
+    pub fn area(self) -> T::Output {
+        self.vector.dx * self.vector.dy
+    }
+}
+
+impl<T: Copy + Mul<Output = T> + Div<Output = T>> Size<T> {
+    pub fn scaled_to_width(self, rhs: T) -> Size<T> {
+        Size::new(rhs, *self.height() * rhs / *self.width())
+    }
+
+    pub fn scaled_to_height(self, rhs: T) -> Size<T> {
+        Size::new(*self.width() * rhs / *self.height(), rhs)
+    }
+}
+
+impl<T: Copy + Mul<Output = T> + Div<Output = T> + Ord> Size<T> {
+    pub fn scaled_to_fill(self, rhs: Size<T>) -> Size<T> {
+        Size {
+            vector: self.vector
+                * std::cmp::max(*rhs.width() / *self.width(), *rhs.height() / *self.height()),
+        }
+    }
+}
+
+impl<T: Ord> Size<T> {
+    pub fn is_landscape(&self) -> bool {
+        self.width() > self.height()
+    }
+
+    pub fn is_portrait(&self) -> bool {
+        self.width() < self.height()
+    }
+
+    pub fn is_square(&self) -> bool {
+        self.width() == self.height()
+    }
+}
+
 impl<T: Add<RHS, Output = Output>, RHS, Output> Add<Size<RHS>> for Size<T> {
     type Output = Size<Output>;
     fn add(self, rhs: Size<RHS>) -> Self::Output {
@@ -37,8 +76,8 @@ impl<T: AddAssign<RHS>, RHS> AddAssign<Size<RHS>> for Size<T> {
     }
 }
 
-impl<T: Mul<RHS, Output = Output>, RHS: Copy, Output> Mul<RHS> for Size<T> {
-    type Output = Size<Output>;
+impl<T: Mul<RHS>, RHS: Copy> Mul<RHS> for Size<T> {
+    type Output = Size<T::Output>;
     fn mul(self, rhs: RHS) -> Self::Output {
         Size {
             vector: self.vector * rhs,
@@ -52,8 +91,8 @@ impl<T: MulAssign<RHS>, RHS: Copy> MulAssign<RHS> for Size<T> {
     }
 }
 
-impl<T: Div<RHS, Output = Output>, RHS: Copy, Output> Div<RHS> for Size<T> {
-    type Output = Size<Output>;
+impl<T: Div<RHS>, RHS: Copy> Div<RHS> for Size<T> {
+    type Output = Size<T::Output>;
     fn div(self, rhs: RHS) -> Self::Output {
         Size {
             vector: self.vector / rhs,
@@ -67,8 +106,8 @@ impl<T: DivAssign<RHS>, RHS: Copy> DivAssign<RHS> for Size<T> {
     }
 }
 
-impl<T: Rem<RHS, Output = Output>, RHS: Copy, Output> Rem<RHS> for Size<T> {
-    type Output = Size<Output>;
+impl<T: Rem<RHS>, RHS: Copy> Rem<RHS> for Size<T> {
+    type Output = Size<T::Output>;
     fn rem(self, rhs: RHS) -> Self::Output {
         Size {
             vector: self.vector % rhs,
