@@ -1,8 +1,9 @@
 use crate::{point::Point, vector::Vector};
+use num_traits::One;
 use std::{
     cmp::Ordering,
     hash::{Hash, Hasher},
-    ops::{Add, AddAssign},
+    ops::{Add, AddAssign, Div},
 };
 
 #[derive(Clone, Copy, Debug, Default)]
@@ -45,6 +46,19 @@ impl<T: Hash + Ord + Clone> Hash for Rect<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.top_left().hash(state);
         self.bottom_right().hash(state)
+    }
+}
+
+impl<T: Copy + One + Add<Output = U>, U: Div> Rect<T> {
+    pub fn center_x(&self) -> U::Output {
+        (*self.a.x() + *self.b.x()) / (T::one() + T::one())
+    }
+    pub fn center_y(&self) -> U::Output {
+        (*self.a.y() + *self.b.y()) / (T::one() + T::one())
+    }
+
+    pub fn center(&self) -> Point<U::Output> {
+        Point::new(self.center_x(), self.center_y())
     }
 }
 
