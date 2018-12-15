@@ -62,6 +62,21 @@ impl<T: Copy + One + Add<Output = U>, U: Div> Rect<T> {
     }
 }
 
+impl<T: Copy + Ord + One + Add<Output = U>, U: Div<Output = T>> Rect<T> {
+    pub fn top_center(&self) -> Point<T> {
+        Point::new(self.center_x(), self.top())
+    }
+    pub fn bottom_center(&self) -> Point<T> {
+        Point::new(self.center_x(), self.bottom())
+    }
+    pub fn center_left(&self) -> Point<T> {
+        Point::new(self.left(), self.center_y())
+    }
+    pub fn center_right(&self) -> Point<T> {
+        Point::new(self.right(), self.center_y())
+    }
+}
+
 impl<T: Ord + Clone> Rect<T> {
     pub fn top(&self) -> T {
         self.a.y().clone().min(self.b.y().clone())
