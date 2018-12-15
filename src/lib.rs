@@ -12,3 +12,6 @@ pub use self::rect::*;
 
 mod lerp;
 pub use self::lerp::*;
+
+mod circle;
+pub use self::circle::*;
