@@ -5,3 +5,4 @@ authors = ["Jake Brownson <jake@brainiumstudios.com>"]
 edition = "2018"
 
 [dependencies]
+num-traits="0.2.6"
