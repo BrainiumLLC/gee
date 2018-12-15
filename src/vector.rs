@@ -1,4 +1,5 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
+use num_traits::Float;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(C)]
@@ -27,6 +28,40 @@ impl<T> Vector<T> {
             dx: &mut self.dx,
             dy: &mut self.dy,
         }
+    }
+
+    pub fn dot_product<RHS, A>(self, rhs: Vector<RHS>) -> A::Output
+    where
+        T: Mul<RHS, Output = A>,
+        A: Add<A>,
+    {
+        self.dx * rhs.dx + self.dy * rhs.dy
+    }
+
+    pub fn magnitude_squared<A>(self) -> A::Output
+    where
+        T: Mul<Output = A> + Copy,
+        A: Add<A>,
+    {
+        self.dot_product(self)
+    }
+
+    pub fn magnitude<A>(self) -> A::Output
+    where
+        T: Mul<Output = A> + Copy,
+        A::Output: Float,
+        A: Add,
+    {
+        self.magnitude_squared().sqrt()
+    }
+
+    pub fn normalized<A>(self) -> Vector<<T as Div<A::Output>>::Output>
+    where
+        T: Mul<Output = A> + Copy + Div<A::Output>,
+        A::Output: Float,
+        A: Add,
+    {
+        self / self.magnitude()
     }
 }
 
@@ -92,5 +127,11 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Vector<T> {
     fn rem_assign(&mut self, rhs: RHS) {
         self.dx %= rhs;
         self.dy %= rhs
+    }
+}
+
+impl<T: Neg<Output = T>> Vector<T> {
+    pub fn perpendicular(self) -> Self {
+        Self::new(-self.dy, self.dx)
     }
 }
