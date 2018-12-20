@@ -3,22 +3,13 @@ use std::ops::{Add, AddAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Point<T> {
-    vector: Vector<T>,
+    pub x: T,
+    pub y: T,
 }
 
 impl<T> Point<T> {
     pub fn new(x: T, y: T) -> Self {
-        Point {
-            vector: Vector::new(x, y),
-        }
-    }
-
-    pub fn x(&self) -> &T {
-        &self.vector.dx
-    }
-
-    pub fn y(&self) -> &T {
-        &self.vector.dy
+        Point { x, y }
     }
 }
 
@@ -26,13 +17,15 @@ impl<T: Add<RHS, Output = Output>, RHS, Output> Add<Vector<RHS>> for Point<T> {
     type Output = Point<Output>;
     fn add(self, rhs: Vector<RHS>) -> Self::Output {
         Point {
-            vector: self.vector + rhs,
+            x: self.x + rhs.dx,
+            y: self.y + rhs.dy,
         }
     }
 }
 
 impl<T: AddAssign<RHS>, RHS> AddAssign<Vector<RHS>> for Point<T> {
     fn add_assign(&mut self, rhs: Vector<RHS>) {
-        self.vector += rhs
+        self.x += rhs.dx;
+        self.y += rhs.dy
     }
 }
