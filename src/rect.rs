@@ -1,11 +1,14 @@
 use crate::{lerp_half, point::Point, vector::Vector};
 use num_traits::One;
+#[cfg(feature = "serde")]
+use serde_derive::{Deserialize, Serialize};
 use std::{
     cmp::{max, min},
     ops::{Add, AddAssign, Div},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Rect<T> {
     pub top:    T,
     pub left:   T,

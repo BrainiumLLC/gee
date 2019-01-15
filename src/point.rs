@@ -1,7 +1,10 @@
 use crate::vector::Vector;
+#[cfg(feature = "serde")]
+use serde_derive::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Point<T> {
     pub x: T,
     pub y: T,
