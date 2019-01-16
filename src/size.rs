@@ -1,17 +1,24 @@
+use crate::vector::Vector;
+#[cfg(feature = "euclid")]
+use euclid::Size2D;
 #[cfg(feature = "serde")]
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Size<T> {
-    width:  T,
-    height: T,
+    pub width:  T,
+    pub height: T,
 }
 
 impl<T> Size<T> {
     pub fn new(width: T, height: T) -> Self {
         Size { width, height }
+    }
+
+    pub fn to_vector(self) -> Vector<T> {
+        Vector::new(self.width, self.height)
     }
 }
 
@@ -115,5 +122,19 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Size<T> {
     fn rem_assign(&mut self, rhs: RHS) {
         self.width %= rhs;
         self.height %= rhs
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T> From<Size2D<T>> for Size<T> {
+    fn from(size: Size2D<T>) -> Self {
+        Size::new(size.width, size.height)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T: Copy> Into<Size2D<T>> for Size<T> {
+    fn into(self) -> Size2D<T> {
+        Size2D::new(self.width, self.height)
     }
 }

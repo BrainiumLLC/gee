@@ -6,9 +6,12 @@ edition = "2018"
 
 [dependencies]
 num-traits = "0.2.6"
-serde = {version = "1.0.84", optional = true}
-serde_derive = {version = "1.0.84", optional = true}
 
-[features]
-default = []
-serde_support = ["serde", "serde_derive"]
+[dependencies.euclid]
+version = "0.19.5"
+optional = true
+
+[dependencies.serde]
+version = "1.0.84"
+features = ["serde_derive"]
+optional = true

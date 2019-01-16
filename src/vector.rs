@@ -1,6 +1,9 @@
+use crate::size::Size;
+#[cfg(feature = "euclid")]
+use euclid::Vector2D;
 use num_traits::Float;
 #[cfg(feature = "serde")]
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -31,6 +34,10 @@ impl<T> Vector<T> {
             dx: &mut self.dx,
             dy: &mut self.dy,
         }
+    }
+
+    pub fn to_size(self) -> Size<T> {
+        Size::new(self.dx, self.dy)
     }
 
     pub fn dot_product<RHS, A>(self, rhs: Vector<RHS>) -> A::Output
@@ -136,5 +143,19 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Vector<T> {
 impl<T: Neg<Output = T>> Vector<T> {
     pub fn perpendicular(self) -> Self {
         Self::new(-self.dy, self.dx)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T> From<Vector2D<T>> for Vector<T> {
+    fn from(vector: Vector2D<T>) -> Self {
+        Vector::new(vector.x, vector.y)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T: Copy> Into<Vector2D<T>> for Vector<T> {
+    fn into(self) -> Vector2D<T> {
+        Vector2D::new(self.dx, self.dy)
     }
 }
