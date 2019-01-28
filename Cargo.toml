@@ -1,8 +1,13 @@
 [package]
 name = "gee"
 version = "0.1.0"
+description = "A simple geometry library intended for 2d games"
 authors = ["Jake Brownson <jake@brainiumstudios.com>"]
 edition = "2018"
+repository = "https://github.com/BrainiumLLC/gee"
+license = "MIT"
+keywords = ["geometry", "games"]
+categories = ["games", "graphics", "science"]
 
 [dependencies]
 num-traits = "0.2.6"
