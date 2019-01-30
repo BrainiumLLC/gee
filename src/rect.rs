@@ -1,5 +1,5 @@
 use crate::{lerp_half, point::Point, size::Size, vector::Vector};
-use num_traits::{One, Zero};
+use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -29,21 +29,26 @@ impl<T> Rect<T> {
 }
 
 impl<T: Add<Output = T> + Copy> Rect<T> {
-    pub fn from_point_size(origin: Point<T>, size: Size<T>) -> Rect<T> {
+    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Rect<T> {
         Rect::new(
-            origin.x,
-            origin.y,
-            origin.x + size.width,
-            origin.y + size.height,
+            top_left.x,
+            top_left.y,
+            top_left.x + size.width,
+            top_left.y + size.height,
         )
     }
 }
 
-impl<T: Copy> Rect<T> {
-    pub fn origin(&self) -> Point<T> {
-        self.top_left()
+impl<T> Rect<T>
+where
+    T: Add<Output = T> + Copy + From<i8> + Default + Sub<Output = T> + Div<Output = T>,
+{
+    pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
+        Self::with_top_left(center - lerp_half(Size::default(), size).into(), size)
     }
+}
 
+impl<T: Copy> Rect<T> {
     pub fn top_left(&self) -> Point<T> {
         Point::new(self.left, self.top)
     }
@@ -133,7 +138,8 @@ impl<T: Ord + Copy> Rect<T> {
     }
 }
 
-impl<T: Copy + One + Add<Output = U>, U: Div> Rect<T> {
+impl<T: Copy + Add<Output = U>, U: Div + From<i8>> Rect<T> //where
+{
     pub fn center_x(&self) -> U::Output {
         lerp_half(self.left, self.right)
     }
@@ -147,7 +153,7 @@ impl<T: Copy + One + Add<Output = U>, U: Div> Rect<T> {
     }
 }
 
-impl<T: Copy + Ord + One + Add<Output = U>, U: Div<Output = T>> Rect<T> {
+impl<T: Copy + Ord + Add<Output = U>, U: Div<Output = T> + From<i8>> Rect<T> {
     pub fn top_center(&self) -> Point<T> {
         Point::new(self.center_x(), self.top)
     }

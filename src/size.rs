@@ -16,9 +16,11 @@ impl<T> Size<T> {
     pub fn new(width: T, height: T) -> Self {
         Size { width, height }
     }
+}
 
-    pub fn to_vector(self) -> Vector<T> {
-        Vector::new(self.width, self.height)
+impl<T> From<Vector<T>> for Size<T> {
+    fn from(vector: Vector<T>) -> Self {
+        Size::new(vector.dx, vector.dy)
     }
 }
 

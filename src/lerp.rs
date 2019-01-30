@@ -1,4 +1,3 @@
-use num_traits::One;
 use std::ops::{Add, Div, Mul, Sub};
 
 pub fn lerp<T, U, V, F>(a: T, b: T, f: F) -> T
@@ -10,10 +9,11 @@ where
     (b - &a) * f + a
 }
 
-pub fn lerp_half<T, U>(a: T, b: T) -> U::Output
+pub fn lerp_half<T, U, V>(a: T, b: T) -> U::Output
 where
-    T: Add<Output = U> + One,
-    U: Div,
+    T: Add<Output = U>,
+    V: From<i8>,
+    U: Div<V>,
 {
-    (a + b) / (T::one() + T::one())
+    (a + b) / 2.into()
 }

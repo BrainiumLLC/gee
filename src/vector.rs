@@ -36,10 +36,6 @@ impl<T> Vector<T> {
         }
     }
 
-    pub fn to_size(self) -> Size<T> {
-        Size::new(self.dx, self.dy)
-    }
-
     pub fn dot_product<RHS, A>(self, rhs: Vector<RHS>) -> A::Output
     where
         T: Mul<RHS, Output = A>,
@@ -72,6 +68,12 @@ impl<T> Vector<T> {
         A: Add,
     {
         self / self.magnitude()
+    }
+}
+
+impl<T> From<Size<T>> for Vector<T> {
+    fn from(size: Size<T>) -> Self {
+        Vector::new(size.width, size.height)
     }
 }
 
