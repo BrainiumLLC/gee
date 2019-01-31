@@ -250,13 +250,13 @@ impl<T: MulAssign<RHS>, RHS: Copy> MulAssign<RHS> for Rect<T> {
 #[cfg(feature = "euclid")]
 impl<T: Add<Output = T> + Copy> From<euclid::Rect<T>> for Rect<T> {
     fn from(rect: euclid::Rect<T>) -> Self {
-        Rect::from_point_size(rect.origin.into(), rect.size.into())
+        Rect::with_top_left(rect.origin.into(), rect.size.into())
     }
 }
 
 #[cfg(feature = "euclid")]
 impl<T: Copy + Sub<Output = T>> Into<euclid::Rect<T>> for Rect<T> {
     fn into(self) -> euclid::Rect<T> {
-        euclid::Rect::new(self.origin().into(), self.size().into())
+        euclid::Rect::new(self.top_left().into(), self.size().into())
     }
 }
