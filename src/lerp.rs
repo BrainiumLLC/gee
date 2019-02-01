@@ -12,7 +12,7 @@ where
 pub fn lerp_half<T, U, V>(a: T, b: T) -> U::Output
 where
     T: Add<Output = U>,
-    V: From<i8>,
+    V: From<u8>,
     U: Div<V>,
 {
     (a + b) / 2.into()

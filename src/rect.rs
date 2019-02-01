@@ -41,7 +41,7 @@ impl<T: Add<Output = T> + Copy> Rect<T> {
 
 impl<T> Rect<T>
 where
-    T: Add<Output = T> + Copy + From<i8> + Default + Sub<Output = T> + Div<Output = T>,
+    T: Add<Output = T> + Copy + From<u8> + Default + Sub<Output = T> + Div<Output = T>,
 {
     pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
         Self::with_top_left(center - lerp_half(Size::default(), size).into(), size)
@@ -138,7 +138,7 @@ impl<T: Ord + Copy> Rect<T> {
     }
 }
 
-impl<T: Copy + Add<Output = U>, U: Div + From<i8>> Rect<T> //where
+impl<T: Copy + Add<Output = U>, U: Div + From<u8>> Rect<T> //where
 {
     pub fn center_x(&self) -> U::Output {
         lerp_half(self.left, self.right)
@@ -153,7 +153,7 @@ impl<T: Copy + Add<Output = U>, U: Div + From<i8>> Rect<T> //where
     }
 }
 
-impl<T: Copy + Ord + Add<Output = U>, U: Div<Output = T> + From<i8>> Rect<T> {
+impl<T: Copy + Ord + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
     pub fn top_center(&self) -> Point<T> {
         Point::new(self.center_x(), self.top)
     }
