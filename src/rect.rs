@@ -90,7 +90,7 @@ impl<T: Zero> Rect<T> {
 
 impl<T: PartialEq> Rect<T> {
     pub fn is_empty(&self) -> bool {
-        self.top == self.bottom || self.left == self.bottom
+        self.top == self.bottom || self.left == self.right
     }
 }
 
