@@ -17,25 +17,43 @@ pub struct Rect<T> {
     pub bottom: T,
 }
 
-impl<T> Rect<T> {
-    pub fn new(left: T, top: T, right: T, bottom: T) -> Rect<T> {
-        Rect {
-            top,
-            left,
-            bottom,
-            right,
+impl<T: Add<Output = T> + Copy> Rect<T> {
+    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
+        Self {
+            left:   top_left.x,
+            top:    top_left.y,
+            right:  top_left.x + size.width,
+            bottom: top_left.y + size.height,
         }
     }
 }
 
-impl<T: Add<Output = T> + Copy> Rect<T> {
-    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Rect<T> {
-        Rect::new(
-            top_left.x,
-            top_left.y,
-            top_left.x + size.width,
-            top_left.y + size.height,
-        )
+impl<T: Add<Output = T> + Sub<Output = T> + Copy> Rect<T> {
+    pub fn with_top_right(top_right: Point<T>, size: Size<T>) -> Self {
+        Self {
+            left:   top_right.x - size.width,
+            top:    top_right.y,
+            right:  top_right.x,
+            bottom: top_right.y + size.height,
+        }
+    }
+
+    pub fn with_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
+        Self {
+            left:   bottom_right.x - size.width,
+            top:    bottom_right.y - size.height,
+            right:  bottom_right.x,
+            bottom: bottom_right.y,
+        }
+    }
+
+    pub fn with_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
+        Self {
+            left:   bottom_left.x,
+            top:    bottom_left.y - size.height,
+            right:  bottom_left.x + size.width,
+            bottom: bottom_left.y,
+        }
     }
 }
 
@@ -44,7 +62,54 @@ where
     T: Add<Output = T> + Copy + From<u8> + Default + Sub<Output = T> + Div<Output = T>,
 {
     pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
-        Self::with_top_left(center - lerp_half(Size::default(), size).into(), size)
+        let half_width = size.width / 2.into();
+        let half_height = size.height / 2.into();
+        Self {
+            left:   center.x - half_width,
+            top:    center.y - half_height,
+            right:  center.x + half_width,
+            bottom: center.y + half_height,
+        }
+    }
+
+    pub fn with_top_center(top_center: Point<T>, size: Size<T>) -> Self {
+        let half_width = size.width / 2.into();
+        Self {
+            left:   top_center.x - half_width,
+            top:    top_center.y,
+            right:  top_center.x + half_width,
+            bottom: top_center.y + size.height,
+        }
+    }
+
+    pub fn with_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
+        let half_width = size.width / 2.into();
+        Self {
+            left:   bottom_center.x - half_width,
+            top:    bottom_center.y - size.height,
+            right:  bottom_center.x + half_width,
+            bottom: bottom_center.y,
+        }
+    }
+
+    pub fn with_left_center(left_center: Point<T>, size: Size<T>) -> Self {
+        let half_height = size.height / 2.into();
+        Self {
+            left:   left_center.x,
+            top:    left_center.y - half_height,
+            right:  left_center.x + size.width,
+            bottom: left_center.y + half_height,
+        }
+    }
+
+    pub fn with_right_center(right_center: Point<T>, size: Size<T>) -> Self {
+        let half_height = size.height / 2.into();
+        Self {
+            left:   right_center.x - size.width,
+            top:    right_center.y - half_height,
+            right:  right_center.x,
+            bottom: right_center.y + half_height,
+        }
     }
 }
 
@@ -80,11 +145,12 @@ impl<T: PartialOrd> Rect<T> {
 
 impl<T: Zero> Rect<T> {
     pub fn zero() -> Self {
-        Rect::new(Zero::zero(), Zero::zero(), Zero::zero(), Zero::zero())
-    }
-
-    pub fn from_size(size: Size<T>) -> Self {
-        Rect::new(Zero::zero(), Zero::zero(), size.width, size.height)
+        Self {
+            left:   T::zero(),
+            top:    T::zero(),
+            right:  T::zero(),
+            bottom: T::zero(),
+        }
     }
 }
 
@@ -123,13 +189,18 @@ impl<T: Copy + PartialOrd + Zero> Rect<T> {
                 max_y = p.y
             }
         }
-        Rect::new(min_x, min_y, max_x, max_y)
+        Self {
+            left:   min_x,
+            top:    min_y,
+            right:  max_x,
+            bottom: max_y,
+        }
     }
 }
 
 impl<T: Ord + Copy> Rect<T> {
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
-        Rect {
+        Self {
             left:   min(a.x, b.x),
             top:    min(a.y, b.y),
             right:  max(a.x, b.x),
