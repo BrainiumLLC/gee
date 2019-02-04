@@ -138,8 +138,7 @@ impl<T: Ord + Copy> Rect<T> {
     }
 }
 
-impl<T: Copy + Add<Output = U>, U: Div + From<u8>> Rect<T> //where
-{
+impl<T: Copy + Add<Output = U>, U: Div + From<u8>> Rect<T> {
     pub fn center_x(&self) -> U::Output {
         lerp_half(self.left, self.right)
     }
