@@ -1,6 +1,7 @@
 use crate::vector::Vector;
 #[cfg(feature = "euclid")]
 use euclid::Size2D;
+use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
@@ -124,6 +125,12 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Size<T> {
     fn rem_assign(&mut self, rhs: RHS) {
         self.width %= rhs;
         self.height %= rhs
+    }
+}
+
+impl<T: Zero> Size<T> {
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero())
     }
 }
 

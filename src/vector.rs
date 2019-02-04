@@ -1,7 +1,7 @@
 use crate::size::Size;
 #[cfg(feature = "euclid")]
 use euclid::Vector2D;
-use num_traits::Float;
+use num_traits::{Float, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign};
@@ -145,6 +145,12 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Vector<T> {
 impl<T: Neg<Output = T>> Vector<T> {
     pub fn perpendicular(self) -> Self {
         Self::new(-self.dy, self.dx)
+    }
+}
+
+impl<T: Zero> Vector<T> {
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero())
     }
 }
 

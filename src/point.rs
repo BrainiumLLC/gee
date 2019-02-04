@@ -1,6 +1,7 @@
 use crate::vector::Vector;
 #[cfg(feature = "euclid")]
 use euclid::Point2D;
+use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
@@ -66,6 +67,12 @@ impl<T: MulAssign<RHS>, RHS: Copy> MulAssign<RHS> for Point<T> {
     fn mul_assign(&mut self, rhs: RHS) {
         self.x *= rhs;
         self.y *= rhs
+    }
+}
+
+impl<T: Zero> Point<T> {
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero())
     }
 }
 
