@@ -1,7 +1,7 @@
 use crate::vector::Vector;
 #[cfg(feature = "euclid")]
 use euclid::Size2D;
-use num_traits::Zero;
+use num_traits::{real::Real, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
@@ -31,6 +31,12 @@ impl<T: Mul> Size<T> {
     }
 }
 
+impl<T: Div> Size<T> {
+    pub fn aspect_ratio(self) -> T::Output {
+        self.width / self.height
+    }
+}
+
 impl<T: Copy + Mul<Output = T> + Div<Output = T>> Size<T> {
     pub fn scaled_to_width(self, rhs: T) -> Size<T> {
         Size::new(rhs, self.height * rhs / self.width)
@@ -44,6 +50,27 @@ impl<T: Copy + Mul<Output = T> + Div<Output = T>> Size<T> {
 impl<T: Copy + Mul<Output = T> + Div<Output = T> + Ord> Size<T> {
     pub fn scaled_to_fill(self, rhs: Size<T>) -> Size<T> {
         self * std::cmp::max(rhs.width / self.width, rhs.height / self.height)
+    }
+}
+
+impl<T: Div<Output = T> + Mul<Output = T> + Real> Size<T> {
+    /// Scales the size to fit within `bounds` while preserving aspect ratio. If
+    /// `allow_upscaling` is enabled, the largest size that fits within `bounds`
+    /// will be calculated. Otherwise, the size will not be increased, but may
+    /// still be decreased as needed to fit.
+    pub fn scaled_to_fit(&self, bounds: Self, allow_upscaling: bool) -> Self {
+        let bounds = if allow_upscaling {
+            bounds
+        } else {
+            Self::new(
+                self.width.min(bounds.width),
+                self.height.min(bounds.height),
+            )
+        };
+        let aspect_ratio = self.aspect_ratio();
+        let width = bounds.width.min(bounds.height * aspect_ratio);
+        let height = bounds.height.min(bounds.width * aspect_ratio.recip());
+        Self::new(width, height)
     }
 }
 
