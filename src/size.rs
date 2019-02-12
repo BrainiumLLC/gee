@@ -54,22 +54,20 @@ impl<T: Copy + Mul<Output = T> + Div<Output = T> + Ord> Size<T> {
 }
 
 impl<T: Div<Output = T> + Mul<Output = T> + Real> Size<T> {
-    /// Scales the size to fit within `bounds` while preserving aspect ratio. If
-    /// `allow_upscaling` is enabled, the largest size that fits within `bounds`
-    /// will be calculated. Otherwise, the size will not be increased, but may
-    /// still be decreased as needed to fit.
-    pub fn scaled_to_fit(&self, bounds: Self, allow_upscaling: bool) -> Self {
-        let bounds = if allow_upscaling {
-            bounds
-        } else {
-            Self::new(
-                self.width.min(bounds.width),
-                self.height.min(bounds.height),
-            )
-        };
+    /// Downscales the size to fit within `rhs` while preserving aspect ratio.
+    pub fn scaled_to_fit(&self, rhs: Size<T>) -> Size<T> {
+        self.scaled_to_fill_and_fit(Self::new(
+            self.width.min(rhs.width),
+            self.height.min(rhs.height),
+        ))
+    }
+
+    /// Scales the size to fit within `rhs` while preserving aspect ratio.
+    /// The largest size that fits within `rhs` will be calculated.
+    pub fn scaled_to_fill_and_fit(&self, rhs: Size<T>) -> Size<T> {
         let aspect_ratio = self.aspect_ratio();
-        let width = bounds.width.min(bounds.height * aspect_ratio);
-        let height = bounds.height.min(bounds.width * aspect_ratio.recip());
+        let width = rhs.width.min(rhs.height * aspect_ratio);
+        let height = rhs.height.min(rhs.width * aspect_ratio.recip());
         Self::new(width, height)
     }
 }
