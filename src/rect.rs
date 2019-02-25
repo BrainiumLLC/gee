@@ -132,8 +132,14 @@ impl<T: Copy> Rect<T> {
 }
 
 impl<T: Copy + Sub> Rect<T> {
+    pub fn width(&self) -> T::Output {
+        self.right - self.left
+    }
+    pub fn height(&self) -> T::Output {
+        self.bottom - self.top
+    }
     pub fn size(&self) -> Size<T::Output> {
-        Size::new(self.right - self.left, self.bottom - self.top)
+        Size::new(self.width(), self.height())
     }
 }
 
