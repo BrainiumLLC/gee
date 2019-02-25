@@ -281,6 +281,38 @@ impl<T: Ord + Copy> Rect<T> {
     }
 }
 
+impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
+    pub fn width_slice<U, V>(&self, num_items: U, index: V) -> Self
+    where
+        T: Div<U, Output = T>,
+        V: Mul<T, Output = T>,
+    {
+        let item_width = self.width() / num_items;
+        let item_left = self.left + index * item_width;
+        Rect {
+            top:    self.top,
+            left:   item_left,
+            right:  item_left + item_width,
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn height_slice<U, V>(&self, num_items: U, index: V) -> Self
+    where
+        T: Div<U, Output = T>,
+        V: Mul<T, Output = T>,
+    {
+        let item_height = self.height() / num_items;
+        let item_top = self.top + index * item_height;
+        Rect {
+            top:    item_top,
+            left:   self.left,
+            right:  self.right,
+            bottom: item_top + item_height,
+        }
+    }
+}
+
 impl<T: Add<RHS>, RHS: Copy> Add<Vector<RHS>> for Rect<T> {
     type Output = Rect<T::Output>;
     fn add(self, rhs: Vector<RHS>) -> Self::Output {
