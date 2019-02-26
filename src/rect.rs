@@ -314,14 +314,14 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
 
     pub fn width_slice_with_margin<U, V>(&self, num_items: U, index: V, margin: T) -> Self
     where
-        T: Div<U, Output = T> + Mul<Output = T>,
+        T: Div<U, Output = T>,
         U: Copy + Mul<T, Output = T>,
-        V: Add<T, Output = T>,
+        V: Mul<T, Output = T>,
     {
         let total_margin = num_items * margin + margin;
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
-        let item_left = margin + item_width * (index + margin);
+        let item_left = margin + index * (margin + item_width);
         Rect {
             top:    self.top,
             left:   item_left,
@@ -332,14 +332,14 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
 
     pub fn height_slice_with_margin<U, V>(&self, num_items: U, index: V, margin: T) -> Self
     where
-        T: Div<U, Output = T> + Mul<Output = T>,
+        T: Div<U, Output = T>,
         U: Copy + Mul<T, Output = T>,
-        V: Add<T, Output = T>,
+        V: Mul<T, Output = T>,
     {
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
-        let item_top = margin + item_height * (index + margin);
+        let item_top = margin + index * (margin + item_height);
         Rect {
             top:    item_top,
             left:   self.left,
