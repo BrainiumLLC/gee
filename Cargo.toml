@@ -11,6 +11,8 @@ categories = ["games", "graphics", "science"]
 
 [dependencies]
 num-traits = "0.2.6"
+strum = "0.13.0"
+strum_macros = "0.13.0"
 
 [dependencies.euclid]
 version = "0.19.5"

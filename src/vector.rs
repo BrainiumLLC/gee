@@ -1,4 +1,7 @@
-use crate::size::Size;
+use crate::{
+    direction::{Cardinal, Direction},
+    size::Size,
+};
 #[cfg(feature = "euclid")]
 use euclid::Vector2D;
 use num_traits::{Float, Zero};
@@ -139,6 +142,34 @@ impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Vector<T> {
     fn rem_assign(&mut self, rhs: RHS) {
         self.dx %= rhs;
         self.dy %= rhs
+    }
+}
+
+impl<T: From<i8>> From<Direction> for Vector<T> {
+    fn from(direction: Direction) -> Self {
+        use Direction::*;
+        match direction {
+            North => Self::new(0, -1),
+            East => Self::new(1, 0),
+            South => Self::new(0, 1),
+            West => Self::new(-1, 0),
+            Northeast => Self::new(1, -1),
+            Southeast => Self::new(1, 1),
+            Southwest => Self::new(-1, 1),
+            Northwest => Self::new(-1, -1),
+        }
+    }
+}
+
+impl<T: From<i8>> From<Cardinal> for Vector<T> {
+    fn from(cardinal: Cardinal) -> Self {
+        use Cardinal::*;
+        match cardinal {
+            North => Self::new(0, -1),
+            East => Self::new(1, 0),
+            South => Self::new(0, 1),
+            West => Self::new(-1, 0),
+        }
     }
 }
 
