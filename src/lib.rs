@@ -1,5 +1,5 @@
-#![deny(rust_2018_idioms)]
-#![deny(unused_must_use)]
+#![deny(rust_2018_idioms, unused_must_use)]
+#![feature(try_from)]
 
 mod circle;
 mod direction;
