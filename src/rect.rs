@@ -113,6 +113,85 @@ where
     }
 }
 
+impl<T: Copy + Ord> Rect<T> {
+    pub fn clipped_above(&self, y: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    max(self.top, y),
+            right:  self.right,
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn clipped_below(&self, y: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    self.top,
+            right:  self.right,
+            bottom: min(self.bottom, y),
+        }
+    }
+
+    pub fn clipped_left(&self, x: T) -> Self {
+        Self {
+            left:   max(self.left, x),
+            top:    self.top,
+            right:  self.right,
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn clipped_right(&self, x: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    self.top,
+            right:  min(self.right, x),
+            bottom: self.bottom,
+        }
+    }
+}
+
+impl<T: Copy> Rect<T>
+where
+    T: Add<Output = T> + Mul<Output = T> + Sub<Output = T>,
+{
+    pub fn scaled_from_top(&self, scale: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    self.top,
+            right:  self.right,
+            bottom: self.top + self.height() * scale,
+        }
+    }
+
+    pub fn scaled_from_bottom(&self, scale: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    self.bottom - self.height() * scale,
+            right:  self.right,
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn scaled_from_left(&self, scale: T) -> Self {
+        Self {
+            left:   self.left,
+            top:    self.top,
+            right:  self.left + self.width() * scale,
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn scaled_from_right(&self, scale: T) -> Self {
+        Self {
+            left:   self.right - self.width() * scale,
+            top:    self.top,
+            right:  self.right,
+            bottom: self.bottom,
+        }
+    }
+}
+
 impl<T: Copy> Rect<T> {
     pub fn top_left(&self) -> Point<T> {
         Point::new(self.left, self.top)
