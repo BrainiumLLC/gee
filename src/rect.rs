@@ -400,7 +400,7 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
         let total_margin = num_items * margin + margin;
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
-        let item_left = margin + index * (margin + item_width);
+        let item_left = self.left + margin + index * (margin + item_width);
         Rect {
             top:    self.top,
             left:   item_left,
@@ -418,7 +418,7 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
-        let item_top = margin + index * (margin + item_height);
+        let item_top = self.top + margin + index * (margin + item_height);
         Rect {
             top:    item_top,
             left:   self.left,
