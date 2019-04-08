@@ -222,6 +222,16 @@ impl<T: Copy + Sub> Rect<T> {
     }
 }
 
+impl<T: Copy, U> Rect<T>
+where
+    T: Sub<Output = U>,
+    U: Div,
+{
+    pub fn aspect_ratio(&self) -> U::Output {
+        self.width() / self.height()
+    }
+}
+
 impl<T: PartialOrd> Rect<T> {
     pub fn contains(&self, point: &Point<T>) -> bool {
         self.left <= point.x && point.x < self.right && self.top <= point.y && point.y < self.bottom
