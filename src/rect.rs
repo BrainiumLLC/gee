@@ -318,7 +318,7 @@ impl<T: Copy + Add<Output = U>, U: Div + From<u8>> Rect<T> {
     }
 }
 
-impl<T: Copy + Ord + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
+impl<T: Copy + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
     pub fn top_center(&self) -> Point<T> {
         Point::new(self.center_x(), self.top)
     }
