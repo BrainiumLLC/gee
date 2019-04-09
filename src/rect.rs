@@ -222,13 +222,9 @@ impl<T: Copy + Sub> Rect<T> {
     }
 }
 
-impl<T: Copy, U> Rect<T>
-where
-    T: Sub<Output = U>,
-    U: Div,
-{
-    pub fn aspect_ratio(&self) -> U::Output {
-        self.width() / self.height()
+impl<T: Div> Rect<T> {
+    pub fn aspect_ratio(&self) -> T::Output {
+        self.size().aspect_ratio()
     }
 }
 
