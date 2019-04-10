@@ -4,6 +4,8 @@
 mod circle;
 mod direction;
 mod lerp;
+mod max;
+mod min;
 mod point;
 mod rect;
 mod rect_position;
@@ -12,6 +14,6 @@ mod transform;
 mod vector;
 
 pub use self::{
-    circle::*, direction::*, lerp::*, point::*, rect::*, rect_position::*, size::*, transform::*,
-    vector::*,
+    circle::*, direction::*, lerp::*, max::*, min::*, point::*, rect::*, rect_position::*, size::*,
+    transform::*, vector::*,
 };

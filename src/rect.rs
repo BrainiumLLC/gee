@@ -1,10 +1,9 @@
-use crate::{lerp_half, point::Point, size::Size, vector::Vector};
+use crate::{lerp_half, max::Max, min::Min, point::Point, size::Size, vector::Vector};
 use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
-    cmp::{max, min},
     ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
 };
 
@@ -113,11 +112,11 @@ where
     }
 }
 
-impl<T: Copy + Ord> Rect<T> {
+impl<T: Copy + Max + Min> Rect<T> {
     pub fn clipped_above(&self, y: T) -> Self {
         Self {
             left:   self.left,
-            top:    max(self.top, y),
+            top:    self.top.max(y),
             right:  self.right,
             bottom: self.bottom,
         }
@@ -128,13 +127,13 @@ impl<T: Copy + Ord> Rect<T> {
             left:   self.left,
             top:    self.top,
             right:  self.right,
-            bottom: min(self.bottom, y),
+            bottom: self.bottom.min(y),
         }
     }
 
     pub fn clipped_left(&self, x: T) -> Self {
         Self {
-            left:   max(self.left, x),
+            left:   self.left.max(x),
             top:    self.top,
             right:  self.right,
             bottom: self.bottom,
@@ -145,7 +144,7 @@ impl<T: Copy + Ord> Rect<T> {
         Self {
             left:   self.left,
             top:    self.top,
-            right:  min(self.right, x),
+            right:  self.right.min(x),
             bottom: self.bottom,
         }
     }
@@ -293,13 +292,13 @@ impl<T: Copy + PartialOrd + Zero> Rect<T> {
     }
 }
 
-impl<T: Ord + Copy> Rect<T> {
+impl<T: Copy + Max + Min> Rect<T> {
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
         Self {
-            left:   min(a.x, b.x),
-            top:    min(a.y, b.y),
-            right:  max(a.x, b.x),
-            bottom: max(a.y, b.y),
+            left:   a.x.min(b.x),
+            top:    a.y.min(b.y),
+            right:  a.x.max(b.x),
+            bottom: a.y.max(b.y),
         }
     }
 }
@@ -333,7 +332,7 @@ impl<T: Copy + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
     }
 }
 
-impl<T: Ord + Copy> Rect<T> {
+impl<T: Copy + PartialOrd + Max + Min> Rect<T> {
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let top = self.top.max(other.top);
         let bottom = self.bottom.min(other.bottom);
