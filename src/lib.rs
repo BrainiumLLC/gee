@@ -1,5 +1,4 @@
 #![deny(rust_2018_idioms, unused_must_use)]
-#![feature(try_from)]
 
 mod circle;
 mod direction;
@@ -12,6 +11,9 @@ mod rect_position;
 mod size;
 mod transform;
 mod vector;
+
+#[cfg(feature = "euclid")]
+pub use euclid;
 
 pub use self::{
     circle::*, direction::*, lerp::*, max::*, min::*, point::*, rect::*, rect_position::*, size::*,
