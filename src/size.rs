@@ -19,6 +19,15 @@ impl<T> Size<T> {
     }
 }
 
+impl<T: Copy> Size<T> {
+    pub fn square(dim: T) -> Self {
+        Size {
+            width:  dim,
+            height: dim,
+        }
+    }
+}
+
 impl<T> From<Vector<T>> for Size<T> {
     fn from(vector: Vector<T>) -> Self {
         Size::new(vector.dx, vector.dy)
