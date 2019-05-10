@@ -248,6 +248,17 @@ impl<T: Zero> Rect<T> {
     }
 }
 
+impl<T> Rect<T> {
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
+        Rect {
+            left:   f(self.left),
+            top:    f(self.top),
+            right:  f(self.right),
+            bottom: f(self.bottom),
+        }
+    }
+}
+
 impl<T: PartialEq> Rect<T> {
     pub fn is_empty(&self) -> bool {
         self.top == self.bottom || self.left == self.right

@@ -168,6 +168,15 @@ impl<T: Zero> Size<T> {
     }
 }
 
+impl<T> Size<T> {
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Size<U> {
+        Size {
+            width:  f(self.width),
+            height: f(self.height),
+        }
+    }
+}
+
 #[cfg(feature = "euclid")]
 impl<T> From<Size2D<T>> for Size<T> {
     fn from(size: Size2D<T>) -> Self {

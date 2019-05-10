@@ -76,6 +76,15 @@ impl<T: Zero> Point<T> {
     }
 }
 
+impl<T> Point<T> {
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Point<U> {
+        Point {
+            x: f(self.x),
+            y: f(self.y),
+        }
+    }
+}
+
 #[cfg(feature = "euclid")]
 impl<T> From<Point2D<T>> for Point<T> {
     fn from(point: Point2D<T>) -> Self {

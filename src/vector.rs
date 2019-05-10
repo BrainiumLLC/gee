@@ -72,6 +72,13 @@ impl<T> Vector<T> {
     {
         self / self.magnitude()
     }
+
+    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vector<U> {
+        Vector {
+            dx: f(self.dx),
+            dy: f(self.dy),
+        }
+    }
 }
 
 impl<T> From<Size<T>> for Vector<T> {
