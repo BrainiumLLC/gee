@@ -9,6 +9,7 @@ use std::{
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct Rect<T> {
     pub left:   T,
     pub top:    T,
