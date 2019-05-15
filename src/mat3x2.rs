@@ -44,6 +44,31 @@ impl<T: Float> Mat3x2<T> {
         Self::row_major(cos, _0 - sin, sin, cos, _0, _0)
     }
 
+    pub fn determinant(&self) -> T {
+        self.m11 * self.m22 - self.m12 * self.m21
+    }
+
+    pub fn inverse(&self) -> Option<Self> {
+        let det = self.determinant();
+
+        let _0: T = Zero::zero();
+        let _1: T = One::one();
+
+        if det == _0 {
+            return None;
+        }
+
+        let inv_det = _1 / det;
+        Some(Self::row_major(
+            inv_det * self.m22,
+            inv_det * (_0 - self.m12),
+            inv_det * (_0 - self.m21),
+            inv_det * self.m11,
+            inv_det * (self.m21 * self.m32 - self.m22 * self.m31),
+            inv_det * (self.m31 * self.m12 - self.m11 * self.m32),
+        ))
+    }
+
     pub fn ortho(
         left: T,
         right: T,
