@@ -57,9 +57,11 @@ impl<T: Copy + Mul<Output = T> + Div<Output = T>> Size<T> {
     }
 }
 
-impl<T: Copy + Mul<Output = T> + Div<Output = T> + Ord> Size<T> {
+impl<T: Copy + Mul<Output = T> + Div<Output = T> + PartialOrd> Size<T> {
     pub fn scaled_to_fill(self, rhs: Size<T>) -> Size<T> {
-        self * std::cmp::max(rhs.width / self.width, rhs.height / self.height)
+        let width = rhs.width / self.width;
+        let height = rhs.height / self.height;
+        self * if width > height { width } else { height }
     }
 }
 
