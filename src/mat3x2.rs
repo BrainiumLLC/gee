@@ -199,14 +199,14 @@ impl<T: Copy> Mat3x2<T> {
         )
     }
 
-    pub fn post_translate<U>(&self, vec: Vector<U>) -> Mat3x2<<T::Output as Add>::Output>
+    pub fn post_translate<U>(&self, x: U, y: U) -> Mat3x2<<T::Output as Add>::Output>
     where
         U: Copy + Zero + One,
         T: Mul<U>,
         T::Output: Add,
         <T::Output as Add>::Output: Add<U, Output = <T::Output as Add>::Output>,
     {
-        self.post_mul(&Mat3x2::create_translation(vec.dx, vec.dy))
+        self.post_mul(&Mat3x2::create_translation(x, y))
     }
 
     pub fn post_scale<U>(&self, x: U, y: U) -> Mat3x2<<T::Output as Add>::Output>
