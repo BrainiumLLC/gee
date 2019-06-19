@@ -74,12 +74,8 @@ impl<T: Float> Mat4<T> {
         let sx = _2 / (right - left);
         let sy = _2 / (top - bottom);
         let sz = -_2 / (far - near);
-        #[rustfmt::skip]
         Self::row_major(
-            sx, _0, _0, _0,
-            _0, sy, _0, _0,
-            _0, _0, sz, _0,
-            tx, ty, tz, _1,
+            sx, _0, _0, _0, _0, sy, _0, _0, _0, _0, sz, _0, tx, ty, tz, _1,
         )
     }
 }
