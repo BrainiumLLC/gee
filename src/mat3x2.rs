@@ -1,4 +1,4 @@
-use crate::{mat4::Mat4, point::Point, rect::Rect, vector::Vector};
+use crate::{mat4::Mat4, point::Point, rect::Rect, vec2::Vec2};
 #[cfg(feature = "euclid")]
 use euclid::Transform2D;
 use num_traits::{Float, One, Zero};
@@ -69,12 +69,7 @@ impl<T: Float> Mat3x2<T> {
         ))
     }
 
-    pub fn ortho(
-        left: T,
-        right: T,
-        bottom: T,
-        top: T,
-    ) -> Self {
+    pub fn ortho(left: T, right: T, bottom: T, top: T) -> Self {
         let tx = -((right + left) / (right - left));
         let ty = -((top + bottom) / (top - bottom));
 
@@ -82,11 +77,7 @@ impl<T: Float> Mat3x2<T> {
         let _2 = _1 + _1;
         let sx = _2 / (right - left);
         let sy = _2 / (top - bottom);
-        Self::row_major(
-            sx, _0,
-            _0, sy,
-            tx, ty,
-        )
+        Self::row_major(sx, _0, _0, sy, tx, ty)
     }
 }
 
@@ -114,17 +105,14 @@ impl<T: One + Zero> Mat3x2<T> {
             self.m12,
             Zero::zero(),
             Zero::zero(),
-
             self.m21,
             self.m22,
             Zero::zero(),
             Zero::zero(),
-
             Zero::zero(),
             Zero::zero(),
             One::one(),
             Zero::zero(),
-
             self.m31,
             self.m32,
             Zero::zero(),
@@ -153,12 +141,12 @@ impl<T: Copy> Mat3x2<T> {
         )
     }
 
-    pub fn transform_vector<U>(&self, vector: &Vector<U>) -> Vector<<U::Output as Add>::Output>
+    pub fn transform_vector<U>(&self, vector: &Vec2<U>) -> Vec2<<U::Output as Add>::Output>
     where
         U: Mul<T> + Copy,
         U::Output: Add,
     {
-        Vector::new(
+        Vec2::new(
             vector.dx * self.m11 + vector.dy * self.m21,
             vector.dx * self.m12 + vector.dy * self.m22,
         )

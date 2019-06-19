@@ -1,4 +1,4 @@
-use crate::vector::Vector;
+use crate::vec2::Vec2;
 #[cfg(feature = "euclid")]
 use euclid::Point2D;
 use num_traits::Zero;
@@ -20,9 +20,9 @@ impl<T> Point<T> {
     }
 }
 
-impl<T: Add<RHS>, RHS> Add<Vector<RHS>> for Point<T> {
+impl<T: Add<RHS>, RHS> Add<Vec2<RHS>> for Point<T> {
     type Output = Point<T::Output>;
-    fn add(self, rhs: Vector<RHS>) -> Self::Output {
+    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
         Point {
             x: self.x + rhs.dx,
             y: self.y + rhs.dy,
@@ -30,16 +30,16 @@ impl<T: Add<RHS>, RHS> Add<Vector<RHS>> for Point<T> {
     }
 }
 
-impl<T: AddAssign<RHS>, RHS> AddAssign<Vector<RHS>> for Point<T> {
-    fn add_assign(&mut self, rhs: Vector<RHS>) {
+impl<T: AddAssign<RHS>, RHS> AddAssign<Vec2<RHS>> for Point<T> {
+    fn add_assign(&mut self, rhs: Vec2<RHS>) {
         self.x += rhs.dx;
         self.y += rhs.dy
     }
 }
 
-impl<T: Sub<RHS>, RHS> Sub<Vector<RHS>> for Point<T> {
+impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for Point<T> {
     type Output = Point<T::Output>;
-    fn sub(self, rhs: Vector<RHS>) -> Self::Output {
+    fn sub(self, rhs: Vec2<RHS>) -> Self::Output {
         Point {
             x: self.x - rhs.dx,
             y: self.y - rhs.dy,
@@ -47,8 +47,8 @@ impl<T: Sub<RHS>, RHS> Sub<Vector<RHS>> for Point<T> {
     }
 }
 
-impl<T: SubAssign<RHS>, RHS> SubAssign<Vector<RHS>> for Point<T> {
-    fn sub_assign(&mut self, rhs: Vector<RHS>) {
+impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for Point<T> {
+    fn sub_assign(&mut self, rhs: Vec2<RHS>) {
         self.x -= rhs.dx;
         self.y -= rhs.dy
     }

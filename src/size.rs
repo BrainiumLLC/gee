@@ -1,4 +1,4 @@
-use crate::vector::Vector;
+use crate::vec2::Vec2;
 #[cfg(feature = "euclid")]
 use euclid::Size2D;
 use num_traits::{real::Real, Zero};
@@ -29,8 +29,8 @@ impl<T: Copy> Size<T> {
     }
 }
 
-impl<T> From<Vector<T>> for Size<T> {
-    fn from(vector: Vector<T>) -> Self {
+impl<T> From<Vec2<T>> for Size<T> {
+    fn from(vector: Vec2<T>) -> Self {
         Size::new(vector.dx, vector.dy)
     }
 }

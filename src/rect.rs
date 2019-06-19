@@ -1,4 +1,4 @@
-use crate::{lerp_half, max::Max, min::Min, point::Point, size::Size, vector::Vector};
+use crate::{lerp_half, max::Max, min::Min, point::Point, size::Size, vec2::Vec2};
 use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -449,9 +449,9 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
     }
 }
 
-impl<T: Add<RHS>, RHS: Copy> Add<Vector<RHS>> for Rect<T> {
+impl<T: Add<RHS>, RHS: Copy> Add<Vec2<RHS>> for Rect<T> {
     type Output = Rect<T::Output>;
-    fn add(self, rhs: Vector<RHS>) -> Self::Output {
+    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
         Rect {
             left:   self.left + rhs.dx,
             top:    self.top + rhs.dy,
@@ -461,8 +461,8 @@ impl<T: Add<RHS>, RHS: Copy> Add<Vector<RHS>> for Rect<T> {
     }
 }
 
-impl<T: AddAssign<RHS>, RHS: Copy> AddAssign<Vector<RHS>> for Rect<T> {
-    fn add_assign(&mut self, rhs: Vector<RHS>) {
+impl<T: AddAssign<RHS>, RHS: Copy> AddAssign<Vec2<RHS>> for Rect<T> {
+    fn add_assign(&mut self, rhs: Vec2<RHS>) {
         self.left += rhs.dx;
         self.top += rhs.dy;
         self.right += rhs.dx;

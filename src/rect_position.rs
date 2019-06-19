@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, Neg, Sub, SubAssign};
 use strum_macros::EnumIter;
 
-use crate::{point::Point, rect::Rect, size::Size, vector::Vector};
+use crate::{point::Point, rect::Rect, size::Size, vec2::Vec2};
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -237,9 +237,9 @@ impl<T: Copy + Add<Output = T> + Div<Output = T> + From<u8>> RectPosition<T> {
     }
 }
 
-impl<T: Add<RHS>, RHS> Add<Vector<RHS>> for RectPosition<T> {
+impl<T: Add<RHS>, RHS> Add<Vec2<RHS>> for RectPosition<T> {
     type Output = RectPosition<T::Output>;
-    fn add(self, rhs: Vector<RHS>) -> Self::Output {
+    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point + rhs,
@@ -247,15 +247,15 @@ impl<T: Add<RHS>, RHS> Add<Vector<RHS>> for RectPosition<T> {
     }
 }
 
-impl<T: AddAssign<RHS>, RHS> AddAssign<Vector<RHS>> for RectPosition<T> {
-    fn add_assign(&mut self, rhs: Vector<RHS>) {
+impl<T: AddAssign<RHS>, RHS> AddAssign<Vec2<RHS>> for RectPosition<T> {
+    fn add_assign(&mut self, rhs: Vec2<RHS>) {
         self.point += rhs;
     }
 }
 
-impl<T: Sub<RHS>, RHS> Sub<Vector<RHS>> for RectPosition<T> {
+impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for RectPosition<T> {
     type Output = RectPosition<T::Output>;
-    fn sub(self, rhs: Vector<RHS>) -> Self::Output {
+    fn sub(self, rhs: Vec2<RHS>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point - rhs,
@@ -263,8 +263,8 @@ impl<T: Sub<RHS>, RHS> Sub<Vector<RHS>> for RectPosition<T> {
     }
 }
 
-impl<T: SubAssign<RHS>, RHS> SubAssign<Vector<RHS>> for RectPosition<T> {
-    fn sub_assign(&mut self, rhs: Vector<RHS>) {
+impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for RectPosition<T> {
+    fn sub_assign(&mut self, rhs: Vec2<RHS>) {
         self.point -= rhs;
     }
 }
@@ -421,8 +421,8 @@ mod test {
             bottom,
         };
 
-        let width_offset: Vector<f64> = Vector::new(rect.width(), 0.0);
-        let height_offset: Vector<f64> = Vector::new(0.0, rect.height());
+        let width_offset: Vec2<f64> = Vec2::new(rect.width(), 0.0);
+        let height_offset: Vec2<f64> = Vec2::new(0.0, rect.height());
         let size_offset = width_offset + height_offset;
         assert_eq!(
             (RectPosition::top_left_from_rect(rect) + size_offset).point,

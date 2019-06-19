@@ -11,12 +11,12 @@ mod point;
 mod rect;
 mod rect_position;
 mod size;
-mod vector;
+mod vec2;
 
 #[cfg(feature = "euclid")]
 pub use euclid;
 
 pub use self::{
-    circle::*, direction::*, lerp::*, mat3x2::*, mat4::*, max::*, min::*,
-    point::*, rect::*, rect_position::*, size::*, vector::*,
+    circle::*, direction::*, lerp::*, mat3x2::*, mat4::*, max::*, min::*, point::*, rect::*,
+    rect_position::*, size::*, vec2::*,
 };

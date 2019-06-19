@@ -63,14 +63,7 @@ impl<T: One + Zero> Mat4<T> {
 }
 
 impl<T: Float> Mat4<T> {
-    pub fn ortho(
-        left: T,
-        right: T,
-        bottom: T,
-        top: T,
-        near: T,
-        far: T,
-    ) -> Self {
+    pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self {
         let tx = -((right + left) / (right - left));
         let ty = -((top + bottom) / (top - bottom));
         let tz = -((far + near) / (far - near));
