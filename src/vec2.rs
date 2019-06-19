@@ -1,9 +1,11 @@
 use crate::{
     direction::{Cardinal, Direction},
     size::Size,
+    vec3::Vec3,
+    vec4::Vec4,
 };
 #[cfg(feature = "euclid")]
-use euclid::Vec22D;
+use euclid::Vector2D;
 use num_traits::{Float, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -23,6 +25,14 @@ impl<T> Vec2<T> {
             dx: dx.into(),
             dy: dy.into(),
         }
+    }
+
+    pub fn from_vec3(vec3: Vec3<T>) -> Self {
+        Self::new(vec3.dx, vec3.dy)
+    }
+
+    pub fn from_vec4(vec4: Vec4<T>) -> Self {
+        Self::new(vec4.dx, vec4.dy)
     }
 
     pub fn as_ref(&self) -> Vec2<&T> {
@@ -78,6 +88,20 @@ impl<T> Vec2<T> {
             dx: f(self.dx),
             dy: f(self.dy),
         }
+    }
+
+    pub fn into_vec3(self) -> Vec3<T>
+    where
+        T: Zero,
+    {
+        Vec3::new(self.dx, self.dy, Zero::zero())
+    }
+
+    pub fn into_vec4(self) -> Vec4<T>
+    where
+        T: Zero,
+    {
+        Vec4::new(self.dx, self.dy, Zero::zero(), Zero::zero())
     }
 }
 
@@ -193,15 +217,15 @@ impl<T: Zero> Vec2<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T> From<Vec22D<T>> for Vec2<T> {
-    fn from(vector: Vec22D<T>) -> Self {
+impl<T> From<Vector2D<T>> for Vec2<T> {
+    fn from(vector: Vector2D<T>) -> Self {
         Vec2::new(vector.x, vector.y)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: Copy> Into<Vec22D<T>> for Vec2<T> {
-    fn into(self) -> Vec22D<T> {
-        Vec22D::new(self.dx, self.dy)
+impl<T: Copy> Into<Vector2D<T>> for Vec2<T> {
+    fn into(self) -> Vector2D<T> {
+        Vector2D::new(self.dx, self.dy)
     }
 }

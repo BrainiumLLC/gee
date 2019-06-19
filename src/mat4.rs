@@ -106,8 +106,8 @@ impl<T> From<Transform3D<T>> for Mat4<T> {
 
 #[cfg(feature = "euclid")]
 impl<T: Copy> Into<Transform3D<T>> for Mat4<T> {
+    #[rustfmt::skip]
     fn into(self) -> Transform3D<T> {
-        #[rustfmt::skip]
         Transform3D::row_major(
             self.m11, self.m12, self.m13, self.m14,
             self.m21, self.m22, self.m23, self.m24,
