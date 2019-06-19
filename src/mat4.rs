@@ -4,6 +4,9 @@ use num_traits::{Float, One, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+pub type Mat4x4<T> = Mat4<T>;
+
+#[rustfmt::skip]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
@@ -15,6 +18,7 @@ pub struct Mat4<T> {
 }
 
 impl<T> Mat4<T> {
+    #[rustfmt::skip]
     pub fn row_major(
         m11: T, m12: T, m13: T, m14: T,
         m21: T, m22: T, m23: T, m24: T,
@@ -43,17 +47,14 @@ impl<T: One + Zero> Mat4<T> {
             Zero::zero(),
             Zero::zero(),
             Zero::zero(),
-
             Zero::zero(),
             One::one(),
             Zero::zero(),
             Zero::zero(),
-
             Zero::zero(),
             Zero::zero(),
             One::one(),
             Zero::zero(),
-
             Zero::zero(),
             Zero::zero(),
             Zero::zero(),
@@ -73,6 +74,7 @@ impl<T: Float> Mat4<T> {
         let sx = _2 / (right - left);
         let sy = _2 / (top - bottom);
         let sz = -_2 / (far - near);
+        #[rustfmt::skip]
         Self::row_major(
             sx, _0, _0, _0,
             _0, sy, _0, _0,
@@ -109,6 +111,7 @@ impl<T> From<Transform3D<T>> for Mat4<T> {
 #[cfg(feature = "euclid")]
 impl<T: Copy> Into<Transform3D<T>> for Mat4<T> {
     fn into(self) -> Transform3D<T> {
+        #[rustfmt::skip]
         Transform3D::row_major(
             self.m11, self.m12, self.m13, self.m14,
             self.m21, self.m22, self.m23, self.m24,
