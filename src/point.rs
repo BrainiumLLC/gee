@@ -47,6 +47,16 @@ impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for Point<T> {
     }
 }
 
+impl<T: Sub<RHS>, RHS> Sub<Point<RHS>> for Point<T> {
+    type Output = Vec2<T::Output>;
+    fn sub(self, rhs: Point<RHS>) -> Self::Output {
+        Vec2 {
+            dx: self.x - rhs.x,
+            dy: self.y - rhs.y,
+        }
+    }
+}
+
 impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for Point<T> {
     fn sub_assign(&mut self, rhs: Vec2<RHS>) {
         self.x -= rhs.dx;
