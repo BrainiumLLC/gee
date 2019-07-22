@@ -2,7 +2,7 @@ use crate::Vec2;
 use core::ops::{Div, Mul};
 use num_traits::Float;
 
-struct Angle<T> {
+pub struct Angle<T> {
     radians: T,
 }
 
