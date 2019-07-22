@@ -20,6 +20,6 @@ mod vec4;
 pub use euclid;
 
 pub use self::{
-    circle::*, direction::*, lerp::*, mat3x2::*, mat4::*, max::*, min::*, point::*, rect::*,
+    angle::*, circle::*, direction::*, lerp::*, mat3x2::*, mat4::*, max::*, min::*, point::*, rect::*,
     rect_position::*, size::*, vec2::*, vec3::*, vec4::*,
 };
