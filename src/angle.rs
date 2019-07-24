@@ -7,20 +7,20 @@ pub struct Angle<T> {
 }
 
 impl<T: From<f32> + Mul<T, Output = T> + Div<T, Output = T>> Angle<T> {
-    fn from_degrees(degrees: T) -> Self {
+    pub fn from_degrees(degrees: T) -> Self {
         Angle {
             radians: degrees * std::f32::consts::PI.into() / 180f32.into(),
         }
     }
 }
 impl<T> Angle<T> {
-    fn from_radians(radians: T) -> Self {
+    pub fn from_radians(radians: T) -> Self {
         Angle { radians }
     }
 }
 
 impl<T: Float> Angle<T> {
-    fn unit_vector(&self) -> Vec2<T> {
+    pub fn unit_vector(&self) -> Vec2<T> {
         Vec2::new(self.radians.cos(), self.radians.sin())
     }
 }
