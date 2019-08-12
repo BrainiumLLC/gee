@@ -105,6 +105,12 @@ impl<T> Vec2<T> {
     }
 }
 
+impl<T: Div + Float> Vec2<T> {
+    pub fn angle(self) -> T {
+        (self.dy / self.dx).atan()
+    }
+}
+
 impl<T> From<Size<T>> for Vec2<T> {
     fn from(size: Size<T>) -> Self {
         Vec2::new(size.width, size.height)
