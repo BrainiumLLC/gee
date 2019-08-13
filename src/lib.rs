@@ -4,11 +4,13 @@ mod angle;
 mod circle;
 mod direction;
 mod lerp;
+mod line_segment;
 mod mat3x2;
 mod mat4;
 mod max;
 mod min;
 mod point;
+mod ray;
 mod rect;
 mod rect_position;
 mod size;
@@ -20,8 +22,8 @@ mod vec4;
 pub use euclid;
 
 pub use self::{
-    angle::*, circle::*, direction::*, lerp::*, mat3x2::*, mat4::*, max::*, min::*, point::*,
-    rect::*, rect_position::*, size::*, vec2::*, vec3::*, vec4::*,
+    angle::*, circle::*, direction::*, lerp::*, line_segment::*, mat3x2::*, mat4::*, max::*,
+    min::*, point::*, ray::*, rect::*, rect_position::*, size::*, vec2::*, vec3::*, vec4::*,
 };
 
 macro_rules! to_f32_f64_impl {

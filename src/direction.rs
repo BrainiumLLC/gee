@@ -1,4 +1,4 @@
-use num_traits::{Float, FloatConst, FromPrimitive};
+use num_traits::{Float, FloatConst};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, ops::Neg};
