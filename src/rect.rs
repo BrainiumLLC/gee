@@ -1,4 +1,6 @@
-use crate::{lerp_half, max::Max, min::Min, point::Point, size::Size, vec2::Vec2};
+use crate::{
+    lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size, vec2::Vec2,
+};
 use num_traits::Zero;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -263,6 +265,21 @@ impl<T> Rect<T> {
 impl<T: PartialEq> Rect<T> {
     pub fn is_empty(&self) -> bool {
         self.top == self.bottom || self.left == self.right
+    }
+}
+
+impl<T: Copy> Rect<T> {
+    pub fn line_segments(&self) -> [LineSegment<T>; 4] {
+        let top_left = self.top_left();
+        let top_right = self.top_right();
+        let bottom_right = self.bottom_right();
+        let bottom_left = self.bottom_left();
+        [
+            LineSegment::new(top_left, top_right),
+            LineSegment::new(top_right, bottom_right),
+            LineSegment::new(bottom_right, bottom_left),
+            LineSegment::new(bottom_left, top_left),
+        ]
     }
 }
 
