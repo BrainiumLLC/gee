@@ -4,8 +4,8 @@ use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 pub struct Ray<T> {
-    point: Point<T>,
-    angle: T,
+    pub point: Point<T>,
+    pub angle: T,
 }
 
 impl<T> Ray<T> {

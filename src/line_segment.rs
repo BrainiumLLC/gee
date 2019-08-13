@@ -4,8 +4,8 @@ use std::ops::Sub;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 pub struct LineSegment<T> {
-    from: Point<T>,
-    to:   Point<T>,
+    pub from: Point<T>,
+    pub to:   Point<T>,
 }
 
 impl<T> LineSegment<T> {
