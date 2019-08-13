@@ -1,3 +1,4 @@
+use num_traits::{Float, FloatConst, FromPrimitive};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, ops::Neg};
@@ -23,6 +24,35 @@ pub enum Direction {
     Southwest,
     West,
     Northwest,
+}
+
+impl Cardinal {
+    pub fn angle<T: Float + FloatConst + From<u8>>(self) -> T {
+        use Cardinal::*;
+        match self {
+            North => T::PI() / 2.into(),
+            South => T::PI() * 3.into() / 2.into(),
+            East => 0.into(),
+            West => T::PI(),
+        }
+    }
+}
+
+impl Direction {
+    pub fn angle<T: Float + FloatConst + From<u8>>(self) -> T {
+        use Direction::*;
+        let _2pi = T::PI() * 2.into();
+        match self {
+            North => T::PI() / 2.into(),
+            South => T::PI() * 3.into() / 2.into(),
+            East => 0.into(),
+            West => T::PI(),
+            Northeast => T::PI() / 4.into(),
+            Southeast => T::PI() * 7.into() / 4.into(),
+            Southwest => T::PI() * 5.into() * 4.into(),
+            Northwest => T::PI() * 3.into() / 4.into(),
+        }
+    }
 }
 
 impl Neg for Cardinal {
