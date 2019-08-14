@@ -1,5 +1,7 @@
 use crate::{LineSegment, Point, Vec2};
 use num_traits::Float;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
