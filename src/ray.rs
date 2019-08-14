@@ -3,6 +3,8 @@ use num_traits::Float;
 use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct Ray<T> {
     pub point: Point<T>,
     pub angle: T,
