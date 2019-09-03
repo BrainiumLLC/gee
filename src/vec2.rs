@@ -9,7 +9,9 @@ use euclid::Vector2D;
 use num_traits::{Float, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign};
+use std::ops::{
+    Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign,
+};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -134,6 +136,20 @@ impl<T: AddAssign<RHS>, RHS> AddAssign<Vec2<RHS>> for Vec2<T> {
     fn add_assign(&mut self, rhs: Vec2<RHS>) {
         self.dx += rhs.dx;
         self.dy += rhs.dy
+    }
+}
+
+impl<T: Sub<RHS, Output = Output>, RHS, Output> Sub<Vec2<RHS>> for Vec2<T> {
+    type Output = Vec2<Output>;
+    fn sub(self, rhs: Vec2<RHS>) -> Self::Output {
+        Vec2::new(self.dx - rhs.dx, self.dy - rhs.dy)
+    }
+}
+
+impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for Vec2<T> {
+    fn sub_assign(&mut self, rhs: Vec2<RHS>) {
+        self.dx -= rhs.dx;
+        self.dy -= rhs.dy
     }
 }
 

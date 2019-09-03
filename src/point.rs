@@ -18,6 +18,10 @@ impl<T> Point<T> {
     pub fn new(x: T, y: T) -> Self {
         Point { x, y }
     }
+
+    pub fn into_vec2(self) -> Vec2<T> {
+        Vec2::new(self.x, self.y)
+    }
 }
 
 impl<T: Add<RHS>, RHS> Add<Vec2<RHS>> for Point<T> {

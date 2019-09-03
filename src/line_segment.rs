@@ -16,6 +16,13 @@ impl<T> LineSegment<T> {
     pub fn new(from: Point<T>, to: Point<T>) -> Self {
         Self { from, to }
     }
+
+    pub fn length(self) -> T
+    where
+        T: Float,
+    {
+        (self.to - self.from).magnitude()
+    }
 }
 
 impl<T: Copy> LineSegment<T>
