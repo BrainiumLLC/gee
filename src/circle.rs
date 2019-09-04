@@ -1,4 +1,4 @@
-use crate::{Max, Min, Point, Rect, Vec2};
+use crate::{Angle, Max, Min, Point, Rect, Vec2};
 use num_traits::{Float, FloatConst, NumCast, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -58,8 +58,8 @@ impl<T> Circle<T> {
     pub fn arc_points(
         &self,
         steps: u32,
-        start_angle: T,
-        end_angle: T,
+        start_angle: Angle<T>,
+        end_angle: Angle<T>,
     ) -> impl Iterator<Item = Point<T>> + Clone
     where
         T: Float + FloatConst,
@@ -69,15 +69,15 @@ impl<T> Circle<T> {
         let steps_float = T::from(steps).unwrap();
         let increment = (end_angle - start_angle) / steps_float;
         (0..steps).map(move |index| {
-            let (dy, dx) = (T::from(index).unwrap() * increment + start_angle).sin_cos();
-            center + Vec2::<T>::new(dx, dy) * radius
+            let unit = (increment * T::from(index).unwrap() + start_angle).unit_vector();
+            center + unit * radius
         })
     }
 
     pub fn circle_points(
         &self,
         steps: u32,
-        start_angle: T,
+        start_angle: Angle<T>,
     ) -> impl Iterator<Item = Point<T>> + Clone
     where
         T: Float + FloatConst,
@@ -85,7 +85,7 @@ impl<T> Circle<T> {
         self.arc_points(
             steps,
             start_angle,
-            start_angle + T::from(2.0).unwrap() * T::PI(),
+            start_angle + Angle::from_radians(T::from(2.0).unwrap() * T::PI()),
         )
     }
 }

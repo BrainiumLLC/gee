@@ -1,19 +1,20 @@
 use crate::Vec2;
-use core::ops::{Div, Mul};
-use num_traits::Float;
+use num_traits::{Float, FloatConst};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Angle<T> {
-    radians: T,
+    pub radians: T,
 }
 
-impl<T: From<f32> + Mul<T, Output = T> + Div<T, Output = T>> Angle<T> {
+impl<T: FloatConst + Float> Angle<T> {
     pub fn from_degrees(degrees: T) -> Self {
         Angle {
-            radians: degrees * std::f32::consts::PI.into() / 180f32.into(),
+            radians: degrees * T::PI() / T::from(180f32).unwrap(),
         }
     }
 }
+
 impl<T> Angle<T> {
     pub fn from_radians(radians: T) -> Self {
         Angle { radians }
@@ -22,6 +23,63 @@ impl<T> Angle<T> {
 
 impl<T: Float> Angle<T> {
     pub fn unit_vector(&self) -> Vec2<T> {
-        Vec2::new(self.radians.cos(), self.radians.sin())
+        let (y, x) = self.radians.sin_cos();
+        Vec2::new(x, y)
+    }
+}
+
+impl<T: Add> Add for Angle<T> {
+    type Output = Angle<T::Output>;
+
+    fn add(self, rhs: Angle<T>) -> Self::Output {
+        Angle::from_radians(self.radians + rhs.radians)
+    }
+}
+
+impl<T: AddAssign> AddAssign for Angle<T> {
+    fn add_assign(&mut self, rhs: Angle<T>) {
+        self.radians += rhs.radians
+    }
+}
+
+impl<T: Sub> Sub for Angle<T> {
+    type Output = Angle<T::Output>;
+
+    fn sub(self, rhs: Angle<T>) -> Self::Output {
+        Angle::from_radians(self.radians - rhs.radians)
+    }
+}
+
+impl<T: SubAssign> SubAssign for Angle<T> {
+    fn sub_assign(&mut self, rhs: Angle<T>) {
+        self.radians -= rhs.radians
+    }
+}
+
+impl<T: Mul> Mul<T> for Angle<T> {
+    type Output = Angle<T::Output>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        Angle::from_radians(self.radians * rhs)
+    }
+}
+
+impl<T: MulAssign> MulAssign<T> for Angle<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        self.radians *= rhs
+    }
+}
+
+impl<T: Div> Div<T> for Angle<T> {
+    type Output = Angle<T::Output>;
+
+    fn div(self, rhs: T) -> Self::Output {
+        Angle::from_radians(self.radians / rhs)
+    }
+}
+
+impl<T: DivAssign> DivAssign<T> for Angle<T> {
+    fn div_assign(&mut self, rhs: T) {
+        self.radians /= rhs
     }
 }
