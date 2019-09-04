@@ -151,3 +151,17 @@ impl<T: DivAssign> DivAssign<T> for Angle<T> {
         self.radians /= rhs
     }
 }
+
+#[cfg(feature = "euclid")]
+impl<T> From<euclid::Angle<T>> for Angle<T> {
+    fn from(angle: euclid::Angle<T>) -> Self {
+        Angle::from_radians(angle.radians)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T: Copy> Into<euclid::Angle<T>> for Angle<T> {
+    fn into(self) -> euclid::Angle<T> {
+        euclid::Angle::radians(self.radians)
+    }
+}
