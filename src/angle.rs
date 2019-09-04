@@ -1,8 +1,11 @@
 use crate::Vec2;
 use num_traits::{Float, FloatConst};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
 pub struct Angle<T> {
     pub radians: T,
