@@ -2,7 +2,7 @@ use crate::Vec2;
 use num_traits::{Float, FloatConst};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -149,6 +149,14 @@ impl<T: Div> Div<T> for Angle<T> {
 impl<T: DivAssign> DivAssign<T> for Angle<T> {
     fn div_assign(&mut self, rhs: T) {
         self.radians /= rhs
+    }
+}
+
+impl<T: Neg> Neg for Angle<T> {
+    type Output = Angle<T::Output>;
+
+    fn neg(self) -> Self::Output {
+        Angle::from_radians(-self.radians)
     }
 }
 
