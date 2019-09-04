@@ -1,18 +1,46 @@
 use crate::{Max, Min, Point, Rect, Vec2};
+use num_traits::{Float, FloatConst, NumCast, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, Sub};
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Circle<T> {
-    pub point:  Point<T>,
+    pub center: Point<T>,
     pub radius: T,
 }
 
+impl<T: NumCast + Zero> Default for Circle<T> {
+    fn default() -> Self {
+        Self::unit()
+    }
+}
+
 impl<T> Circle<T> {
-    pub fn new(point: Point<T>, radius: T) -> Self {
-        Circle { point, radius }
+    pub fn new(center: Point<T>, radius: T) -> Self {
+        Circle { center, radius }
+    }
+
+    pub fn unit() -> Self
+    where
+        T: NumCast + Zero,
+    {
+        Self::with_radius(T::from(1.0).unwrap())
+    }
+
+    pub fn with_radius(radius: T) -> Self
+    where
+        T: Zero,
+    {
+        Self::new(Point::zero(), radius)
+    }
+
+    pub fn with_center(center: Point<T>) -> Self
+    where
+        T: NumCast,
+    {
+        Self::new(center, T::from(1.0).unwrap())
     }
 
     pub fn bounding_rect(&self) -> Rect<<T as Sub>::Output>
@@ -22,8 +50,42 @@ impl<T> Circle<T> {
         <T as Sub>::Output: Copy + Min + Max,
     {
         let radius_offset: Vec2<T> = Vec2::new(self.radius, self.radius);
-        let top_left = self.point - radius_offset;
-        let bottom_right = self.point + radius_offset;
+        let top_left = self.center - radius_offset;
+        let bottom_right = self.center + radius_offset;
         Rect::from_points(top_left, bottom_right)
+    }
+
+    pub fn arc_points(
+        &self,
+        steps: u32,
+        start_angle: T,
+        end_angle: T,
+    ) -> impl Iterator<Item = Point<T>> + Clone
+    where
+        T: Float + FloatConst,
+    {
+        let radius = self.radius;
+        let center = self.center;
+        let steps_float = T::from(steps).unwrap();
+        let increment = (end_angle - start_angle) / steps_float;
+        (0..steps).map(move |index| {
+            let (dy, dx) = (T::from(index).unwrap() * increment + start_angle).sin_cos();
+            center + Vec2::<T>::new(dx, dy) * radius
+        })
+    }
+
+    pub fn circle_points(
+        &self,
+        steps: u32,
+        start_angle: T,
+    ) -> impl Iterator<Item = Point<T>> + Clone
+    where
+        T: Float + FloatConst,
+    {
+        self.arc_points(
+            steps,
+            start_angle,
+            start_angle + T::from(2.0).unwrap() * T::PI(),
+        )
     }
 }
