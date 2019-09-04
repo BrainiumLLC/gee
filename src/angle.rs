@@ -3,14 +3,51 @@ use num_traits::{Float, FloatConst};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct Angle<T> {
     pub radians: T,
 }
 
 #[allow(non_snake_case)]
 impl<T: FloatConst + Float> Angle<T> {
+    pub fn ZERO() -> Self {
+        Self::from_radians(T::from(0).unwrap())
+    }
+
     pub fn FRAC_PI_2() -> Self {
         Self::from_radians(T::FRAC_PI_2())
+    }
+
+    pub fn FRAC_3PI_2() -> Self {
+        Self::from_radians(T::FRAC_PI_2() * T::from(3).unwrap())
+    }
+
+    pub fn FRAC_PI_3() -> Self {
+        Self::from_radians(T::FRAC_PI_3())
+    }
+
+    pub fn FRAC_PI_4() -> Self {
+        Self::from_radians(T::FRAC_PI_4())
+    }
+
+    pub fn FRAC_3PI_4() -> Self {
+        Self::from_radians(T::FRAC_PI_4() * T::from(3).unwrap())
+    }
+
+    pub fn FRAC_5PI_4() -> Self {
+        Self::from_radians(T::FRAC_PI_4() * T::from(5).unwrap())
+    }
+
+    pub fn FRAC_7PI_4() -> Self {
+        Self::from_radians(T::FRAC_PI_4() * T::from(7).unwrap())
+    }
+
+    pub fn FRAC_PI_6() -> Self {
+        Self::from_radians(T::FRAC_PI_6())
+    }
+
+    pub fn FRAC_PI_8() -> Self {
+        Self::from_radians(T::FRAC_PI_8())
     }
 
     pub fn PI() -> Self {
@@ -18,13 +55,11 @@ impl<T: FloatConst + Float> Angle<T> {
     }
 
     pub fn TAU() -> Self {
-        Self::from_radians(T::PI()) * T::from(2.0).unwrap()
+        Self::from_radians(T::PI()) * T::from(2).unwrap()
     }
 
     pub fn from_degrees(degrees: T) -> Self {
-        Angle {
-            radians: degrees * T::PI() / T::from(180f32).unwrap(),
-        }
+        Angle::from_radians(degrees * T::PI() / T::from(180).unwrap())
     }
 }
 
@@ -35,9 +70,26 @@ impl<T> Angle<T> {
 }
 
 impl<T: Float> Angle<T> {
+    /// Returns an `Angle` in the range `(-PI,PI]`.
+    pub fn from_xy(x: T, y: T) -> Self {
+        Angle::from_radians(y.atan2(x))
+    }
+
     pub fn unit_vector(&self) -> Vec2<T> {
         let (y, x) = self.radians.sin_cos();
         Vec2::new(x, y)
+    }
+
+    pub fn sin(&self) -> T {
+        self.radians.sin()
+    }
+
+    pub fn cos(&self) -> T {
+        self.radians.cos()
+    }
+
+    pub fn tan(&self) -> T {
+        self.radians.tan()
     }
 }
 

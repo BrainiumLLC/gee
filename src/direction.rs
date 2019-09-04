@@ -1,3 +1,4 @@
+use crate::Angle;
 use num_traits::{Float, FloatConst};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -27,30 +28,29 @@ pub enum Direction {
 }
 
 impl Cardinal {
-    pub fn angle<T: Float + FloatConst + From<u8>>(self) -> T {
+    pub fn angle<T: Float + FloatConst>(self) -> Angle<T> {
         use Cardinal::*;
         match self {
-            North => T::PI() / 2.into(),
-            South => T::PI() * 3.into() / 2.into(),
-            East => 0.into(),
-            West => T::PI(),
+            North => Angle::FRAC_PI_2(),
+            South => Angle::FRAC_3PI_2(),
+            East => Angle::ZERO(),
+            West => Angle::PI(),
         }
     }
 }
 
 impl Direction {
-    pub fn angle<T: Float + FloatConst + From<u8>>(self) -> T {
+    pub fn angle<T: Float + FloatConst>(self) -> Angle<T> {
         use Direction::*;
-        let _2pi = T::PI() * 2.into();
         match self {
-            North => T::PI() / 2.into(),
-            South => T::PI() * 3.into() / 2.into(),
-            East => 0.into(),
-            West => T::PI(),
-            Northeast => T::PI() / 4.into(),
-            Southeast => T::PI() * 7.into() / 4.into(),
-            Southwest => T::PI() * 5.into() * 4.into(),
-            Northwest => T::PI() * 3.into() / 4.into(),
+            North => Angle::FRAC_PI_2(),
+            South => Angle::FRAC_3PI_2(),
+            East => Angle::ZERO(),
+            West => Angle::PI(),
+            Northeast => Angle::FRAC_PI_4(),
+            Southeast => Angle::FRAC_7PI_4(),
+            Southwest => Angle::FRAC_5PI_4(),
+            Northwest => Angle::FRAC_3PI_4(),
         }
     }
 }

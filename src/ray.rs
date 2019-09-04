@@ -1,4 +1,4 @@
-use crate::{LineSegment, Point, Vec2};
+use crate::{Angle, LineSegment, Point, Vec2};
 use num_traits::Float;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -9,11 +9,11 @@ use std::ops::{Add, Div, Mul, Sub};
 #[repr(C)]
 pub struct Ray<T> {
     pub point: Point<T>,
-    pub angle: T,
+    pub angle: Angle<T>,
 }
 
 impl<T> Ray<T> {
-    pub fn new(point: Point<T>, angle: T) -> Self {
+    pub fn new(point: Point<T>, angle: Angle<T>) -> Self {
         Ray { point, angle }
     }
 }
@@ -56,6 +56,6 @@ where
 
 impl<T: Float> Ray<T> {
     pub fn unit_vector(&self) -> Vec2<T> {
-        Vec2::unit_from_angle(self.angle)
+        self.angle.unit_vector()
     }
 }

@@ -1,4 +1,5 @@
 use crate::{
+    angle::Angle,
     direction::{Cardinal, Direction},
     size::Size,
     vec3::Vec3,
@@ -108,14 +109,12 @@ impl<T> Vec2<T> {
 }
 
 impl<T: Float> Vec2<T> {
-    pub fn unit_from_angle(angle: T) -> Self {
-        Self::new(angle.cos(), angle.sin())
+    pub fn unit_from_angle(angle: Angle<T>) -> Self {
+        angle.unit_vector()
     }
-}
 
-impl<T: Div + Float> Vec2<T> {
-    pub fn angle(self) -> T {
-        (self.dy / self.dx).atan()
+    pub fn angle(self) -> Angle<T> {
+        Angle::from_xy(self.dx, self.dy)
     }
 }
 

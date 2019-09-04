@@ -6,6 +6,7 @@ use std::ops::{Add, Sub};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct Circle<T> {
     pub center: Point<T>,
     pub radius: T,
