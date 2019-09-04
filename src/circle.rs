@@ -82,10 +82,6 @@ impl<T> Circle<T> {
     where
         T: Float + FloatConst,
     {
-        self.arc_points(
-            steps,
-            start_angle,
-            start_angle + Angle::from_radians(T::from(2.0).unwrap() * T::PI()),
-        )
+        self.arc_points(steps, start_angle, start_angle + Angle::TAU())
     }
 }

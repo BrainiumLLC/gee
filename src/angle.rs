@@ -7,7 +7,20 @@ pub struct Angle<T> {
     pub radians: T,
 }
 
+#[allow(non_snake_case)]
 impl<T: FloatConst + Float> Angle<T> {
+    pub fn FRAC_PI_2() -> Self {
+        Self::from_radians(T::FRAC_PI_2())
+    }
+
+    pub fn PI() -> Self {
+        Self::from_radians(T::PI())
+    }
+
+    pub fn TAU() -> Self {
+        Self::from_radians(T::PI()) * T::from(2.0).unwrap()
+    }
+
     pub fn from_degrees(degrees: T) -> Self {
         Angle {
             radians: degrees * T::PI() / T::from(180f32).unwrap(),
