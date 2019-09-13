@@ -23,11 +23,8 @@ pub struct Vec2<T> {
 }
 
 impl<T> Vec2<T> {
-    pub fn new<U: Into<T>>(dx: U, dy: U) -> Self {
-        Vec2 {
-            dx: dx.into(),
-            dy: dy.into(),
-        }
+    pub fn new(dx: T, dy: T) -> Self {
+        Vec2 { dx, dy }
     }
 
     pub fn from_vec3(vec3: Vec3<T>) -> Self {
@@ -207,15 +204,16 @@ impl<T: From<i8>> From<Direction> for Vec2<T> {
     fn from(direction: Direction) -> Self {
         use Direction::*;
         match direction {
-            North => Self::new(0, -1),
-            East => Self::new(1, 0),
-            South => Self::new(0, 1),
-            West => Self::new(-1, 0),
-            Northeast => Self::new(1, -1),
-            Southeast => Self::new(1, 1),
-            Southwest => Self::new(-1, 1),
-            Northwest => Self::new(-1, -1),
+            North => Vec2::new(0, -1),
+            East => Vec2::new(1, 0),
+            South => Vec2::new(0, 1),
+            West => Vec2::new(-1, 0),
+            Northeast => Vec2::new(1, -1),
+            Southeast => Vec2::new(1, 1),
+            Southwest => Vec2::new(-1, 1),
+            Northwest => Vec2::new(-1, -1),
         }
+        .map(Into::into)
     }
 }
 
@@ -223,11 +221,12 @@ impl<T: From<i8>> From<Cardinal> for Vec2<T> {
     fn from(cardinal: Cardinal) -> Self {
         use Cardinal::*;
         match cardinal {
-            North => Self::new(0, -1),
-            East => Self::new(1, 0),
-            South => Self::new(0, 1),
-            West => Self::new(-1, 0),
+            North => Vec2::new(0, -1),
+            East => Vec2::new(1, 0),
+            South => Vec2::new(0, 1),
+            West => Vec2::new(-1, 0),
         }
+        .map(Into::into)
     }
 }
 

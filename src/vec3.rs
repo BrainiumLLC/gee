@@ -16,12 +16,8 @@ pub struct Vec3<T> {
 }
 
 impl<T> Vec3<T> {
-    pub fn new<U: Into<T>>(dx: U, dy: U, dz: U) -> Self {
-        Vec3 {
-            dx: dx.into(),
-            dy: dy.into(),
-            dz: dz.into(),
-        }
+    pub fn new(dx: T, dy: T, dz: T) -> Self {
+        Vec3 { dx, dy, dz }
     }
 
     pub fn from_vec2(vec2: Vec2<T>) -> Self
