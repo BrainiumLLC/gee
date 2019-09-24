@@ -61,9 +61,59 @@ impl<T: One + Zero> Mat4<T> {
             One::one(),
         )
     }
+
+    pub fn create_scale(x: T, y: T, z: T) -> Self {
+        Self::row_major(
+            x,
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            y,
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            z,
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            One::one(),
+        )
+    }
 }
 
 impl<T: Float> Mat4<T> {
+    pub fn post_transform(self, mat: Self) -> Self {
+        Self::row_major(
+            self.m11 * mat.m11 + self.m12 * mat.m21 + self.m13 * mat.m31 + self.m14 * mat.m41,
+            self.m11 * mat.m12 + self.m12 * mat.m22 + self.m13 * mat.m32 + self.m14 * mat.m42,
+            self.m11 * mat.m13 + self.m12 * mat.m23 + self.m13 * mat.m33 + self.m14 * mat.m43,
+            self.m11 * mat.m14 + self.m12 * mat.m24 + self.m13 * mat.m34 + self.m14 * mat.m44,
+            self.m21 * mat.m11 + self.m22 * mat.m21 + self.m23 * mat.m31 + self.m24 * mat.m41,
+            self.m21 * mat.m12 + self.m22 * mat.m22 + self.m23 * mat.m32 + self.m24 * mat.m42,
+            self.m21 * mat.m13 + self.m22 * mat.m23 + self.m23 * mat.m33 + self.m24 * mat.m43,
+            self.m21 * mat.m14 + self.m22 * mat.m24 + self.m23 * mat.m34 + self.m24 * mat.m44,
+            self.m31 * mat.m11 + self.m32 * mat.m21 + self.m33 * mat.m31 + self.m34 * mat.m41,
+            self.m31 * mat.m12 + self.m32 * mat.m22 + self.m33 * mat.m32 + self.m34 * mat.m42,
+            self.m31 * mat.m13 + self.m32 * mat.m23 + self.m33 * mat.m33 + self.m34 * mat.m43,
+            self.m31 * mat.m14 + self.m32 * mat.m24 + self.m33 * mat.m34 + self.m34 * mat.m44,
+            self.m41 * mat.m11 + self.m42 * mat.m21 + self.m43 * mat.m31 + self.m44 * mat.m41,
+            self.m41 * mat.m12 + self.m42 * mat.m22 + self.m43 * mat.m32 + self.m44 * mat.m42,
+            self.m41 * mat.m13 + self.m42 * mat.m23 + self.m43 * mat.m33 + self.m44 * mat.m43,
+            self.m41 * mat.m14 + self.m42 * mat.m24 + self.m43 * mat.m34 + self.m44 * mat.m44,
+        )
+    }
+
+    pub fn pre_transform(self, mat: Self) -> Self {
+        mat.post_transform(self)
+    }
+
+    pub fn post_scale(self, x: T, y: T, z: T) -> Self {
+        self.post_transform(Self::create_scale(x, y, z))
+    }
+
     pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self {
         let tx = -((right + left) / (right - left));
         let ty = -((top + bottom) / (top - bottom));
