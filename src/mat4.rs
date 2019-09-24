@@ -82,6 +82,27 @@ impl<T: One + Zero> Mat4<T> {
             One::one(),
         )
     }
+
+    pub fn create_translation(x: T, y: T, z: T) -> Self {
+        Self::row_major(
+            One::one(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            One::one(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            Zero::zero(),
+            One::one(),
+            Zero::zero(),
+            x,
+            y,
+            z,
+            One::one(),
+        )
+    }
 }
 
 impl<T: Float> Mat4<T> {
@@ -112,6 +133,18 @@ impl<T: Float> Mat4<T> {
 
     pub fn post_scale(self, x: T, y: T, z: T) -> Self {
         self.post_transform(Self::create_scale(x, y, z))
+    }
+
+    pub fn pre_scale(self, x: T, y: T, z: T) -> Self {
+        self.pre_transform(Self::create_scale(x, y, z))
+    }
+
+    pub fn post_translate(self, x: T, y: T, z: T) -> Self {
+        self.post_transform(Self::create_translation(x, y, z))
+    }
+
+    pub fn pre_translate(self, x: T, y: T, z: T) -> Self {
+        self.pre_transform(Self::create_translation(x, y, z))
     }
 
     pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self {
