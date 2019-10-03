@@ -10,7 +10,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct Size<T> {
-    pub width:  T,
+    pub width: T,
     pub height: T,
 }
 
@@ -23,7 +23,7 @@ impl<T> Size<T> {
 impl<T: Copy> Size<T> {
     pub fn square(dim: T) -> Self {
         Size {
-            width:  dim,
+            width: dim,
             height: dim,
         }
     }
@@ -44,6 +44,15 @@ impl<T: Mul> Size<T> {
 impl<T: Div> Size<T> {
     pub fn aspect_ratio(self) -> T::Output {
         self.width / self.height
+    }
+}
+
+impl<T: Ord> Size<T> {
+    pub fn min(self) -> T {
+        std::cmp::min(self.width, self.height)
+    }
+    pub fn max(self) -> T {
+        std::cmp::max(self.width, self.height)
     }
 }
 
@@ -102,7 +111,7 @@ impl<T: Add<RHS, Output = Output>, RHS, Output> Add<Size<RHS>> for Size<T> {
     type Output = Size<Output>;
     fn add(self, rhs: Size<RHS>) -> Self::Output {
         Size {
-            width:  self.width + rhs.width,
+            width: self.width + rhs.width,
             height: self.height + rhs.height,
         }
     }
@@ -118,7 +127,7 @@ impl<T: Mul<RHS>, RHS: Copy> Mul<RHS> for Size<T> {
     type Output = Size<T::Output>;
     fn mul(self, rhs: RHS) -> Self::Output {
         Size {
-            width:  self.width * rhs,
+            width: self.width * rhs,
             height: self.height * rhs,
         }
     }
@@ -135,7 +144,7 @@ impl<T: Div<RHS>, RHS: Copy> Div<RHS> for Size<T> {
     type Output = Size<T::Output>;
     fn div(self, rhs: RHS) -> Self::Output {
         Size {
-            width:  self.width / rhs,
+            width: self.width / rhs,
             height: self.height / rhs,
         }
     }
@@ -152,7 +161,7 @@ impl<T: Rem<RHS>, RHS: Copy> Rem<RHS> for Size<T> {
     type Output = Size<T::Output>;
     fn rem(self, rhs: RHS) -> Self::Output {
         Size {
-            width:  self.width % rhs,
+            width: self.width % rhs,
             height: self.height % rhs,
         }
     }
@@ -174,7 +183,7 @@ impl<T: Zero> Size<T> {
 impl<T> Size<T> {
     pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Size<U> {
         Size {
-            width:  f(self.width),
+            width: f(self.width),
             height: f(self.height),
         }
     }
