@@ -105,6 +105,15 @@ impl<T> Vec2<T> {
     }
 }
 
+impl<T: Mul<Output = T>> Vec2<T> {
+    pub fn scaled(self, rhs: Size<T>) -> Self {
+        Self {
+            dx: self.dx * rhs.width,
+            dy: self.dy * rhs.height,
+        }
+    }
+}
+
 impl<T: Float> Vec2<T> {
     pub fn unit_from_angle(angle: Angle<T>) -> Self {
         angle.unit_vector()
