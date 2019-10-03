@@ -56,6 +56,15 @@ impl<T: Ord> Size<T> {
     }
 }
 
+impl<T: Mul<Output = T>> Size<T> {
+    pub fn scaled(self, rhs: Vec2<T>) -> Self {
+        Self {
+            width: self.width * rhs.dx,
+            height: self.height * rhs.dy,
+        }
+    }
+}
+
 impl<T: Copy + Mul<Output = T> + Div<Output = T>> Size<T> {
     pub fn scaled_to_width(self, rhs: T) -> Size<T> {
         Size::new(rhs, self.height * rhs / self.width)
