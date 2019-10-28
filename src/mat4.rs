@@ -1,3 +1,4 @@
+use crate::Angle;
 #[cfg(feature = "euclid")]
 use euclid::Transform3D;
 use num_traits::{Float, One, Zero};
@@ -159,6 +160,31 @@ impl<T: Float> Mat4<T> {
         let sz = -_2 / (far - near);
         Self::row_major(
             sx, _0, _0, _0, _0, sy, _0, _0, _0, _0, sz, _0, tx, ty, tz, _1,
+        )
+    }
+
+    pub fn persp(aspect: T, fov: Angle<T>, near: T, far: T) -> Self {
+        let (_0, _1): (T, T) = (Zero::zero(), One::one());
+        let _2 = _1 + _1;
+        let f = (fov.radians / _2).tan().recip();
+        let depth = near - far;
+        Self::row_major(
+            f / aspect,
+            _0,
+            _0,
+            _0,
+            _0,
+            -f,
+            _0,
+            _0,
+            _0,
+            _0,
+            far / depth,
+            -_1,
+            _0,
+            _0,
+            near * far / depth,
+            _0,
         )
     }
 }
