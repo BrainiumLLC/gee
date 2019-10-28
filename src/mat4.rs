@@ -1,4 +1,4 @@
-use crate::Angle;
+use crate::{Angle, Vec3};
 #[cfg(feature = "euclid")]
 use euclid::Transform3D;
 use num_traits::{Float, One, Zero};
@@ -107,6 +107,38 @@ impl<T: One + Zero> Mat4<T> {
 }
 
 impl<T: Float> Mat4<T> {
+    pub fn create_rotation(Vec3 { dx: x, dy: y, dz: z }: Vec3<T>, theta: Angle<T>) -> Self {
+        let (_0, _1): (T, T) = (Zero::zero(), One::one());
+        let _2 = _1 + _1;
+
+        let xx = x * x;
+        let yy = y * y;
+        let zz = z * z;
+
+        let half_theta = theta.radians / _2;
+        let sc = half_theta.sin() * half_theta.cos();
+        let sq = half_theta.sin() * half_theta.sin();
+
+        Self::row_major(
+            _1 - _2 * (yy + zz) * sq,
+            _2 * (x * y * sq - z * sc),
+            _2 * (x * z * sq + y * sc),
+            _0,
+            _2 * (x * y * sq + z * sc),
+            _1 - _2 * (xx + zz) * sq,
+            _2 * (y * z * sq - x * sc),
+            _0,
+            _2 * (x * z * sq - y * sc),
+            _2 * (y * z * sq + x * sc),
+            _1 - _2 * (xx + yy) * sq,
+            _0,
+            _0,
+            _0,
+            _0,
+            _1
+        )
+    }
+
     pub fn post_transform(self, mat: Self) -> Self {
         Self::row_major(
             self.m11 * mat.m11 + self.m12 * mat.m21 + self.m13 * mat.m31 + self.m14 * mat.m41,
