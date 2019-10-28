@@ -23,7 +23,7 @@ pub struct Vec2<T> {
 }
 
 impl<T> Vec2<T> {
-    pub fn new(dx: T, dy: T) -> Self {
+    pub const fn new(dx: T, dy: T) -> Self {
         Vec2 { dx, dy }
     }
 
@@ -35,7 +35,7 @@ impl<T> Vec2<T> {
         Self::new(vec4.dx, vec4.dy)
     }
 
-    pub fn as_ref(&self) -> Vec2<&T> {
+    pub const fn as_ref(&self) -> Vec2<&T> {
         Vec2 {
             dx: &self.dx,
             dy: &self.dy,
