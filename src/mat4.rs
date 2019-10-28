@@ -180,6 +180,14 @@ impl<T: Float> Mat4<T> {
         self.pre_transform(Self::create_translation(x, y, z))
     }
 
+    pub fn post_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self {
+        self.post_transform(Self::create_rotation(axis, theta))
+    }
+
+    pub fn pre_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self {
+        self.pre_transform(Self::create_rotation(axis, theta))
+    }
+
     pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self {
         let tx = -((right + left) / (right - left));
         let ty = -((top + bottom) / (top - bottom));
