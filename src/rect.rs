@@ -531,6 +531,35 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
         self.width_slices_with_margin(num_items.width, margin_x)
             .map(move |x| x.height_slices_with_margin(num_items.height, margin_y))
     }
+
+    pub fn grid_cells<U>(self, num_items: Size<U>) -> impl Iterator<Item = (Point<usize>, Self)>
+    where
+        T: Div<U, Output = T> + Zero,
+        U: Copy + Mul<T, Output = T> + Zero,
+        std::ops::Range<U>: IntoIterator<Item = U>,
+    {
+        self.grid_cells_with_margin(num_items, T::zero(), T::zero())
+    }
+
+    pub fn grid_cells_with_margin<U>(
+        self,
+        num_items: Size<U>,
+        margin_x: T,
+        margin_y: T,
+    ) -> impl Iterator<Item = (Point<usize>, Self)>
+    where
+        T: Div<U, Output = T>,
+        U: Copy + Mul<T, Output = T> + Zero,
+        std::ops::Range<U>: IntoIterator<Item = U>,
+    {
+        self.grid_slices_with_margin(num_items, margin_x, margin_y)
+            .enumerate()
+            .flat_map(|(x, column)| {
+                column
+                    .enumerate()
+                    .map(move |(y, cell)| (Point::new(x, y), cell))
+            })
+    }
 }
 
 impl<T: Add<RHS>, RHS: Copy> Add<Vec2<RHS>> for Rect<T> {
