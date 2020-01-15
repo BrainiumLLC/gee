@@ -18,6 +18,10 @@ impl<T> Size<T> {
     pub fn new(width: T, height: T) -> Self {
         Size { width, height }
     }
+
+    pub fn into_vec2(self) -> Vec2<T> {
+        Vec2::from(self)
+    }
 }
 
 impl<T: Copy> Size<T> {
