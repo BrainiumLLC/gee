@@ -1,7 +1,7 @@
 use crate::{
     lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size, vec2::Vec2,
 };
-use num_traits::Zero;
+use num_traits::{Float, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -559,6 +559,28 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
                     .enumerate()
                     .map(move |(y, cell)| (Point::new(x, y), cell))
             })
+    }
+}
+
+impl<T: Float> Rect<T> {
+    pub fn cut_width(&self, percent: T) -> (Self, Self) {
+        let cut = self.width() * percent;
+        let left = Self::with_top_left(self.top_left(), Size::new(cut, self.height()));
+        let right = Self::with_top_left(
+            left.top_right(),
+            Size::new(self.width() - cut, self.height()),
+        );
+        (left, right)
+    }
+
+    pub fn cut_height(&self, percent: T) -> (Self, Self) {
+        let cut = self.height() * percent;
+        let top = Self::with_top_left(self.top_left(), Size::new(self.width(), cut));
+        let bottom = Self::with_top_left(
+            top.bottom_left(),
+            Size::new(self.width(), self.height() - cut),
+        );
+        (top, bottom)
     }
 }
 
