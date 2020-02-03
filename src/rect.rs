@@ -116,7 +116,7 @@ where
 }
 
 impl<T: Copy + Max + Min> Rect<T> {
-    pub fn clipped_above(&self, y: T) -> Self {
+    pub fn rect_after_y(&self, y: T) -> Self {
         Self {
             left:   self.left,
             top:    self.top.max(y),
@@ -125,7 +125,7 @@ impl<T: Copy + Max + Min> Rect<T> {
         }
     }
 
-    pub fn clipped_below(&self, y: T) -> Self {
+    pub fn rect_before_y(&self, y: T) -> Self {
         Self {
             left:   self.left,
             top:    self.top,
@@ -134,7 +134,7 @@ impl<T: Copy + Max + Min> Rect<T> {
         }
     }
 
-    pub fn clipped_left(&self, x: T) -> Self {
+    pub fn rect_after_x(&self, x: T) -> Self {
         Self {
             left:   self.left.max(x),
             top:    self.top,
@@ -143,13 +143,31 @@ impl<T: Copy + Max + Min> Rect<T> {
         }
     }
 
-    pub fn clipped_right(&self, x: T) -> Self {
+    pub fn rect_before_x(&self, x: T) -> Self {
         Self {
             left:   self.left,
             top:    self.top,
             right:  self.right.min(x),
             bottom: self.bottom,
         }
+    }
+
+    pub fn split_at_x(&self, x: T) -> (Self, Self) {
+        (self.rect_before_x(x), self.rect_after_x(x))
+    }
+
+    pub fn split_at_y(&self, y: T) -> (Self, Self) {
+        (self.rect_before_y(y), self.rect_after_y(y))
+    }
+}
+
+impl<T: Float + Max + Min> Rect<T> {
+    pub fn split_by_percent_width(&self, percent: T) -> (Self, Self) {
+        self.split_at_x(self.left + self.width() * percent)
+    }
+
+    pub fn split_by_percent_height(&self, percent: T) -> (Self, Self) {
+        self.split_at_y(self.top + self.height() * percent)
     }
 }
 
@@ -559,28 +577,6 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
                     .enumerate()
                     .map(move |(y, cell)| (Point::new(x, y), cell))
             })
-    }
-}
-
-impl<T: Float> Rect<T> {
-    pub fn cut_width(&self, percent: T) -> (Self, Self) {
-        let cut = self.width() * percent;
-        let left = Self::with_top_left(self.top_left(), Size::new(cut, self.height()));
-        let right = Self::with_top_left(
-            left.top_right(),
-            Size::new(self.width() - cut, self.height()),
-        );
-        (left, right)
-    }
-
-    pub fn cut_height(&self, percent: T) -> (Self, Self) {
-        let cut = self.height() * percent;
-        let top = Self::with_top_left(self.top_left(), Size::new(self.width(), cut));
-        let bottom = Self::with_top_left(
-            top.bottom_left(),
-            Size::new(self.width(), self.height() - cut),
-        );
-        (top, bottom)
     }
 }
 
