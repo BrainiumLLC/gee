@@ -6,7 +6,7 @@ use num_traits::{Float, Zero};
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
-    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
+    ops::{Add, AddAssign, Bound, Div, Mul, MulAssign, RangeBounds, Sub},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -116,10 +116,19 @@ where
 }
 
 impl<T: Copy + Max + Min> Rect<T> {
-    pub fn rect_after_y(&self, y: T) -> Self {
+    pub fn rect_before_x(&self, x: T) -> Self {
         Self {
             left:   self.left,
-            top:    self.top.max(y),
+            top:    self.top,
+            right:  self.right.min(x),
+            bottom: self.bottom,
+        }
+    }
+
+    pub fn rect_after_x(&self, x: T) -> Self {
+        Self {
+            left:   self.left.max(x),
+            top:    self.top,
             right:  self.right,
             bottom: self.bottom,
         }
@@ -134,22 +143,42 @@ impl<T: Copy + Max + Min> Rect<T> {
         }
     }
 
-    pub fn rect_after_x(&self, x: T) -> Self {
+    pub fn rect_after_y(&self, y: T) -> Self {
         Self {
-            left:   self.left.max(x),
-            top:    self.top,
+            left:   self.left,
+            top:    self.top.max(y),
             right:  self.right,
             bottom: self.bottom,
         }
     }
 
-    pub fn rect_before_x(&self, x: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top,
-            right:  self.right.min(x),
-            bottom: self.bottom,
+    fn clamp(
+        &self,
+        range: impl RangeBounds<T>,
+        after: impl FnOnce(&Self, T) -> Self,
+        before: impl FnOnce(&Self, T) -> Self,
+    ) -> Self {
+        let after_start = match range.start_bound() {
+            Bound::Included(start) => after(self, *start),
+            // You can't actually construct ranges with an exclusive start bound unless you
+            // create your own `RangeBound` impl, so people shouldn't really ever hit this.
+            Bound::Excluded(_) => panic!("clamp range can't have exclusive start bound"),
+            Bound::Unbounded => *self,
+        };
+        match range.end_bound() {
+            // We don't define the right side as inside the rect, so this bound must be exclusive.
+            Bound::Included(_) => panic!("clamp range can't have inclusive end bound"),
+            Bound::Excluded(end) => before(&after_start, *end),
+            Bound::Unbounded => after_start,
         }
+    }
+
+    pub fn clamp_x(&self, x_range: impl RangeBounds<T>) -> Self {
+        self.clamp(x_range, Self::rect_after_x, Self::rect_before_x)
+    }
+
+    pub fn clamp_y(&self, y_range: impl RangeBounds<T>) -> Self {
+        self.clamp(y_range, Self::rect_after_y, Self::rect_before_y)
     }
 
     pub fn split_at_x(&self, x: T) -> (Self, Self) {
