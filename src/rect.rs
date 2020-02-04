@@ -1,7 +1,8 @@
 use crate::{
-    lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size, vec2::Vec2,
+    cast, lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size,
+    vec2::Vec2,
 };
-use num_traits::{Float, Zero};
+use num_traits::{Float, Num, NumCast, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -445,61 +446,26 @@ impl<T: Copy + PartialOrd + Max + Min> Rect<T> {
     }
 }
 
-impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
-    pub fn width_slice<U, V>(&self, num_items: U, index: V) -> Self
-    where
-        T: Div<U, Output = T>,
-        V: Mul<T, Output = T>,
-    {
-        let item_width = self.width() / num_items;
-        let item_left = self.left + index * item_width;
-        Rect {
-            top:    self.top,
-            left:   item_left,
-            right:  item_left + item_width,
-            bottom: self.bottom,
-        }
+impl<T: Copy + Num + NumCast> Rect<T> {
+    pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
+        self.width_slice_with_margin(num_items, index, T::zero())
     }
 
-    pub fn width_slices<U>(self, num_items: U) -> impl Iterator<Item = Self>
-    where
-        T: Div<U, Output = T> + Zero,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+    pub fn width_slices(self, num_items: usize) -> impl Iterator<Item = Self> {
         self.width_slices_with_margin(num_items, T::zero())
     }
 
-    pub fn height_slice<U, V>(&self, num_items: U, index: V) -> Self
-    where
-        T: Div<U, Output = T>,
-        V: Mul<T, Output = T>,
-    {
-        let item_height = self.height() / num_items;
-        let item_top = self.top + index * item_height;
-        Rect {
-            top:    item_top,
-            left:   self.left,
-            right:  self.right,
-            bottom: item_top + item_height,
-        }
+    pub fn height_slice(&self, num_items: usize, index: usize) -> Self {
+        self.height_slice_with_margin(num_items, index, T::zero())
     }
 
-    pub fn height_slices<U>(self, num_items: U) -> impl Iterator<Item = Self>
-    where
-        T: Div<U, Output = T> + Zero,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+    pub fn height_slices(self, num_items: usize) -> impl Iterator<Item = Self> {
         self.height_slices_with_margin(num_items, T::zero())
     }
 
-    pub fn width_slice_with_margin<U, V>(&self, num_items: U, index: V, margin: T) -> Self
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T>,
-        V: Mul<T, Output = T>,
-    {
+    pub fn width_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
+        let num_items = cast::num(num_items);
+        let index: T = cast::num(index);
         let total_margin = num_items * margin + margin;
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
@@ -512,23 +478,15 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
         }
     }
 
-    pub fn width_slices_with_margin<U>(self, num_items: U, margin: T) -> impl Iterator<Item = Self>
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
-        (U::zero()..num_items)
+    pub fn width_slices_with_margin(self, num_items: usize, margin: T) -> impl Iterator<Item = Self> {
+        (0..num_items)
             .into_iter()
             .map(move |i| self.width_slice_with_margin(num_items, i, margin))
     }
 
-    pub fn height_slice_with_margin<U, V>(&self, num_items: U, index: V, margin: T) -> Self
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T>,
-        V: Mul<T, Output = T>,
-    {
+    pub fn height_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
+        let num_items = cast::num(num_items);
+        let index: T = cast::num(index);
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
@@ -541,64 +499,39 @@ impl<T: Copy + Add<Output = T> + Sub<Output = T>> Rect<T> {
         }
     }
 
-    pub fn height_slices_with_margin<U>(self, num_items: U, margin: T) -> impl Iterator<Item = Self>
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
-        (U::zero()..num_items)
+    pub fn height_slices_with_margin(self, num_items: usize, margin: T) -> impl Iterator<Item = Self> {
+        (0..num_items)
             .into_iter()
             .map(move |i| self.height_slice_with_margin(num_items, i, margin))
     }
 
-    pub fn grid_slices<U>(
+    pub fn grid_slices(
         self,
-        num_items: Size<U>,
-    ) -> impl Iterator<Item = impl Iterator<Item = Self>>
-    where
-        T: Div<U, Output = T> + Zero,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+        num_items: Size<usize>,
+    ) -> impl Iterator<Item = impl Iterator<Item = Self>> {
         self.grid_slices_with_margin(num_items, T::zero(), T::zero())
     }
 
-    pub fn grid_slices_with_margin<U>(
+    pub fn grid_slices_with_margin(
         self,
-        num_items: Size<U>,
+        num_items: Size<usize>,
         margin_x: T,
         margin_y: T,
-    ) -> impl Iterator<Item = impl Iterator<Item = Self>>
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+    ) -> impl Iterator<Item = impl Iterator<Item = Self>> {
         self.width_slices_with_margin(num_items.width, margin_x)
             .map(move |x| x.height_slices_with_margin(num_items.height, margin_y))
     }
 
-    pub fn grid_cells<U>(self, num_items: Size<U>) -> impl Iterator<Item = (Point<usize>, Self)>
-    where
-        T: Div<U, Output = T> + Zero,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+    pub fn grid_cells(self, num_items: Size<usize>) -> impl Iterator<Item = (Point<usize>, Self)> {
         self.grid_cells_with_margin(num_items, T::zero(), T::zero())
     }
 
-    pub fn grid_cells_with_margin<U>(
+    pub fn grid_cells_with_margin(
         self,
-        num_items: Size<U>,
+        num_items: Size<usize>,
         margin_x: T,
         margin_y: T,
-    ) -> impl Iterator<Item = (Point<usize>, Self)>
-    where
-        T: Div<U, Output = T>,
-        U: Copy + Mul<T, Output = T> + Zero,
-        std::ops::Range<U>: IntoIterator<Item = U>,
-    {
+    ) -> impl Iterator<Item = (Point<usize>, Self)> {
         self.grid_slices_with_margin(num_items, margin_x, margin_y)
             .enumerate()
             .flat_map(|(x, column)| {

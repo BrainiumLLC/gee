@@ -1,6 +1,7 @@
 #![deny(rust_2018_idioms, unused_must_use)]
 
 mod angle;
+mod cast;
 mod circle;
 mod direction;
 mod lerp;
