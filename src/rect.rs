@@ -191,6 +191,21 @@ impl<T: Copy + Max + Min> Rect<T> {
     }
 }
 
+impl<T: Add<Output = T> + Copy + Max + Min + Sub<Output = T>> Rect<T> {
+    pub fn pad(&self, left: T, right: T, top: T, bottom: T) -> Self {
+        self.clamp_x((self.left + left)..(self.right - right))
+            .clamp_y((self.top + top)..(self.bottom - bottom))
+    }
+
+    pub fn pad_horiz_and_vert(&self, horiz_pad: T, vert_pad: T) -> Self {
+        self.pad(horiz_pad, horiz_pad, vert_pad, vert_pad)
+    }
+
+    pub fn pad_uniform(&self, pad: T) -> Self {
+        self.pad_horiz_and_vert(pad, pad)
+    }
+}
+
 impl<T: Float + Max + Min> Rect<T> {
     pub fn split_by_percent_width(&self, percent: T) -> (Self, Self) {
         self.split_at_x(self.left + self.width() * percent)
