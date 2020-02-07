@@ -2,12 +2,13 @@ use crate::{
     cast, lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size,
     vec2::Vec2,
 };
-use num_traits::{Float, Num, NumCast, Zero};
+use num_traits::{Num, NumCast, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
-    ops::{Add, AddAssign, Bound, Div, Mul, MulAssign, RangeBounds, Sub},
+    fmt::Debug,
+    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -116,103 +117,68 @@ where
     }
 }
 
-impl<T: Copy + Max + Min> Rect<T> {
-    pub fn rect_before_x(&self, x: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top,
-            right:  self.right.min(x),
-            bottom: self.bottom,
+impl<T: Copy + PartialOrd> Rect<T> {
+    pub fn split_at_x(&self, x: T) -> Option<(Self, Self)> {
+        if self.contains_x(x) {
+            let Self { left, right, top, bottom } = *self;
+            Some((
+                Self {
+                    left,
+                    right: x,
+                    top,
+                    bottom, 
+                },
+                Self {
+                    left: x,
+                    right,
+                    top,
+                    bottom,
+                },
+            ))
+        } else {
+            None
         }
     }
 
-    pub fn rect_after_x(&self, x: T) -> Self {
-        Self {
-            left:   self.left.max(x),
-            top:    self.top,
-            right:  self.right,
-            bottom: self.bottom,
+    pub fn split_at_y(&self, y: T) -> Option<(Self, Self)> {
+        if self.contains_y(y) {
+            let Self { left, right, top, bottom } = *self;
+            Some((
+                Self {
+                    left,
+                    right,
+                    top,
+                    bottom: y, 
+                },
+                Self {
+                    left,
+                    right,
+                    top: y,
+                    bottom,
+                },
+            ))
+        } else {
+            None
         }
-    }
-
-    pub fn rect_before_y(&self, y: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top,
-            right:  self.right,
-            bottom: self.bottom.min(y),
-        }
-    }
-
-    pub fn rect_after_y(&self, y: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top.max(y),
-            right:  self.right,
-            bottom: self.bottom,
-        }
-    }
-
-    fn clamp(
-        &self,
-        range: impl RangeBounds<T>,
-        after: impl FnOnce(&Self, T) -> Self,
-        before: impl FnOnce(&Self, T) -> Self,
-    ) -> Self {
-        let after_start = match range.start_bound() {
-            Bound::Included(start) => after(self, *start),
-            // You can't actually construct ranges with an exclusive start bound unless you
-            // create your own `RangeBound` impl, so people shouldn't really ever hit this.
-            Bound::Excluded(_) => panic!("clamp range can't have exclusive start bound"),
-            Bound::Unbounded => *self,
-        };
-        match range.end_bound() {
-            // We don't define the right side as inside the rect, so this bound must be exclusive.
-            Bound::Included(_) => panic!("clamp range can't have inclusive end bound"),
-            Bound::Excluded(end) => before(&after_start, *end),
-            Bound::Unbounded => after_start,
-        }
-    }
-
-    pub fn clamp_x(&self, x_range: impl RangeBounds<T>) -> Self {
-        self.clamp(x_range, Self::rect_after_x, Self::rect_before_x)
-    }
-
-    pub fn clamp_y(&self, y_range: impl RangeBounds<T>) -> Self {
-        self.clamp(y_range, Self::rect_after_y, Self::rect_before_y)
-    }
-
-    pub fn split_at_x(&self, x: T) -> (Self, Self) {
-        (self.rect_before_x(x), self.rect_after_x(x))
-    }
-
-    pub fn split_at_y(&self, y: T) -> (Self, Self) {
-        (self.rect_before_y(y), self.rect_after_y(y))
     }
 }
 
-impl<T: Add<Output = T> + Copy + Max + Min + Sub<Output = T>> Rect<T> {
-    pub fn pad(&self, left: T, right: T, top: T, bottom: T) -> Self {
-        self.clamp_x((self.left + left)..(self.right - right))
-            .clamp_y((self.top + top)..(self.bottom - bottom))
+impl<T: Copy + Debug + Num + PartialOrd> Rect<T> {
+    pub fn padded(&self, left: T, right: T, top: T, bottom: T) -> Self {
+        Self::try_new_checked(
+            self.left + left,
+            self.right - right,
+            self.top + top,
+            self.bottom - bottom,
+        )
     }
 
-    pub fn pad_horiz_and_vert(&self, horiz_pad: T, vert_pad: T) -> Self {
-        self.pad(horiz_pad, horiz_pad, vert_pad, vert_pad)
+    pub fn padded_horiz_and_vert(&self, horiz: T, vert: T) -> Self {
+        self.padded(horiz, horiz, vert, vert)
     }
 
-    pub fn pad_uniform(&self, pad: T) -> Self {
-        self.pad_horiz_and_vert(pad, pad)
-    }
-}
-
-impl<T: Float + Max + Min> Rect<T> {
-    pub fn split_by_percent_width(&self, percent: T) -> (Self, Self) {
-        self.split_at_x(self.left + self.width() * percent)
-    }
-
-    pub fn split_by_percent_height(&self, percent: T) -> (Self, Self) {
-        self.split_at_y(self.top + self.height() * percent)
+    pub fn padded_uniform(&self, pad: T) -> Self {
+        self.padded_horiz_and_vert(pad, pad)
     }
 }
 
@@ -297,9 +263,38 @@ where
     }
 }
 
-impl<T: PartialOrd> Rect<T> {
+impl<T: Copy + PartialOrd> Rect<T> {
+    pub fn contains_x(&self, x: T) -> bool {
+        (self.left..self.right).contains(&x)
+    }
+
+    pub fn contains_y(&self, y: T) -> bool {
+        (self.top..self.bottom).contains(&y)
+    }
+
     pub fn contains(&self, point: &Point<T>) -> bool {
-        self.left <= point.x && point.x < self.right && self.top <= point.y && point.y < self.bottom
+        self.contains_x(point.x) && self.contains_y(point.y)
+    }
+
+    pub fn valid(&self) -> bool {
+        self.left <= self.right && self.top <= self.bottom
+    }
+
+    pub fn new_checked(left: T, right: T, top: T, bottom: T) -> Option<Self> {
+        let this = Self { left, right, top, bottom };
+        if this.valid() {
+            Some(this)
+        } else {
+            None
+        }
+    }
+}
+
+impl<T: Copy + Debug + PartialOrd> Rect<T> {
+    pub fn try_new_checked(left: T, right: T, top: T, bottom: T) -> Self {
+        let this = Self { left, right, top, bottom };
+        assert!(this.valid(), "invalid rect: {:#?}", this);
+        this
     }
 }
 
@@ -425,6 +420,7 @@ impl<T: Copy + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
 }
 
 impl<T: Copy + PartialOrd + Max + Min> Rect<T> {
+    // TODO: clamp method
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let top = self.top.max(other.top);
         let bottom = self.bottom.min(other.bottom);
