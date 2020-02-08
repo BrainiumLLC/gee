@@ -1,139 +1,142 @@
-use crate::{
-    cast, lerp_half, line_segment::LineSegment, max::Max, min::Min, point::Point, size::Size,
-    vec2::Vec2,
-};
-use num_traits::{Num, NumCast, Zero};
+use crate::{cast, LineSegment, OrdinaryNum, Point, Size, Vec2};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
     fmt::Debug,
-    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
+    ops::{Add, AddAssign, Mul, MulAssign},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[repr(C)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check rect validity in deserialize
 pub struct Rect<T> {
-    pub left:   T,
-    pub top:    T,
-    pub right:  T,
-    pub bottom: T,
+    top:    T,
+    right:  T,
+    bottom: T,
+    left:   T,
 }
 
-impl<T: Add<Output = T> + Copy> Rect<T> {
-    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
+impl<T: OrdinaryNum> Rect<T> {
+    pub fn new_unchecked(top: T, right: T, bottom: T, left: T) -> Self {
         Self {
-            left:   top_left.x,
-            top:    top_left.y,
-            right:  top_left.x + size.width,
-            bottom: top_left.y + size.height,
+            top,
+            right,
+            bottom,
+            left,
         }
     }
-}
 
-impl<T: Add<Output = T> + Sub<Output = T> + Copy> Rect<T> {
-    pub fn with_top_right(top_right: Point<T>, size: Size<T>) -> Self {
-        Self {
-            left:   top_right.x - size.width,
-            top:    top_right.y,
-            right:  top_right.x,
-            bottom: top_right.y + size.height,
+    pub fn try_new(top: T, right: T, bottom: T, left: T) -> Option<Self> {
+        if top <= bottom && left <= right {
+            Some(Self::new_unchecked(top, right, bottom, left))
+        } else {
+            None
         }
+    }
+
+    pub fn new(top: T, right: T, bottom: T, left: T) -> Self {
+        Self::try_new(top, right, bottom, left)
+            .expect("invalid Rect (left > right and/or top > bottom)")
+    }
+
+    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
+        Self::new(
+            top_left.y,
+            top_left.x + size.width(),
+            top_left.y + size.height(),
+            top_left.x,
+        )
+    }
+
+    pub fn with_top_right(top_right: Point<T>, size: Size<T>) -> Self {
+        Self::new(
+            top_right.y,
+            top_right.x,
+            top_right.y + size.height(),
+            top_right.x - size.width(),
+        )
     }
 
     pub fn with_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
-        Self {
-            left:   bottom_right.x - size.width,
-            top:    bottom_right.y - size.height,
-            right:  bottom_right.x,
-            bottom: bottom_right.y,
-        }
+        Self::new(
+            bottom_right.y - size.height(),
+            bottom_right.x,
+            bottom_right.y,
+            bottom_right.x - size.width(),
+        )
     }
 
     pub fn with_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
-        Self {
-            left:   bottom_left.x,
-            top:    bottom_left.y - size.height,
-            right:  bottom_left.x + size.width,
-            bottom: bottom_left.y,
-        }
+        Self::new(
+            bottom_left.y - size.height(),
+            bottom_left.x + size.width(),
+            bottom_left.y,
+            bottom_left.x,
+        )
     }
-}
 
-impl<T> Rect<T>
-where
-    T: Add<Output = T> + Copy + From<u8> + Default + Sub<Output = T> + Div<Output = T>,
-{
     pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width / 2.into();
-        let half_height = size.height / 2.into();
-        Self {
-            left:   center.x - half_width,
-            top:    center.y - half_height,
-            right:  center.x + half_width,
-            bottom: center.y + half_height,
-        }
+        let half_width = size.width().half();
+        let half_height = size.height().half();
+        Self::new(
+            center.y - half_height,
+            center.x + half_width,
+            center.y + half_height,
+            center.x - half_width,
+        )
     }
 
     pub fn with_top_center(top_center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width / 2.into();
-        Self {
-            left:   top_center.x - half_width,
-            top:    top_center.y,
-            right:  top_center.x + half_width,
-            bottom: top_center.y + size.height,
-        }
+        let half_width = size.width().half();
+        Self::new(
+            top_center.y,
+            top_center.x + half_width,
+            top_center.y + size.height(),
+            top_center.x - half_width,
+        )
     }
 
     pub fn with_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width / 2.into();
-        Self {
-            left:   bottom_center.x - half_width,
-            top:    bottom_center.y - size.height,
-            right:  bottom_center.x + half_width,
-            bottom: bottom_center.y,
-        }
+        let half_width = size.width().half();
+        Self::new(
+            bottom_center.y - size.height(),
+            bottom_center.x + half_width,
+            bottom_center.y,
+            bottom_center.x - half_width,
+        )
     }
 
     pub fn with_left_center(left_center: Point<T>, size: Size<T>) -> Self {
-        let half_height = size.height / 2.into();
-        Self {
-            left:   left_center.x,
-            top:    left_center.y - half_height,
-            right:  left_center.x + size.width,
-            bottom: left_center.y + half_height,
-        }
+        let half_height = size.height().half();
+        Self::new(
+            left_center.y - half_height,
+            left_center.x + size.width(),
+            left_center.y + half_height,
+            left_center.x,
+        )
     }
 
     pub fn with_right_center(right_center: Point<T>, size: Size<T>) -> Self {
-        let half_height = size.height / 2.into();
-        Self {
-            left:   right_center.x - size.width,
-            top:    right_center.y - half_height,
-            right:  right_center.x,
-            bottom: right_center.y + half_height,
-        }
+        let half_height = size.height().half();
+        Self::new(
+            right_center.y - half_height,
+            right_center.x,
+            right_center.y + half_height,
+            right_center.x - size.width(),
+        )
     }
-}
 
-impl<T: Copy + PartialOrd> Rect<T> {
     pub fn split_at_x(&self, x: T) -> Option<(Self, Self)> {
         if self.contains_x(x) {
-            let Self { left, right, top, bottom } = *self;
+            let Self {
+                top,
+                right,
+                bottom,
+                left,
+            } = *self;
             Some((
-                Self {
-                    left,
-                    right: x,
-                    top,
-                    bottom, 
-                },
-                Self {
-                    left: x,
-                    right,
-                    top,
-                    bottom,
-                },
+                Self::new(top, x, bottom, left),
+                Self::new(top, right, bottom, x),
             ))
         } else {
             None
@@ -142,88 +145,74 @@ impl<T: Copy + PartialOrd> Rect<T> {
 
     pub fn split_at_y(&self, y: T) -> Option<(Self, Self)> {
         if self.contains_y(y) {
-            let Self { left, right, top, bottom } = *self;
+            let Self {
+                top,
+                right,
+                bottom,
+                left,
+            } = *self;
             Some((
-                Self {
-                    left,
-                    right,
-                    top,
-                    bottom: y, 
-                },
-                Self {
-                    left,
-                    right,
-                    top: y,
-                    bottom,
-                },
+                Self::new(top, right, y, left),
+                Self::new(y, right, bottom, left),
             ))
         } else {
             None
         }
     }
-}
 
-impl<T: Copy + Debug + Num + PartialOrd> Rect<T> {
-    pub fn padded(&self, left: T, right: T, top: T, bottom: T) -> Self {
-        Self::try_new_checked(
-            self.left + left,
-            self.right - right,
+    pub fn padded(&self, top: T, right: T, bottom: T, left: T) -> Self {
+        Self::new(
             self.top + top,
+            self.right - right,
             self.bottom - bottom,
+            self.left + left,
         )
     }
 
     pub fn padded_horiz_and_vert(&self, horiz: T, vert: T) -> Self {
-        self.padded(horiz, horiz, vert, vert)
+        self.padded(vert, horiz, vert, horiz)
     }
 
     pub fn padded_uniform(&self, pad: T) -> Self {
         self.padded_horiz_and_vert(pad, pad)
     }
-}
 
-impl<T: Copy> Rect<T>
-where
-    T: Add<Output = T> + Mul<Output = T> + Sub<Output = T>,
-{
     pub fn scaled_from_top(&self, scale: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top,
-            right:  self.right,
-            bottom: self.top + self.height() * scale,
-        }
+        Self::new(
+            self.top,
+            self.right,
+            self.top + self.height() * scale,
+            self.left,
+        )
     }
 
     pub fn scaled_from_bottom(&self, scale: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.bottom - self.height() * scale,
-            right:  self.right,
-            bottom: self.bottom,
-        }
+        Self::new(
+            self.bottom - self.height() * scale,
+            self.right,
+            self.bottom,
+            self.left,
+        )
     }
 
     pub fn scaled_from_left(&self, scale: T) -> Self {
-        Self {
-            left:   self.left,
-            top:    self.top,
-            right:  self.left + self.width() * scale,
-            bottom: self.bottom,
-        }
+        Self::new(
+            self.top,
+            self.left + self.width() * scale,
+            self.bottom,
+            self.left,
+        )
     }
 
     pub fn scaled_from_right(&self, scale: T) -> Self {
-        Self {
-            left:   self.right - self.width() * scale,
-            top:    self.top,
-            right:  self.right,
-            bottom: self.bottom,
-        }
+        Self::new(
+            self.top,
+            self.right,
+            self.bottom,
+            self.right - self.width() * scale,
+        )
     }
-}
 
-impl<T: Copy> Rect<T> {
     pub fn top_left(&self) -> Point<T> {
         Point::new(self.left, self.top)
     }
@@ -239,31 +228,23 @@ impl<T: Copy> Rect<T> {
     pub fn bottom_right(&self) -> Point<T> {
         Point::new(self.right, self.bottom)
     }
-}
 
-impl<T: Copy + Sub> Rect<T> {
-    pub fn width(&self) -> T::Output {
+    pub fn width(&self) -> T {
         self.right - self.left
     }
-    pub fn height(&self) -> T::Output {
+
+    pub fn height(&self) -> T {
         self.bottom - self.top
     }
-    pub fn size(&self) -> Size<T::Output> {
+
+    pub fn size(&self) -> Size<T> {
         Size::new(self.width(), self.height())
     }
-}
 
-impl<T, V> Rect<T>
-where
-    T: Copy + Sub<Output = V>,
-    V: Div,
-{
-    pub fn aspect_ratio(&self) -> V::Output {
+    pub fn aspect_ratio(&self) -> T {
         self.size().aspect_ratio()
     }
-}
 
-impl<T: Copy + PartialOrd> Rect<T> {
     pub fn contains_x(&self, x: T) -> bool {
         (self.left..self.right).contains(&x)
     }
@@ -276,57 +257,18 @@ impl<T: Copy + PartialOrd> Rect<T> {
         self.contains_x(point.x) && self.contains_y(point.y)
     }
 
-    pub fn valid(&self) -> bool {
-        self.left <= self.right && self.top <= self.bottom
-    }
-
-    pub fn new_checked(left: T, right: T, top: T, bottom: T) -> Option<Self> {
-        let this = Self { left, right, top, bottom };
-        if this.valid() {
-            Some(this)
-        } else {
-            None
-        }
-    }
-}
-
-impl<T: Copy + Debug + PartialOrd> Rect<T> {
-    pub fn try_new_checked(left: T, right: T, top: T, bottom: T) -> Self {
-        let this = Self { left, right, top, bottom };
-        assert!(this.valid(), "invalid rect: {:#?}", this);
-        this
-    }
-}
-
-impl<T: Zero> Rect<T> {
     pub fn zero() -> Self {
-        Self {
-            left:   T::zero(),
-            top:    T::zero(),
-            right:  T::zero(),
-            bottom: T::zero(),
-        }
+        Self::new(T::zero(), T::zero(), T::zero(), T::zero())
     }
-}
 
-impl<T> Rect<T> {
-    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
-        Rect {
-            left:   f(self.left),
-            top:    f(self.top),
-            right:  f(self.right),
-            bottom: f(self.bottom),
-        }
+    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
+        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
     }
-}
 
-impl<T: PartialEq> Rect<T> {
     pub fn is_empty(&self) -> bool {
         self.top == self.bottom || self.left == self.right
     }
-}
 
-impl<T: Copy> Rect<T> {
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
         let top_left = self.top_left();
         let top_right = self.top_right();
@@ -339,9 +281,7 @@ impl<T: Copy> Rect<T> {
             LineSegment::new(bottom_left, top_left),
         ]
     }
-}
 
-impl<T: Copy + PartialOrd + Zero> Rect<T> {
     pub fn from_points_iter<I>(points: I) -> Self
     where
         I: IntoIterator,
@@ -370,57 +310,41 @@ impl<T: Copy + PartialOrd + Zero> Rect<T> {
                 max_y = p.y
             }
         }
-        Self {
-            left:   min_x,
-            top:    min_y,
-            right:  max_x,
-            bottom: max_y,
-        }
+        Self::new(min_y, max_x, max_y, min_x)
     }
-}
 
-impl<T: Copy + Max + Min> Rect<T> {
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
-        Self {
-            left:   a.x.min(b.x),
-            top:    a.y.min(b.y),
-            right:  a.x.max(b.x),
-            bottom: a.y.max(b.y),
-        }
-    }
-}
-
-impl<T: Copy + Add<Output = U>, U: Div + From<u8>> Rect<T> {
-    pub fn center_x(&self) -> U::Output {
-        lerp_half(self.left, self.right)
+        Self::new(a.y.min(b.y), a.x.max(b.x), a.y.max(b.y), a.x.min(b.x))
     }
 
-    pub fn center_y(&self) -> U::Output {
-        lerp_half(self.top, self.bottom)
+    pub fn center_x(&self) -> T {
+        (self.left + self.right).half()
     }
 
-    pub fn center(&self) -> Point<U::Output> {
+    pub fn center_y(&self) -> T {
+        (self.top + self.bottom).half()
+    }
+
+    pub fn center(&self) -> Point<T> {
         Point::new(self.center_x(), self.center_y())
     }
-}
 
-impl<T: Copy + Add<Output = U>, U: Div<Output = T> + From<u8>> Rect<T> {
     pub fn top_center(&self) -> Point<T> {
         Point::new(self.center_x(), self.top)
     }
+
     pub fn bottom_center(&self) -> Point<T> {
         Point::new(self.center_x(), self.bottom)
     }
+
     pub fn center_left(&self) -> Point<T> {
         Point::new(self.left, self.center_y())
     }
+
     pub fn center_right(&self) -> Point<T> {
         Point::new(self.right, self.center_y())
     }
-}
 
-impl<T: Copy + PartialOrd + Max + Min> Rect<T> {
-    // TODO: clamp method
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let top = self.top.max(other.top);
         let bottom = self.bottom.min(other.bottom);
@@ -455,9 +379,7 @@ impl<T: Copy + PartialOrd + Max + Min> Rect<T> {
             right,
         }
     }
-}
 
-impl<T: Copy + Num + NumCast> Rect<T> {
     pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
         self.width_slice_with_margin(num_items, index, T::zero())
     }
@@ -489,7 +411,11 @@ impl<T: Copy + Num + NumCast> Rect<T> {
         }
     }
 
-    pub fn width_slices_with_margin(self, num_items: usize, margin: T) -> impl Iterator<Item = Self> {
+    pub fn width_slices_with_margin(
+        self,
+        num_items: usize,
+        margin: T,
+    ) -> impl Iterator<Item = Self> {
         (0..num_items)
             .into_iter()
             .map(move |i| self.width_slice_with_margin(num_items, i, margin))
@@ -510,7 +436,11 @@ impl<T: Copy + Num + NumCast> Rect<T> {
         }
     }
 
-    pub fn height_slices_with_margin(self, num_items: usize, margin: T) -> impl Iterator<Item = Self> {
+    pub fn height_slices_with_margin(
+        self,
+        num_items: usize,
+        margin: T,
+    ) -> impl Iterator<Item = Self> {
         (0..num_items)
             .into_iter()
             .map(move |i| self.height_slice_with_margin(num_items, i, margin))
@@ -529,8 +459,8 @@ impl<T: Copy + Num + NumCast> Rect<T> {
         margin_x: T,
         margin_y: T,
     ) -> impl Iterator<Item = impl Iterator<Item = Self>> {
-        self.width_slices_with_margin(num_items.width, margin_x)
-            .map(move |x| x.height_slices_with_margin(num_items.height, margin_y))
+        self.width_slices_with_margin(num_items.width(), margin_x)
+            .map(move |x| x.height_slices_with_margin(num_items.height(), margin_y))
     }
 
     pub fn grid_cells(self, num_items: Size<usize>) -> impl Iterator<Item = (Point<usize>, Self)> {

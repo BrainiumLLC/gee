@@ -10,6 +10,7 @@ mod mat3x2;
 mod mat4;
 mod max;
 mod min;
+mod ordinary_num;
 mod point;
 mod ray;
 mod rect;
@@ -24,7 +25,8 @@ pub use euclid;
 
 pub use self::{
     angle::*, circle::*, direction::*, lerp::*, line_segment::*, mat3x2::*, mat4::*, max::*,
-    min::*, point::*, ray::*, rect::*, rect_position::*, size::*, vec2::*, vec3::*, vec4::*,
+    min::*, ordinary_num::*, point::*, ray::*, rect::*, rect_position::*, size::*, vec2::*,
+    vec3::*, vec4::*,
 };
 
 macro_rules! to_f32_f64_impl {

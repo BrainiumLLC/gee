@@ -1,10 +1,4 @@
-use crate::{
-    angle::Angle,
-    direction::{Cardinal, Direction},
-    size::Size,
-    vec3::Vec3,
-    vec4::Vec4,
-};
+use crate::{Angle, Cardinal, Direction, OrdinaryNum, Size, Vec3, Vec4};
 #[cfg(feature = "euclid")]
 use euclid::Vector2D;
 use num_traits::{Float, Zero};
@@ -105,11 +99,11 @@ impl<T> Vec2<T> {
     }
 }
 
-impl<T: Mul<Output = T>> Vec2<T> {
+impl<T: OrdinaryNum> Vec2<T> {
     pub fn scaled(self, rhs: Size<T>) -> Self {
         Self {
-            dx: self.dx * rhs.width,
-            dy: self.dy * rhs.height,
+            dx: self.dx * rhs.width(),
+            dy: self.dy * rhs.height(),
         }
     }
 }
@@ -124,9 +118,9 @@ impl<T: Float> Vec2<T> {
     }
 }
 
-impl<T> From<Size<T>> for Vec2<T> {
+impl<T: OrdinaryNum> From<Size<T>> for Vec2<T> {
     fn from(size: Size<T>) -> Self {
-        Vec2::new(size.width, size.height)
+        Vec2::new(size.width(), size.height())
     }
 }
 

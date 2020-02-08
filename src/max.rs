@@ -1,4 +1,4 @@
-pub trait Max {
+pub trait Max: PartialOrd {
     fn max(self, other: Self) -> Self;
 }
 

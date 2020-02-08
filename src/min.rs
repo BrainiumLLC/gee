@@ -1,4 +1,4 @@
-pub trait Min {
+pub trait Min: PartialOrd {
     fn min(self, other: Self) -> Self;
 }
 
