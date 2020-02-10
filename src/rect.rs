@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
     fmt::Debug,
-    ops::{Add, AddAssign, Mul, MulAssign},
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -39,12 +39,26 @@ impl<T: OrdinaryNum> Rect<T> {
             .expect("invalid Rect (left > right and/or top > bottom)")
     }
 
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero(), T::zero(), T::zero())
+    }
+
     pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
         Self::new(
             top_left.y,
             top_left.x + size.width(),
             top_left.y + size.height(),
             top_left.x,
+        )
+    }
+
+    pub fn with_top_center(top_center: Point<T>, size: Size<T>) -> Self {
+        let half_width = size.width().halved();
+        Self::new(
+            top_center.y,
+            top_center.x + half_width,
+            top_center.y + size.height(),
+            top_center.x - half_width,
         )
     }
 
@@ -57,12 +71,53 @@ impl<T: OrdinaryNum> Rect<T> {
         )
     }
 
+    pub fn with_center_left(left_center: Point<T>, size: Size<T>) -> Self {
+        let half_height = size.height().halved();
+        Self::new(
+            left_center.y - half_height,
+            left_center.x + size.width(),
+            left_center.y + half_height,
+            left_center.x,
+        )
+    }
+
+    pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
+        let half_width = size.width().halved();
+        let half_height = size.height().halved();
+        Self::new(
+            center.y - half_height,
+            center.x + half_width,
+            center.y + half_height,
+            center.x - half_width,
+        )
+    }
+
+    pub fn with_center_right(right_center: Point<T>, size: Size<T>) -> Self {
+        let half_height = size.height().halved();
+        Self::new(
+            right_center.y - half_height,
+            right_center.x,
+            right_center.y + half_height,
+            right_center.x - size.width(),
+        )
+    }
+
     pub fn with_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
         Self::new(
             bottom_right.y - size.height(),
             bottom_right.x,
             bottom_right.y,
             bottom_right.x - size.width(),
+        )
+    }
+
+    pub fn with_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
+        let half_width = size.width().halved();
+        Self::new(
+            bottom_center.y - size.height(),
+            bottom_center.x + half_width,
+            bottom_center.y,
+            bottom_center.x - half_width,
         )
     }
 
@@ -75,55 +130,135 @@ impl<T: OrdinaryNum> Rect<T> {
         )
     }
 
-    pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width().half();
-        let half_height = size.height().half();
-        Self::new(
-            center.y - half_height,
-            center.x + half_width,
-            center.y + half_height,
-            center.x - half_width,
-        )
+    pub fn from_points_iter<I>(points: I) -> Self
+    where
+        I: IntoIterator,
+        I::Item: Borrow<Point<T>>,
+    {
+        let mut points = points.into_iter();
+
+        let (mut min_x, mut min_y) = match points.next() {
+            Some(first) => (first.borrow().x, first.borrow().y),
+            None => return Rect::zero(),
+        };
+
+        let (mut max_x, mut max_y) = (min_x, min_y);
+        for point in points {
+            let p = point.borrow();
+            if p.x < min_x {
+                min_x = p.x
+            }
+            if p.x > max_x {
+                max_x = p.x
+            }
+            if p.y < min_y {
+                min_y = p.y
+            }
+            if p.y > max_y {
+                max_y = p.y
+            }
+        }
+        Self::new(min_y, max_x, max_y, min_x)
     }
 
-    pub fn with_top_center(top_center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width().half();
-        Self::new(
-            top_center.y,
-            top_center.x + half_width,
-            top_center.y + size.height(),
-            top_center.x - half_width,
-        )
+    pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
+        Self::new(a.y.min(b.y), a.x.max(b.x), a.y.max(b.y), a.x.min(b.x))
     }
 
-    pub fn with_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
-        let half_width = size.width().half();
-        Self::new(
-            bottom_center.y - size.height(),
-            bottom_center.x + half_width,
-            bottom_center.y,
-            bottom_center.x - half_width,
-        )
+    pub fn top(&self) -> T {
+        self.top
     }
 
-    pub fn with_left_center(left_center: Point<T>, size: Size<T>) -> Self {
-        let half_height = size.height().half();
-        Self::new(
-            left_center.y - half_height,
-            left_center.x + size.width(),
-            left_center.y + half_height,
-            left_center.x,
-        )
+    pub fn right(&self) -> T {
+        self.right
     }
 
-    pub fn with_right_center(right_center: Point<T>, size: Size<T>) -> Self {
-        let half_height = size.height().half();
-        Self::new(
-            right_center.y - half_height,
-            right_center.x,
-            right_center.y + half_height,
-            right_center.x - size.width(),
-        )
+    pub fn bottom(&self) -> T {
+        self.bottom
+    }
+
+    pub fn left(&self) -> T {
+        self.left
+    }
+
+    pub fn center_x(&self) -> T {
+        (self.left + self.right).halved()
+    }
+
+    pub fn center_y(&self) -> T {
+        (self.top + self.bottom).halved()
+    }
+
+    pub fn width(&self) -> T {
+        self.right - self.left
+    }
+
+    pub fn height(&self) -> T {
+        self.bottom - self.top
+    }
+
+    pub fn top_left(&self) -> Point<T> {
+        Point::new(self.left, self.top)
+    }
+
+    pub fn top_center(&self) -> Point<T> {
+        Point::new(self.center_x(), self.top)
+    }
+
+    pub fn top_right(&self) -> Point<T> {
+        Point::new(self.right, self.top)
+    }
+
+    pub fn center_left(&self) -> Point<T> {
+        Point::new(self.left, self.center_y())
+    }
+
+    pub fn center(&self) -> Point<T> {
+        Point::new(self.center_x(), self.center_y())
+    }
+
+    pub fn center_right(&self) -> Point<T> {
+        Point::new(self.right, self.center_y())
+    }
+
+    pub fn bottom_left(&self) -> Point<T> {
+        Point::new(self.left, self.bottom)
+    }
+
+    pub fn bottom_center(&self) -> Point<T> {
+        Point::new(self.center_x(), self.bottom)
+    }
+
+    pub fn bottom_right(&self) -> Point<T> {
+        Point::new(self.right, self.bottom)
+    }
+
+    pub fn size(&self) -> Size<T> {
+        Size::new(self.width(), self.height())
+    }
+
+    pub fn aspect_ratio(&self) -> T {
+        self.size().aspect_ratio()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.top == self.bottom || self.left == self.right
+    }
+
+    pub fn contains_x(&self, x: T) -> bool {
+        (self.left..self.right).contains(&x)
+    }
+
+    pub fn contains_y(&self, y: T) -> bool {
+        (self.top..self.bottom).contains(&y)
+    }
+
+    pub fn contains(&self, point: &Point<T>) -> bool {
+        self.contains_x(point.x) && self.contains_y(point.y)
+    }
+
+    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
+        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
     }
 
     pub fn split_at_x(&self, x: T) -> Option<(Self, Self)> {
@@ -213,62 +348,6 @@ impl<T: OrdinaryNum> Rect<T> {
         )
     }
 
-    pub fn top_left(&self) -> Point<T> {
-        Point::new(self.left, self.top)
-    }
-
-    pub fn top_right(&self) -> Point<T> {
-        Point::new(self.right, self.top)
-    }
-
-    pub fn bottom_left(&self) -> Point<T> {
-        Point::new(self.left, self.bottom)
-    }
-
-    pub fn bottom_right(&self) -> Point<T> {
-        Point::new(self.right, self.bottom)
-    }
-
-    pub fn width(&self) -> T {
-        self.right - self.left
-    }
-
-    pub fn height(&self) -> T {
-        self.bottom - self.top
-    }
-
-    pub fn size(&self) -> Size<T> {
-        Size::new(self.width(), self.height())
-    }
-
-    pub fn aspect_ratio(&self) -> T {
-        self.size().aspect_ratio()
-    }
-
-    pub fn contains_x(&self, x: T) -> bool {
-        (self.left..self.right).contains(&x)
-    }
-
-    pub fn contains_y(&self, y: T) -> bool {
-        (self.top..self.bottom).contains(&y)
-    }
-
-    pub fn contains(&self, point: &Point<T>) -> bool {
-        self.contains_x(point.x) && self.contains_y(point.y)
-    }
-
-    pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero(), T::zero(), T::zero())
-    }
-
-    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
-        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.top == self.bottom || self.left == self.right
-    }
-
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
         let top_left = self.top_left();
         let top_right = self.top_right();
@@ -282,88 +361,13 @@ impl<T: OrdinaryNum> Rect<T> {
         ]
     }
 
-    pub fn from_points_iter<I>(points: I) -> Self
-    where
-        I: IntoIterator,
-        I::Item: Borrow<Point<T>>,
-    {
-        let mut points = points.into_iter();
-
-        let (mut min_x, mut min_y) = match points.next() {
-            Some(first) => (first.borrow().x, first.borrow().y),
-            None => return Rect::zero(),
-        };
-
-        let (mut max_x, mut max_y) = (min_x, min_y);
-        for point in points {
-            let p = point.borrow();
-            if p.x < min_x {
-                min_x = p.x
-            }
-            if p.x > max_x {
-                max_x = p.x
-            }
-            if p.y < min_y {
-                min_y = p.y
-            }
-            if p.y > max_y {
-                max_y = p.y
-            }
-        }
-        Self::new(min_y, max_x, max_y, min_x)
-    }
-
-    pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
-        Self::new(a.y.min(b.y), a.x.max(b.x), a.y.max(b.y), a.x.min(b.x))
-    }
-
-    pub fn center_x(&self) -> T {
-        (self.left + self.right).half()
-    }
-
-    pub fn center_y(&self) -> T {
-        (self.top + self.bottom).half()
-    }
-
-    pub fn center(&self) -> Point<T> {
-        Point::new(self.center_x(), self.center_y())
-    }
-
-    pub fn top_center(&self) -> Point<T> {
-        Point::new(self.center_x(), self.top)
-    }
-
-    pub fn bottom_center(&self) -> Point<T> {
-        Point::new(self.center_x(), self.bottom)
-    }
-
-    pub fn center_left(&self) -> Point<T> {
-        Point::new(self.left, self.center_y())
-    }
-
-    pub fn center_right(&self) -> Point<T> {
-        Point::new(self.right, self.center_y())
-    }
-
     pub fn intersection(&self, other: &Self) -> Option<Self> {
         let top = self.top.max(other.top);
-        let bottom = self.bottom.min(other.bottom);
-        if top > bottom {
-            return None;
-        }
-
-        let left = self.left.max(other.left);
         let right = self.right.min(other.right);
-        if left > right {
-            return None;
-        }
+        let bottom = self.bottom.min(other.bottom);
+        let left = self.left.max(other.left);
 
-        Some(Rect {
-            top,
-            left,
-            bottom,
-            right,
-        })
+        Self::try_new(top, left, bottom, right)
     }
 
     pub fn union(&self, other: &Self) -> Self {
@@ -372,12 +376,8 @@ impl<T: OrdinaryNum> Rect<T> {
         let bottom = self.bottom.max(other.bottom);
         let right = self.right.max(other.right);
 
-        Rect {
-            top,
-            left,
-            bottom,
-            right,
-        }
+        // We are guaranteed a canonical rectangle if both inputs are canonical.
+        Self::new_unchecked(top, left, bottom, right)
     }
 
     pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
@@ -403,12 +403,7 @@ impl<T: OrdinaryNum> Rect<T> {
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
         let item_left = self.left + margin + index * (margin + item_width);
-        Rect {
-            top:    self.top,
-            left:   item_left,
-            right:  item_left + item_width,
-            bottom: self.bottom,
-        }
+        Rect::new(self.top, item_left + item_width, self.bottom, item_left)
     }
 
     pub fn width_slices_with_margin(
@@ -428,12 +423,7 @@ impl<T: OrdinaryNum> Rect<T> {
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
         let item_top = self.top + margin + index * (margin + item_height);
-        Rect {
-            top:    item_top,
-            left:   self.left,
-            right:  self.right,
-            bottom: item_top + item_height,
-        }
+        Rect::new(item_top, self.right, item_top + item_height, self.left)
     }
 
     pub fn height_slices_with_margin(
@@ -483,45 +473,60 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 }
 
-impl<T: Add<RHS>, RHS: Copy> Add<Vec2<RHS>> for Rect<T> {
-    type Output = Rect<T::Output>;
-    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
-        Rect {
-            left:   self.left + rhs.dx,
-            top:    self.top + rhs.dy,
-            right:  self.right + rhs.dx,
-            bottom: self.bottom + rhs.dy,
-        }
+impl<T: OrdinaryNum> Add<Vec2<T>> for Rect<T> {
+    type Output = Self;
+    fn add(self, rhs: Vec2<T>) -> Self::Output {
+        Rect::new(
+            self.top + rhs.dy,
+            self.right + rhs.dx,
+            self.bottom + rhs.dy,
+            self.left + rhs.dx,
+        )
     }
 }
 
-impl<T: AddAssign<RHS>, RHS: Copy> AddAssign<Vec2<RHS>> for Rect<T> {
-    fn add_assign(&mut self, rhs: Vec2<RHS>) {
-        self.left += rhs.dx;
-        self.top += rhs.dy;
-        self.right += rhs.dx;
-        self.bottom += rhs.dy
+impl<T: OrdinaryNum> AddAssign<Vec2<T>> for Rect<T> {
+    fn add_assign(&mut self, rhs: Vec2<T>) {
+        *self = *self + rhs
     }
 }
 
-impl<T: Mul<RHS>, RHS: Copy> Mul<RHS> for Rect<T> {
-    type Output = Rect<T::Output>;
-    fn mul(self, rhs: RHS) -> Self::Output {
-        Rect {
-            left:   self.left * rhs,
-            top:    self.top * rhs,
-            right:  self.right * rhs,
-            bottom: self.bottom * rhs,
-        }
+impl<T: OrdinaryNum> Mul<T> for Rect<T> {
+    type Output = Self;
+    fn mul(self, rhs: T) -> Self::Output {
+        self.map(move |x| x * rhs)
     }
 }
 
-impl<T: MulAssign<RHS>, RHS: Copy> MulAssign<RHS> for Rect<T> {
-    fn mul_assign(&mut self, rhs: RHS) {
-        self.left *= rhs;
-        self.top *= rhs;
-        self.right *= rhs;
-        self.bottom *= rhs
+impl<T: OrdinaryNum> MulAssign<T> for Rect<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs
+    }
+}
+
+impl<T: OrdinaryNum> Div<T> for Rect<T> {
+    type Output = Self;
+    fn div(self, rhs: T) -> Self::Output {
+        self.map(move |x| x / rhs)
+    }
+}
+
+impl<T: OrdinaryNum> DivAssign<T> for Rect<T> {
+    fn div_assign(&mut self, rhs: T) {
+        *self = *self / rhs
+    }
+}
+
+impl<T: OrdinaryNum> Rem<T> for Rect<T> {
+    type Output = Self;
+    fn rem(self, rhs: T) -> Self::Output {
+        self.map(move |x| x % rhs)
+    }
+}
+
+impl<T: OrdinaryNum> RemAssign<T> for Rect<T> {
+    fn rem_assign(&mut self, rhs: T) {
+        *self = *self % rhs
     }
 }
 
@@ -536,5 +541,81 @@ impl<T: Add<Output = T> + Copy> From<euclid::Rect<T>> for Rect<T> {
 impl<T: Copy + Sub<Output = T>> Into<euclid::Rect<T>> for Rect<T> {
     fn into(self) -> euclid::Rect<T> {
         euclid::Rect::new(self.top_left().into(), self.size().into())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn points() {
+        let top = -1;
+        let right = 4;
+        let bottom = 7;
+        let left = -2;
+        let center_x = 1;
+        let center_y = 3;
+        let width = 6;
+        let height = 8;
+        let rect = Rect::new(top, right, bottom, left);
+
+        let rect_asserts = |rect: Rect<i32>| {
+            assert_eq!(rect.top(), top);
+            assert_eq!(rect.right(), right);
+            assert_eq!(rect.bottom(), bottom);
+            assert_eq!(rect.left(), left);
+            assert_eq!(rect.width(), width);
+            assert_eq!(rect.height(), height);
+
+            assert_eq!(rect.top_left(), Point::new(left, top));
+            assert_eq!(rect.top_center(), Point::new(center_x, top));
+            assert_eq!(rect.top_right(), Point::new(right, top));
+            assert_eq!(rect.center_left(), Point::new(left, center_y));
+            assert_eq!(rect.center(), Point::new(center_x, center_y));
+            assert_eq!(rect.center_right(), Point::new(right, center_y));
+            assert_eq!(rect.bottom_left(), Point::new(left, bottom));
+            assert_eq!(rect.bottom_center(), Point::new(center_x, bottom));
+            assert_eq!(rect.bottom_right(), Point::new(right, bottom));
+        };
+        rect_asserts(rect);
+        rect_asserts(Rect::with_top_left(
+            Point::new(left, top),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_top_center(
+            Point::new(center_x, top),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_top_right(
+            Point::new(right, top),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_center_left(
+            Point::new(left, center_y),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_center(
+            Point::new(center_x, center_y),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_center_right(
+            Point::new(right, center_y),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_bottom_left(
+            Point::new(left, bottom),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_bottom_center(
+            Point::new(center_x, bottom),
+            Size::new(width, height),
+        ));
+        rect_asserts(Rect::with_bottom_right(
+            Point::new(right, bottom),
+            Size::new(width, height),
+        ));
+
+        assert_eq!(rect.size(), Size::new(width, height));
     }
 }

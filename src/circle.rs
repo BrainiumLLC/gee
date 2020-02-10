@@ -1,55 +1,55 @@
-use crate::{Angle, Max, Min, Point, Rect, Vec2};
-use num_traits::{Float, FloatConst, NumCast, Zero};
+use crate::{Angle, OrdinaryNum, Point, Rect, Vec2};
+use num_traits::{Float, FloatConst};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, Sub};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[repr(C)]
 pub struct Circle<T> {
-    pub center: Point<T>,
-    pub radius: T,
+    center: Point<T>,
+    radius: T,
 }
 
-impl<T: NumCast + Zero> Default for Circle<T> {
+impl<T: OrdinaryNum> Default for Circle<T> {
     fn default() -> Self {
         Self::unit()
     }
 }
 
-impl<T> Circle<T> {
+impl<T: OrdinaryNum> Circle<T> {
+    pub fn new_unchecked(center: Point<T>, radius: T) -> Self {
+        Self { center, radius }
+    }
+
+    pub fn try_new(center: Point<T>, radius: T) -> Option<Self> {
+        if radius >= T::zero() {
+            Some(Self::new_unchecked(center, radius))
+        } else {
+            None
+        }
+    }
+
     pub fn new(center: Point<T>, radius: T) -> Self {
-        Circle { center, radius }
+        Self::try_new(center, radius).expect("radius is less than 0")
     }
 
-    pub fn unit() -> Self
-    where
-        T: NumCast + Zero,
-    {
-        Self::with_radius(T::from(1.0).unwrap())
+    pub fn unit() -> Self {
+        Self::with_radius(T::one())
     }
 
-    pub fn with_radius(radius: T) -> Self
-    where
-        T: Zero,
-    {
+    pub fn zero() -> Self {
+        Self::with_radius(T::zero())
+    }
+
+    pub fn with_radius(radius: T) -> Self {
         Self::new(Point::zero(), radius)
     }
 
-    pub fn with_center(center: Point<T>) -> Self
-    where
-        T: NumCast,
-    {
-        Self::new(center, T::from(1.0).unwrap())
+    pub fn with_center(center: Point<T>) -> Self {
+        Self::new(center, T::one())
     }
 
-    pub fn bounding_rect(&self) -> Rect<<T as Sub>::Output>
-    where
-        T: Copy + Sub,
-        T: Add<Output = <T as Sub>::Output>,
-        <T as Sub>::Output: Copy + Min + Max,
-    {
+    pub fn bounding_rect(&self) -> Rect<T> {
         let radius_offset: Vec2<T> = Vec2::new(self.radius, self.radius);
         let top_left = self.center - radius_offset;
         let bottom_right = self.center + radius_offset;

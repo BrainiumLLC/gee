@@ -1,4 +1,4 @@
-use crate::{mat4::Mat4, point::Point, rect::Rect, vec2::Vec2};
+use crate::{Mat4, OrdinaryNum, Point, Rect, Vec2};
 #[cfg(feature = "euclid")]
 use euclid::Transform2D;
 use num_traits::{Float, One, Zero};
@@ -152,15 +152,9 @@ impl<T: Copy> Mat3x2<T> {
         )
     }
 
-    pub fn transform_rect<U>(
-        &self,
-        rect: &Rect<U>,
-    ) -> Rect<<<U::Output as Add>::Output as Add<T>>::Output>
+    pub fn transform_rect(&self, rect: &Rect<T>) -> Rect<T>
     where
-        U: Mul<T> + Copy,
-        U::Output: Add,
-        <U::Output as Add>::Output: Add<T>,
-        <<U::Output as Add>::Output as Add<T>>::Output: Copy + PartialOrd + Zero,
+        T: OrdinaryNum,
     {
         Rect::from_points_iter(&[
             self.transform_point(&rect.top_left()),

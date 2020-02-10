@@ -1,15 +1,15 @@
-use crate::{Max, Min};
+use crate::{cast, Max, Min};
 use num_traits::{Num, NumCast};
 use std::fmt::Debug;
 
 pub trait OrdinaryNum: Copy + Debug + Min + Max + Num + NumCast + PartialOrd {
     fn two() -> Self {
-        let one = Self::one();
-        one + one
+        cast::num(2)
     }
 
-    fn half(self) -> Self {
+    fn halved(self) -> Self {
         self / Self::two()
     }
 }
+
 impl<T: Copy + Debug + Min + Max + Num + NumCast + PartialOrd> OrdinaryNum for T {}

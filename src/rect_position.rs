@@ -1,9 +1,8 @@
+use crate::{OrdinaryNum, Point, Rect, Size, Vec2};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, AddAssign, Div, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Neg, Sub, SubAssign};
 use strum_macros::EnumIter;
-
-use crate::{point::Point, rect::Rect, size::Size, vec2::Vec2};
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -121,19 +120,16 @@ impl RectLocation {
         }
     }
 
-    pub fn point_from_rect<T: Copy + Add<Output = T> + Div<Output = T> + From<u8>>(
-        &self,
-        rect: Rect<T>,
-    ) -> Point<T> {
+    pub fn point_from_rect<T: OrdinaryNum>(&self, rect: Rect<T>) -> Point<T> {
         let x = match self.horizontal {
-            HorizontalLocation::Left => rect.left,
+            HorizontalLocation::Left => rect.left(),
             HorizontalLocation::Center => rect.center_x(),
-            HorizontalLocation::Right => rect.right,
+            HorizontalLocation::Right => rect.right(),
         };
         let y = match self.vertical {
-            VerticalLocation::Top => rect.top,
+            VerticalLocation::Top => rect.top(),
             VerticalLocation::Center => rect.center_y(),
-            VerticalLocation::Bottom => rect.bottom,
+            VerticalLocation::Bottom => rect.bottom(),
         };
         Point::new(x, y)
     }
@@ -146,7 +142,7 @@ pub struct RectPosition<T> {
     pub point:    Point<T>,
 }
 
-impl<T> RectPosition<T> {
+impl<T: OrdinaryNum> RectPosition<T> {
     pub fn top_left(point: Point<T>) -> Self {
         Self {
             location: RectLocation::top_left(),
@@ -203,9 +199,7 @@ impl<T> RectPosition<T> {
             point,
         }
     }
-}
 
-impl<T: Copy + Add<Output = T> + Div<Output = T> + From<u8>> RectPosition<T> {
     pub fn top_left_from_rect(rect: Rect<T>) -> Self {
         Self::top_left(rect.top_left())
     }
@@ -234,6 +228,85 @@ impl<T: Copy + Add<Output = T> + Div<Output = T> + From<u8>> RectPosition<T> {
     }
     pub fn bottom_right_from_rect(rect: Rect<T>) -> Self {
         Self::bottom_right(rect.bottom_right())
+    }
+
+    pub fn left_with_width(&self, width: T) -> T {
+        use HorizontalLocation::*;
+        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
+        match self.location.horizontal {
+            Left => self.point.x,
+            Center => self.point.x - width.halved(),
+            Right => self.point.x - width,
+        }
+    }
+    pub fn center_x_with_width(&self, width: T) -> T {
+        use HorizontalLocation::*;
+        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
+        match self.location.horizontal {
+            Left => self.point.x + width.halved(),
+            Center => self.point.x,
+            Right => self.point.x - width.halved(),
+        }
+    }
+    pub fn right_with_width(&self, width: T) -> T {
+        use HorizontalLocation::*;
+        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
+        match self.location.horizontal {
+            Left => self.point.x + width,
+            Center => self.point.x + width.halved(),
+            Right => self.point.x,
+        }
+    }
+
+    pub fn top_with_height(&self, height: T) -> T {
+        use VerticalLocation::*;
+        assert!(
+            height >= T::zero(),
+            "invalid value for height: {:?}",
+            height
+        );
+        match self.location.vertical {
+            Top => self.point.y,
+            Center => self.point.y - height.halved(),
+            Bottom => self.point.y - height,
+        }
+    }
+    pub fn center_y_with_height(&self, height: T) -> T {
+        use VerticalLocation::*;
+        assert!(
+            height >= T::zero(),
+            "invalid value for height: {:?}",
+            height
+        );
+        match self.location.vertical {
+            Top => self.point.y + height.halved(),
+            Center => self.point.y,
+            Bottom => self.point.y - height.halved(),
+        }
+    }
+    pub fn bottom_with_height(&self, height: T) -> T {
+        use VerticalLocation::*;
+        assert!(
+            height >= T::zero(),
+            "invalid value for height: {:?}",
+            height
+        );
+        match self.location.vertical {
+            Top => self.point.y + height,
+            Center => self.point.y + height.halved(),
+            Bottom => self.point.y,
+        }
+    }
+
+    pub fn rect_with_size(&self, size: Size<T>) -> Rect<T> {
+        let width = size.width();
+        let height = size.height();
+        Rect::new(
+            self.top_with_height(height),
+            self.right_with_width(width),
+            self.bottom_with_height(height),
+            self.left_with_width(width),
+        )
     }
 }
 
@@ -266,67 +339,6 @@ impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for RectPosition<T> {
 impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for RectPosition<T> {
     fn sub_assign(&mut self, rhs: Vec2<RHS>) {
         self.point -= rhs;
-    }
-}
-
-impl<T: Copy + Add<Output = T> + Sub<Output = T> + Div<Output = T> + From<u8>> RectPosition<T> {
-    pub fn left_with_width(&self, width: T) -> T {
-        use HorizontalLocation::*;
-        match self.location.horizontal {
-            Left => self.point.x,
-            Center => self.point.x - width / 2.into(),
-            Right => self.point.x - width,
-        }
-    }
-    pub fn center_x_with_width(&self, width: T) -> T {
-        use HorizontalLocation::*;
-        match self.location.horizontal {
-            Left => self.point.x + width / 2.into(),
-            Center => self.point.x,
-            Right => self.point.x - width / 2.into(),
-        }
-    }
-    pub fn right_with_width(&self, width: T) -> T {
-        use HorizontalLocation::*;
-        match self.location.horizontal {
-            Left => self.point.x + width,
-            Center => self.point.x + width / 2.into(),
-            Right => self.point.x,
-        }
-    }
-
-    pub fn top_with_height(&self, height: T) -> T {
-        use VerticalLocation::*;
-        match self.location.vertical {
-            Top => self.point.y,
-            Center => self.point.y - height / 2.into(),
-            Bottom => self.point.y - height,
-        }
-    }
-    pub fn center_y_with_height(&self, height: T) -> T {
-        use VerticalLocation::*;
-        match self.location.vertical {
-            Top => self.point.y + height / 2.into(),
-            Center => self.point.y,
-            Bottom => self.point.y - height / 2.into(),
-        }
-    }
-    pub fn bottom_with_height(&self, height: T) -> T {
-        use VerticalLocation::*;
-        match self.location.vertical {
-            Top => self.point.y + height,
-            Center => self.point.y + height / 2.into(),
-            Bottom => self.point.y,
-        }
-    }
-
-    pub fn rect_with_size(&self, size: Size<T>) -> Rect<T> {
-        Rect {
-            left:   self.left_with_width(size.width),
-            top:    self.top_with_height(size.height),
-            right:  self.right_with_width(size.width),
-            bottom: self.bottom_with_height(size.height),
-        }
     }
 }
 
@@ -370,12 +382,7 @@ mod test {
         let bottom = 4.0;
         let center_x = (left + right) / 2.0;
         let center_y = (top + bottom) / 2.0;
-        let rect = Rect {
-            left,
-            top,
-            right,
-            bottom,
-        };
+        let rect = Rect::new(top, right, bottom, left);
 
         let top_left = RectLocation::top_left().point_from_rect(rect);
         assert_eq!(top_left.x, left);
@@ -414,12 +421,7 @@ mod test {
         let top = -2.0;
         let right = 3.0;
         let bottom = 4.0;
-        let rect = Rect {
-            left,
-            top,
-            right,
-            bottom,
-        };
+        let rect = Rect::new(top, right, bottom, left);
 
         let width_offset: Vec2<f64> = Vec2::new(rect.width(), 0.0);
         let height_offset: Vec2<f64> = Vec2::new(0.0, rect.height());
@@ -448,16 +450,11 @@ mod test {
 
     #[test]
     fn rect_position_rect_from_size() {
-        let left = -1.0;
         let top = -2.0;
         let right = 3.0;
         let bottom = 4.0;
-        let rect = Rect {
-            left,
-            top,
-            right,
-            bottom,
-        };
+        let left = -1.0;
+        let rect = Rect::new(top, right, bottom, left);
 
         assert_eq!(
             RectPosition::top_left_from_rect(rect).rect_with_size(rect.size()),

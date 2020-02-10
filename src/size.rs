@@ -13,7 +13,7 @@ pub struct Size<T> {
 }
 
 impl<T: OrdinaryNum> Size<T> {
-    pub const fn new_unchecked(width: T, height: T) -> Self {
+    pub fn new_unchecked(width: T, height: T) -> Self {
         Self { width, height }
     }
 
@@ -40,6 +40,7 @@ impl<T: OrdinaryNum> Size<T> {
     pub fn width(self) -> T {
         self.width
     }
+
     pub fn height(self) -> T {
         self.height
     }
@@ -111,6 +112,10 @@ impl<T: OrdinaryNum> Size<T> {
         Self::new(width, height)
     }
 
+    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Size<U> {
+        Size::new(f(self.width), f(self.height))
+    }
+
     pub fn into_vec2(self) -> Vec2<T> {
         Vec2::from(self)
     }
@@ -132,7 +137,7 @@ impl<T: OrdinaryNum> AddAssign for Size<T> {
 impl<T: OrdinaryNum> Mul<T> for Size<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self::Output {
-        Self::new(self.width * rhs, self.height * rhs)
+        self.map(move |x| x * rhs)
     }
 }
 
@@ -145,7 +150,7 @@ impl<T: OrdinaryNum> MulAssign<T> for Size<T> {
 impl<T: OrdinaryNum> Div<T> for Size<T> {
     type Output = Self;
     fn div(self, rhs: T) -> Self::Output {
-        Self::new(self.width / rhs, self.height / rhs)
+        self.map(move |x| x / rhs)
     }
 }
 
@@ -158,19 +163,13 @@ impl<T: OrdinaryNum> DivAssign<T> for Size<T> {
 impl<T: OrdinaryNum> Rem<T> for Size<T> {
     type Output = Self;
     fn rem(self, rhs: T) -> Self::Output {
-        Self::new(self.width % rhs, self.height % rhs)
+        self.map(move |x| x % rhs)
     }
 }
 
 impl<T: OrdinaryNum> RemAssign<T> for Size<T> {
     fn rem_assign(&mut self, rhs: T) {
         *self = *self % rhs
-    }
-}
-
-impl<T> Size<T> {
-    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Size<U> {
-        Size::new(f(self.width), f(self.height))
     }
 }
 
