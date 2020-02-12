@@ -1,7 +1,9 @@
 #![deny(rust_2018_idioms, unused_must_use)]
 
-mod angle;
+#[macro_use]
 mod cast;
+
+mod angle;
 mod circle;
 mod direction;
 mod lerp;
@@ -29,38 +31,23 @@ pub use self::{
     vec3::*, vec4::*,
 };
 
-macro_rules! to_f32_f64_impl {
-    ($hkt:ident: $t:ty) => {
-        impl $hkt<$t> {
-            pub fn to_f32(self) -> $hkt<f32> {
-                self.map(|v| v as f32)
-            }
+#[cfg(test)]
+pub(crate) mod test {
+    pub fn approx_eq(lhs: f32, rhs: f32) -> bool {
+        lhs.is_finite() && rhs.is_finite() && ((lhs - 0.00001)..(lhs + 0.00001)).contains(&rhs)
+    }
 
-            pub fn to_f64(self) -> $hkt<f64> {
-                self.map(|v| v as f64)
-            }
-        }
-    };
-    ($hkt:ident: $($t:ty),* $(,)*) => {
-        $(to_f32_f64_impl! {$hkt: $t})*
-    };
-}
-
-macro_rules! to_f32_f64 {
-    ($($hkt:ident),* $(,)*) => {
-        $(to_f32_f64_impl! {
-        $hkt:
-            i8,i16,i32,i64,i128,
-            u8,u16,u32,u64,u128,
-        })*
-    };
-}
-
-to_f32_f64! {
-    Point,
-    Rect,
-    Size,
-    Vec2,
-    Vec3,
-    Vec4,
+    #[macro_export]
+    macro_rules! assert_approx_eq {
+        ($lhs:expr, $rhs:expr $(, $t:tt)*) => {{
+            let left = $lhs;
+            let right = $rhs;
+            assert!(
+                $crate::test::approx_eq(left, right),
+                "approx_eq check failed\n    left: {:?}, right: {:?}",
+                left,
+                right
+            )
+        }};
+    }
 }

@@ -1,7 +1,7 @@
 use crate::{OrdinaryNum, Point, Rect, Size, Vec2};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, AddAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, BitOr, Neg, Sub, SubAssign};
 use strum_macros::EnumIter;
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -33,6 +33,22 @@ pub enum VerticalLocation {
     Bottom,
 }
 
+impl BitOr<HorizontalLocation> for VerticalLocation {
+    type Output = RectLocation;
+
+    fn bitor(self, rhs: HorizontalLocation) -> Self::Output {
+        RectLocation::new(rhs, self)
+    }
+}
+
+impl BitOr<VerticalLocation> for HorizontalLocation {
+    type Output = RectLocation;
+
+    fn bitor(self, rhs: VerticalLocation) -> Self::Output {
+        rhs | self
+    }
+}
+
 impl Neg for VerticalLocation {
     type Output = Self;
 
@@ -57,81 +73,76 @@ impl Neg for RectLocation {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self {
-            horizontal: -self.horizontal,
-            vertical:   -self.vertical,
-        }
+        Self::new(-self.horizontal, -self.vertical)
     }
 }
 
 impl RectLocation {
-    pub fn top_left() -> Self {
+    pub fn new(horizontal: HorizontalLocation, vertical: VerticalLocation) -> Self {
         Self {
-            horizontal: HorizontalLocation::Left,
-            vertical:   VerticalLocation::Top,
-        }
-    }
-    pub fn top_center() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Center,
-            vertical:   VerticalLocation::Top,
-        }
-    }
-    pub fn top_right() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Right,
-            vertical:   VerticalLocation::Top,
-        }
-    }
-    pub fn center_left() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Left,
-            vertical:   VerticalLocation::Center,
-        }
-    }
-    pub fn center() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Center,
-            vertical:   VerticalLocation::Center,
-        }
-    }
-    pub fn center_right() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Right,
-            vertical:   VerticalLocation::Center,
-        }
-    }
-    pub fn bottom_left() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Left,
-            vertical:   VerticalLocation::Bottom,
-        }
-    }
-    pub fn bottom_center() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Center,
-            vertical:   VerticalLocation::Bottom,
-        }
-    }
-    pub fn bottom_right() -> Self {
-        Self {
-            horizontal: HorizontalLocation::Right,
-            vertical:   VerticalLocation::Bottom,
+            horizontal,
+            vertical,
         }
     }
 
-    pub fn point_from_rect<T: OrdinaryNum>(&self, rect: Rect<T>) -> Point<T> {
-        let x = match self.horizontal {
-            HorizontalLocation::Left => rect.left(),
-            HorizontalLocation::Center => rect.center_x(),
-            HorizontalLocation::Right => rect.right(),
-        };
-        let y = match self.vertical {
-            VerticalLocation::Top => rect.top(),
-            VerticalLocation::Center => rect.center_y(),
-            VerticalLocation::Bottom => rect.bottom(),
-        };
-        Point::new(x, y)
+    pub fn left(vertical: VerticalLocation) -> Self {
+        HorizontalLocation::Left | vertical
+    }
+
+    pub fn right(vertical: VerticalLocation) -> Self {
+        HorizontalLocation::Right | vertical
+    }
+
+    pub fn top(horizontal: HorizontalLocation) -> Self {
+        horizontal | VerticalLocation::Top
+    }
+
+    pub fn bottom(horizontal: HorizontalLocation) -> Self {
+        horizontal | VerticalLocation::Bottom
+    }
+
+    pub fn top_left() -> Self {
+        HorizontalLocation::Left | VerticalLocation::Top
+    }
+
+    pub fn top_center() -> Self {
+        HorizontalLocation::Center | VerticalLocation::Top
+    }
+
+    pub fn top_right() -> Self {
+        HorizontalLocation::Right | VerticalLocation::Top
+    }
+
+    pub fn center_left() -> Self {
+        HorizontalLocation::Left | VerticalLocation::Center
+    }
+
+    pub fn center() -> Self {
+        HorizontalLocation::Center | VerticalLocation::Center
+    }
+
+    pub fn center_right() -> Self {
+        HorizontalLocation::Right | VerticalLocation::Center
+    }
+
+    pub fn bottom_left() -> Self {
+        HorizontalLocation::Left | VerticalLocation::Bottom
+    }
+
+    pub fn bottom_center() -> Self {
+        HorizontalLocation::Center | VerticalLocation::Bottom
+    }
+
+    pub fn bottom_right() -> Self {
+        HorizontalLocation::Right | VerticalLocation::Bottom
+    }
+
+    pub fn point_from_rect<T: OrdinaryNum>(&self, rect: &Rect<T>) -> Point<T> {
+        rect.point_at(*self)
+    }
+
+    pub fn position_from_rect<T: OrdinaryNum>(&self, rect: &Rect<T>) -> RectPosition<T> {
+        rect.position_at(*self)
     }
 }
 
@@ -143,69 +154,58 @@ pub struct RectPosition<T> {
 }
 
 impl<T: OrdinaryNum> RectPosition<T> {
+    pub fn new(location: RectLocation, point: Point<T>) -> Self {
+        Self { location, point }
+    }
+
+    pub fn from_location_and_rect(location: RectLocation, rect: &Rect<T>) -> Self {
+        location.position_from_rect(rect)
+    }
+
     pub fn top_left(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::top_left(),
-            point,
-        }
+        Self::new(RectLocation::top_left(), point)
     }
+
     pub fn top_center(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::top_center(),
-            point,
-        }
+        Self::new(RectLocation::top_center(), point)
     }
+
     pub fn top_right(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::top_right(),
-            point,
-        }
+        Self::new(RectLocation::top_right(), point)
     }
 
     pub fn center_left(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::center_left(),
-            point,
-        }
+        Self::new(RectLocation::center_left(), point)
     }
+
     pub fn center(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::center(),
-            point,
-        }
+        Self::new(RectLocation::center(), point)
     }
+
     pub fn center_right(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::center_right(),
-            point,
-        }
+        Self::new(RectLocation::center_right(), point)
     }
 
     pub fn bottom_left(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::bottom_left(),
-            point,
-        }
+        Self::new(RectLocation::bottom_left(), point)
     }
+
     pub fn bottom_center(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::bottom_center(),
-            point,
-        }
+        Self::new(RectLocation::bottom_center(), point)
     }
+
     pub fn bottom_right(point: Point<T>) -> Self {
-        Self {
-            location: RectLocation::bottom_right(),
-            point,
-        }
+        Self::new(RectLocation::bottom_right(), point)
     }
 
     pub fn top_left_from_rect(rect: Rect<T>) -> Self {
         Self::top_left(rect.top_left())
     }
+
     pub fn top_center_from_rect(rect: Rect<T>) -> Self {
         Self::top_center(rect.top_center())
     }
+
     pub fn top_right_from_rect(rect: Rect<T>) -> Self {
         Self::top_right(rect.top_right())
     }
@@ -213,9 +213,11 @@ impl<T: OrdinaryNum> RectPosition<T> {
     pub fn center_left_from_rect(rect: Rect<T>) -> Self {
         Self::center_left(rect.center_left())
     }
+
     pub fn center_from_rect(rect: Rect<T>) -> Self {
         Self::center(rect.center())
     }
+
     pub fn center_right_from_rect(rect: Rect<T>) -> Self {
         Self::center_right(rect.center_right())
     }
@@ -223,9 +225,11 @@ impl<T: OrdinaryNum> RectPosition<T> {
     pub fn bottom_left_from_rect(rect: Rect<T>) -> Self {
         Self::bottom_left(rect.bottom_left())
     }
+
     pub fn bottom_center_from_rect(rect: Rect<T>) -> Self {
         Self::bottom_center(rect.bottom_center())
     }
+
     pub fn bottom_right_from_rect(rect: Rect<T>) -> Self {
         Self::bottom_right(rect.bottom_right())
     }
@@ -299,20 +303,13 @@ impl<T: OrdinaryNum> RectPosition<T> {
     }
 
     pub fn rect_with_size(&self, size: Size<T>) -> Rect<T> {
-        let width = size.width();
-        let height = size.height();
-        Rect::new(
-            self.top_with_height(height),
-            self.right_with_width(width),
-            self.bottom_with_height(height),
-            self.left_with_width(width),
-        )
+        Rect::with_position(*self, size)
     }
 }
 
-impl<T: Add<RHS>, RHS> Add<Vec2<RHS>> for RectPosition<T> {
-    type Output = RectPosition<T::Output>;
-    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
+impl<T: OrdinaryNum> Add<Vec2<T>> for RectPosition<T> {
+    type Output = Self;
+    fn add(self, rhs: Vec2<T>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point + rhs,
@@ -320,15 +317,15 @@ impl<T: Add<RHS>, RHS> Add<Vec2<RHS>> for RectPosition<T> {
     }
 }
 
-impl<T: AddAssign<RHS>, RHS> AddAssign<Vec2<RHS>> for RectPosition<T> {
-    fn add_assign(&mut self, rhs: Vec2<RHS>) {
-        self.point += rhs;
+impl<T: OrdinaryNum> AddAssign<Vec2<T>> for RectPosition<T> {
+    fn add_assign(&mut self, rhs: Vec2<T>) {
+        *self = *self + rhs
     }
 }
 
-impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for RectPosition<T> {
-    type Output = RectPosition<T::Output>;
-    fn sub(self, rhs: Vec2<RHS>) -> Self::Output {
+impl<T: OrdinaryNum> Sub<Vec2<T>> for RectPosition<T> {
+    type Output = Self;
+    fn sub(self, rhs: Vec2<T>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point - rhs,
@@ -336,9 +333,9 @@ impl<T: Sub<RHS>, RHS> Sub<Vec2<RHS>> for RectPosition<T> {
     }
 }
 
-impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for RectPosition<T> {
-    fn sub_assign(&mut self, rhs: Vec2<RHS>) {
-        self.point -= rhs;
+impl<T: OrdinaryNum> SubAssign<Vec2<T>> for RectPosition<T> {
+    fn sub_assign(&mut self, rhs: Vec2<T>) {
+        *self = *self - rhs
     }
 }
 
@@ -382,7 +379,7 @@ mod test {
         let bottom = 4.0;
         let center_x = (left + right) / 2.0;
         let center_y = (top + bottom) / 2.0;
-        let rect = Rect::new(top, right, bottom, left);
+        let rect = &Rect::new(top, right, bottom, left);
 
         let top_left = RectLocation::top_left().point_from_rect(rect);
         assert_eq!(top_left.x, left);

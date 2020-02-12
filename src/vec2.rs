@@ -1,7 +1,6 @@
-use crate::{Angle, Cardinal, Direction, OrdinaryNum, Size, Vec3, Vec4};
+use crate::{Angle, Cardinal, Direction, OrdinaryFloat, OrdinaryNum, Point, Size, Vec3, Vec4};
 #[cfg(feature = "euclid")]
 use euclid::Vector2D;
-use num_traits::{Float, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{
@@ -16,9 +15,13 @@ pub struct Vec2<T> {
     pub dy: T,
 }
 
-impl<T> Vec2<T> {
-    pub const fn new(dx: T, dy: T) -> Self {
+impl<T: OrdinaryNum> Vec2<T> {
+    pub fn new(dx: T, dy: T) -> Self {
         Vec2 { dx, dy }
+    }
+
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero())
     }
 
     pub fn from_vec3(vec3: Vec3<T>) -> Self {
@@ -29,92 +32,85 @@ impl<T> Vec2<T> {
         Self::new(vec4.dx, vec4.dy)
     }
 
-    pub const fn as_ref(&self) -> Vec2<&T> {
-        Vec2 {
-            dx: &self.dx,
-            dy: &self.dy,
-        }
-    }
-
-    pub fn as_mut(&mut self) -> Vec2<&mut T> {
-        Vec2 {
-            dx: &mut self.dx,
-            dy: &mut self.dy,
-        }
-    }
-
-    pub fn dot_product<RHS, A>(self, rhs: Vec2<RHS>) -> A::Output
-    where
-        T: Mul<RHS, Output = A>,
-        A: Add<A>,
-    {
+    pub fn dot_product(self, rhs: Self) -> T {
         self.dx * rhs.dx + self.dy * rhs.dy
     }
 
-    pub fn magnitude_squared<A>(self) -> A::Output
-    where
-        T: Mul<Output = A> + Copy,
-        A: Add<A>,
-    {
+    pub fn magnitude_squared(self) -> T {
         self.dot_product(self)
     }
 
-    pub fn magnitude<A>(self) -> A::Output
+    pub fn magnitude(self) -> T
     where
-        T: Mul<Output = A> + Copy,
-        A::Output: Float,
-        A: Add,
+        T: OrdinaryFloat,
     {
         self.magnitude_squared().sqrt()
     }
 
-    pub fn normalized<A>(self) -> Vec2<<T as Div<A::Output>>::Output>
+    pub fn normalized(self) -> Self
     where
-        T: Mul<Output = A> + Copy + Div<A::Output>,
-        A::Output: Float,
-        A: Add,
+        T: OrdinaryFloat,
     {
         self / self.magnitude()
     }
 
-    pub fn map<U, F: Fn(T) -> U>(self, f: F) -> Vec2<U> {
-        Vec2 {
-            dx: f(self.dx),
-            dy: f(self.dy),
-        }
-    }
-
-    pub fn into_vec3(self) -> Vec3<T>
+    pub fn unit_from_angle(angle: Angle<T>) -> Self
     where
-        T: Zero,
+        T: OrdinaryFloat,
     {
-        Vec3::new(self.dx, self.dy, Zero::zero())
+        angle.unit_vec2()
     }
 
-    pub fn into_vec4(self) -> Vec4<T>
+    pub fn angle(self) -> Angle<T>
     where
-        T: Zero,
+        T: OrdinaryFloat,
     {
-        Vec4::new(self.dx, self.dy, Zero::zero(), Zero::zero())
-    }
-}
-
-impl<T: OrdinaryNum> Vec2<T> {
-    pub fn scaled(self, rhs: Size<T>) -> Self {
-        Self {
-            dx: self.dx * rhs.width(),
-            dy: self.dy * rhs.height(),
-        }
-    }
-}
-
-impl<T: Float> Vec2<T> {
-    pub fn unit_from_angle(angle: Angle<T>) -> Self {
-        angle.unit_vector()
-    }
-
-    pub fn angle(self) -> Angle<T> {
         Angle::from_xy(self.dx, self.dy)
+    }
+
+    pub fn scaled(self, rhs: Size<T>) -> Self {
+        Self::new(self.dx * rhs.width(), self.dy * rhs.height())
+    }
+
+    pub fn perpendicular(self) -> Self
+    where
+        T: Neg<Output = T>,
+    {
+        Self::new(-self.dy, self.dx)
+    }
+
+    pub fn yx(self) -> Self {
+        Self::new(self.dy, self.dx)
+    }
+
+    pub fn map<U: OrdinaryNum>(&self, mut f: impl FnMut(T) -> U) -> Vec2<U> {
+        Vec2::new(f(self.dx), f(self.dy))
+    }
+
+    impl_casts_and_cast!(Vec2);
+
+    pub fn to_array(self) -> [T; 2] {
+        [self.dx, self.dy]
+    }
+
+    pub fn to_tuple(self) -> (T, T) {
+        (self.dx, self.dy)
+    }
+
+    pub fn to_point(self) -> Point<T> {
+        Point::zero() + self
+    }
+
+    pub fn to_size(self) -> Size<T> {
+        self.into()
+    }
+
+    pub fn to_vec3(self) -> Vec3<T> {
+        Vec3::new(self.dx, self.dy, T::zero())
+    }
+
+    pub fn to_vec4(self) -> Vec4<T> {
+        Vec4::new(self.dx, self.dy, T::zero(), T::zero())
     }
 }
 
@@ -124,86 +120,79 @@ impl<T: OrdinaryNum> From<Size<T>> for Vec2<T> {
     }
 }
 
-impl<T: Add<RHS, Output = Output>, RHS, Output> Add<Vec2<RHS>> for Vec2<T> {
-    type Output = Vec2<Output>;
-    fn add(self, rhs: Vec2<RHS>) -> Self::Output {
+impl<T: OrdinaryNum> Add for Vec2<T> {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
         Vec2::new(self.dx + rhs.dx, self.dy + rhs.dy)
     }
 }
 
-impl<T: AddAssign<RHS>, RHS> AddAssign<Vec2<RHS>> for Vec2<T> {
-    fn add_assign(&mut self, rhs: Vec2<RHS>) {
-        self.dx += rhs.dx;
-        self.dy += rhs.dy
+impl<T: OrdinaryNum> AddAssign for Vec2<T> {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs
     }
 }
 
-impl<T: Sub<RHS, Output = Output>, RHS, Output> Sub<Vec2<RHS>> for Vec2<T> {
-    type Output = Vec2<Output>;
-    fn sub(self, rhs: Vec2<RHS>) -> Self::Output {
+impl<T: OrdinaryNum> Sub for Vec2<T> {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
         Vec2::new(self.dx - rhs.dx, self.dy - rhs.dy)
     }
 }
 
-impl<T: SubAssign<RHS>, RHS> SubAssign<Vec2<RHS>> for Vec2<T> {
-    fn sub_assign(&mut self, rhs: Vec2<RHS>) {
-        self.dx -= rhs.dx;
-        self.dy -= rhs.dy
+impl<T: OrdinaryNum> SubAssign<Self> for Vec2<T> {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = *self - rhs
     }
 }
 
-impl<T: Mul<RHS, Output = Output>, RHS: Copy, Output> Mul<RHS> for Vec2<T> {
-    type Output = Vec2<Output>;
-    fn mul(self, rhs: RHS) -> Self::Output {
-        Vec2 {
-            dx: self.dx * rhs,
-            dy: self.dy * rhs,
-        }
+impl<T: OrdinaryNum> Mul<T> for Vec2<T> {
+    type Output = Self;
+    fn mul(self, rhs: T) -> Self::Output {
+        self.map(move |x| x * rhs)
     }
 }
 
-impl<T: MulAssign<RHS>, RHS: Copy> MulAssign<RHS> for Vec2<T> {
-    fn mul_assign(&mut self, rhs: RHS) {
-        self.dx *= rhs;
-        self.dy *= rhs
+impl<T: OrdinaryNum> MulAssign<T> for Vec2<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs
     }
 }
 
-impl<T: Div<RHS, Output = Output>, RHS: Copy, Output> Div<RHS> for Vec2<T> {
-    type Output = Vec2<Output>;
-    fn div(self, rhs: RHS) -> Self::Output {
-        Vec2 {
-            dx: self.dx / rhs,
-            dy: self.dy / rhs,
-        }
+impl<T: OrdinaryNum> Div<T> for Vec2<T> {
+    type Output = Self;
+    fn div(self, rhs: T) -> Self::Output {
+        self.map(move |x| x / rhs)
     }
 }
 
-impl<T: DivAssign<RHS>, RHS: Copy> DivAssign<RHS> for Vec2<T> {
-    fn div_assign(&mut self, rhs: RHS) {
-        self.dx /= rhs;
-        self.dy /= rhs
+impl<T: OrdinaryNum> DivAssign<T> for Vec2<T> {
+    fn div_assign(&mut self, rhs: T) {
+        *self = *self / rhs
     }
 }
 
-impl<T: Rem<RHS, Output = Output>, RHS: Copy, Output> Rem<RHS> for Vec2<T> {
-    type Output = Vec2<Output>;
-    fn rem(self, rhs: RHS) -> Self::Output {
-        Vec2 {
-            dx: self.dx % rhs,
-            dy: self.dy % rhs,
-        }
+impl<T: OrdinaryNum> Rem<T> for Vec2<T> {
+    type Output = Self;
+    fn rem(self, rhs: T) -> Self::Output {
+        self.map(move |x| x % rhs)
     }
 }
 
-impl<T: RemAssign<RHS>, RHS: Copy> RemAssign<RHS> for Vec2<T> {
-    fn rem_assign(&mut self, rhs: RHS) {
-        self.dx %= rhs;
-        self.dy %= rhs
+impl<T: OrdinaryNum> RemAssign<T> for Vec2<T> {
+    fn rem_assign(&mut self, rhs: T) {
+        *self = *self % rhs
     }
 }
 
-impl<T: From<i8>> From<Direction> for Vec2<T> {
+impl<T: Neg<Output = T> + OrdinaryNum> Neg for Vec2<T> {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        self.map(move |x| -x)
+    }
+}
+
+impl<T: OrdinaryNum> From<Direction> for Vec2<T> {
     fn from(direction: Direction) -> Self {
         use Direction::*;
         match direction {
@@ -216,11 +205,11 @@ impl<T: From<i8>> From<Direction> for Vec2<T> {
             Southwest => Vec2::new(-1, 1),
             Northwest => Vec2::new(-1, -1),
         }
-        .map(Into::into)
+        .cast()
     }
 }
 
-impl<T: From<i8>> From<Cardinal> for Vec2<T> {
+impl<T: OrdinaryNum> From<Cardinal> for Vec2<T> {
     fn from(cardinal: Cardinal) -> Self {
         use Cardinal::*;
         match cardinal {
@@ -229,31 +218,19 @@ impl<T: From<i8>> From<Cardinal> for Vec2<T> {
             South => Vec2::new(0, 1),
             West => Vec2::new(-1, 0),
         }
-        .map(Into::into)
-    }
-}
-
-impl<T: Neg<Output = T>> Vec2<T> {
-    pub fn perpendicular(self) -> Self {
-        Self::new(-self.dy, self.dx)
-    }
-}
-
-impl<T: Zero> Vec2<T> {
-    pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero())
+        .cast()
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T> From<Vector2D<T>> for Vec2<T> {
+impl<T: OrdinaryNum> From<Vector2D<T>> for Vec2<T> {
     fn from(vector: Vector2D<T>) -> Self {
         Vec2::new(vector.x, vector.y)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: Copy> Into<Vector2D<T>> for Vec2<T> {
+impl<T: OrdinaryNum> Into<Vector2D<T>> for Vec2<T> {
     fn into(self) -> Vector2D<T> {
         Vector2D::new(self.dx, self.dy)
     }

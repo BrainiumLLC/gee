@@ -1,9 +1,9 @@
-use crate::{Angle, Vec3};
+use crate::{Angle, OrdinaryFloat, OrdinaryNum, Vec3};
 #[cfg(feature = "euclid")]
 use euclid::Transform3D;
-use num_traits::{Float, One, Zero};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+use std::ops::Neg;
 
 pub type Mat4x4<T> = Mat4<T>;
 
@@ -18,7 +18,13 @@ pub struct Mat4<T> {
     pub m41: T, pub m42: T, pub m43: T, pub m44: T,
 }
 
-impl<T> Mat4<T> {
+impl<T: OrdinaryNum> Default for Mat4<T> {
+    fn default() -> Self {
+        Self::identity()
+    }
+}
+
+impl<T: OrdinaryNum> Mat4<T> {
     #[rustfmt::skip]
     pub fn row_major(
         m11: T, m12: T, m13: T, m14: T,
@@ -33,82 +39,82 @@ impl<T> Mat4<T> {
             m41, m42, m43, m44,
         }
     }
-}
 
-impl<T: One + Zero> Default for Mat4<T> {
-    fn default() -> Self {
-        Self::identity()
-    }
-}
-
-impl<T: One + Zero> Mat4<T> {
     pub fn identity() -> Self {
         Self::row_major(
-            One::one(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
+            T::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
         )
     }
 
     pub fn create_scale(x: T, y: T, z: T) -> Self {
         Self::row_major(
             x,
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
             y,
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
             z,
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
         )
     }
 
     pub fn create_translation(x: T, y: T, z: T) -> Self {
         Self::row_major(
-            One::one(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            Zero::zero(),
-            One::one(),
-            Zero::zero(),
+            T::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::zero(),
+            T::one(),
+            T::zero(),
             x,
             y,
             z,
-            One::one(),
+            T::one(),
         )
     }
-}
 
-impl<T: Float> Mat4<T> {
-    pub fn create_rotation(Vec3 { dx: x, dy: y, dz: z }: Vec3<T>, theta: Angle<T>) -> Self {
-        let (_0, _1): (T, T) = (Zero::zero(), One::one());
+    pub fn create_rotation(
+        Vec3 {
+            dx: x,
+            dy: y,
+            dz: z,
+        }: Vec3<T>,
+        theta: Angle<T>,
+    ) -> Self
+    where
+        T: OrdinaryFloat,
+    {
+        let (_0, _1): (T, T) = (T::zero(), T::one());
         let _2 = _1 + _1;
 
         let xx = x * x;
@@ -135,11 +141,11 @@ impl<T: Float> Mat4<T> {
             _0,
             _0,
             _0,
-            _1
+            _1,
         )
     }
 
-    pub fn post_transform(self, mat: Self) -> Self {
+    pub fn post_mul(&self, mat: &Self) -> Self {
         Self::row_major(
             self.m11 * mat.m11 + self.m12 * mat.m21 + self.m13 * mat.m31 + self.m14 * mat.m41,
             self.m11 * mat.m12 + self.m12 * mat.m22 + self.m13 * mat.m32 + self.m14 * mat.m42,
@@ -160,40 +166,49 @@ impl<T: Float> Mat4<T> {
         )
     }
 
-    pub fn pre_transform(self, mat: Self) -> Self {
-        mat.post_transform(self)
+    pub fn pre_mul(&self, mat: &Self) -> Self {
+        mat.post_mul(self)
     }
 
-    pub fn post_scale(self, x: T, y: T, z: T) -> Self {
-        self.post_transform(Self::create_scale(x, y, z))
+    pub fn post_scale(&self, x: T, y: T, z: T) -> Self {
+        self.post_mul(&Self::create_scale(x, y, z))
     }
 
-    pub fn pre_scale(self, x: T, y: T, z: T) -> Self {
-        self.pre_transform(Self::create_scale(x, y, z))
+    pub fn pre_scale(&self, x: T, y: T, z: T) -> Self {
+        self.pre_mul(&Self::create_scale(x, y, z))
     }
 
     pub fn post_translate(self, x: T, y: T, z: T) -> Self {
-        self.post_transform(Self::create_translation(x, y, z))
+        self.post_mul(&Self::create_translation(x, y, z))
     }
 
     pub fn pre_translate(self, x: T, y: T, z: T) -> Self {
-        self.pre_transform(Self::create_translation(x, y, z))
+        self.pre_mul(&Self::create_translation(x, y, z))
     }
 
-    pub fn post_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self {
-        self.post_transform(Self::create_rotation(axis, theta))
+    pub fn post_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self
+    where
+        T: OrdinaryFloat,
+    {
+        self.post_mul(&Self::create_rotation(axis, theta))
     }
 
-    pub fn pre_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self {
-        self.pre_transform(Self::create_rotation(axis, theta))
+    pub fn pre_rotate(self, axis: Vec3<T>, theta: Angle<T>) -> Self
+    where
+        T: OrdinaryFloat,
+    {
+        self.pre_mul(&Self::create_rotation(axis, theta))
     }
 
-    pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self {
+    pub fn ortho(left: T, right: T, bottom: T, top: T, near: T, far: T) -> Self
+    where
+        T: Neg<Output = T>,
+    {
         let tx = -((right + left) / (right - left));
         let ty = -((top + bottom) / (top - bottom));
         let tz = -((far + near) / (far - near));
 
-        let (_0, _1): (T, T) = (Zero::zero(), One::one());
+        let (_0, _1): (T, T) = (T::zero(), T::one());
         let _2 = _1 + _1;
         let sx = _2 / (right - left);
         let sy = _2 / (top - bottom);
@@ -203,8 +218,11 @@ impl<T: Float> Mat4<T> {
         )
     }
 
-    pub fn persp(aspect: T, fov: Angle<T>, near: T, far: T) -> Self {
-        let (_0, _1): (T, T) = (Zero::zero(), One::one());
+    pub fn persp(aspect: T, fov: Angle<T>, near: T, far: T) -> Self
+    where
+        T: OrdinaryFloat,
+    {
+        let (_0, _1): (T, T) = (T::zero(), T::one());
         let _2 = _1 + _1;
         let f = (fov.radians / _2).tan().recip();
         let depth = near - far;
@@ -230,7 +248,7 @@ impl<T: Float> Mat4<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T> From<Transform3D<T>> for Mat4<T> {
+impl<T: OrdinaryNum> From<Transform3D<T>> for Mat4<T> {
     fn from(transform: Transform3D<T>) -> Self {
         Self::row_major(
             transform.m11,
@@ -254,7 +272,7 @@ impl<T> From<Transform3D<T>> for Mat4<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: Copy> Into<Transform3D<T>> for Mat4<T> {
+impl<T: OrdinaryNum> Into<Transform3D<T>> for Mat4<T> {
     #[rustfmt::skip]
     fn into(self) -> Transform3D<T> {
         Transform3D::row_major(

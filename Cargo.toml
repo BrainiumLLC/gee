@@ -9,6 +9,10 @@ license = "MIT"
 keywords = ["geometry", "games"]
 categories = ["games", "graphics", "science"]
 
+[features]
+default = []
+unchecked-ctors = []
+
 [dependencies]
 num-traits = "0.2.6"
 strum = "0.13.0"

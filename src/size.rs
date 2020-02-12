@@ -18,7 +18,11 @@ impl<T: OrdinaryNum> Size<T> {
     }
 
     pub fn new(width: T, height: T) -> Self {
-        Self::try_new(width, height).expect("width or height is less than 0")
+        if cfg!(not(feature = "unchecked-ctors")) {
+            Self::try_new(width, height).expect("width or height is less than 0")
+        } else {
+            Self::new_unchecked(width, height)
+        }
     }
 
     pub fn try_new(width: T, height: T) -> Option<Self> {
@@ -73,20 +77,28 @@ impl<T: OrdinaryNum> Size<T> {
         self.width.max(self.height)
     }
 
-    pub fn scaled(self, rhs: T) -> Self {
-        Self::new(self.width * rhs, self.height * rhs)
+    pub fn scaled(self, coeff: T) -> Self {
+        self * coeff
     }
 
-    pub fn scaled_by_vec2(self, rhs: Vec2<T>) -> Self {
-        Self::new(self.width * rhs.dx, self.height * rhs.dy)
+    pub fn scale_width(self, coeff: T) -> Self {
+        Self::new(self.width * coeff, self.height)
     }
 
-    pub fn fit_width(self, rhs: T) -> Size<T> {
-        Self::new(rhs, self.height * rhs / self.width)
+    pub fn scale_height(self, coeff: T) -> Self {
+        Self::new(self.width, self.height * coeff)
     }
 
-    pub fn fit_height(self, rhs: T) -> Size<T> {
-        Self::new(self.width * rhs / self.height, rhs)
+    pub fn scale_by_vec2(self, scale: Vec2<T>) -> Self {
+        self.scale_width(scale.dx).scale_height(scale.dy)
+    }
+
+    pub fn fit_width(self, width_to_fit: T) -> Size<T> {
+        Self::new(width_to_fit, self.height * width_to_fit / self.width)
+    }
+
+    pub fn fit_height(self, height_to_fit: T) -> Size<T> {
+        Self::new(self.width * height_to_fit / self.height, height_to_fit)
     }
 
     pub fn fill(self, rhs: Size<T>) -> Size<T> {
@@ -112,11 +124,21 @@ impl<T: OrdinaryNum> Size<T> {
         Self::new(width, height)
     }
 
-    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Size<U> {
+    pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Size<U> {
         Size::new(f(self.width), f(self.height))
     }
 
-    pub fn into_vec2(self) -> Vec2<T> {
+    impl_casts_and_cast!(Size);
+
+    pub fn to_array(self) -> [T; 2] {
+        [self.width, self.height]
+    }
+
+    pub fn to_tuple(self) -> (T, T) {
+        (self.width, self.height)
+    }
+
+    pub fn to_vec2(self) -> Vec2<T> {
         Vec2::from(self)
     }
 }
@@ -174,8 +196,8 @@ impl<T: OrdinaryNum> RemAssign<T> for Size<T> {
 }
 
 impl<T: OrdinaryNum> From<Vec2<T>> for Size<T> {
-    fn from(vector: Vec2<T>) -> Self {
-        Self::new(vector.dx, vector.dy)
+    fn from(vec2: Vec2<T>) -> Self {
+        Self::new(vec2.dx, vec2.dy)
     }
 }
 

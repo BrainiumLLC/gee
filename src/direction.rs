@@ -1,5 +1,4 @@
-use crate::Angle;
-use num_traits::{Float, FloatConst};
+use crate::{Angle, OrdinaryFloat, Vec2};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, ops::Neg};
@@ -12,6 +11,29 @@ pub enum Cardinal {
     East,
     South,
     West,
+}
+
+impl Cardinal {
+    pub fn angle<T: OrdinaryFloat>(self) -> Angle<T> {
+        Direction::from(self).angle()
+    }
+
+    pub fn unit_vec2<T: OrdinaryFloat>(self) -> Vec2<T> {
+        Direction::from(self).unit_vec2()
+    }
+}
+
+impl Neg for Cardinal {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        use Cardinal::*;
+        match self {
+            North => South,
+            South => North,
+            East => West,
+            West => East,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -27,20 +49,8 @@ pub enum Direction {
     Northwest,
 }
 
-impl Cardinal {
-    pub fn angle<T: Float + FloatConst>(self) -> Angle<T> {
-        use Cardinal::*;
-        match self {
-            North => Angle::FRAC_PI_2(),
-            South => Angle::FRAC_3PI_2(),
-            East => Angle::ZERO(),
-            West => Angle::PI(),
-        }
-    }
-}
-
 impl Direction {
-    pub fn angle<T: Float + FloatConst>(self) -> Angle<T> {
+    pub fn angle<T: OrdinaryFloat>(self) -> Angle<T> {
         use Direction::*;
         match self {
             North => Angle::FRAC_PI_2(),
@@ -53,18 +63,9 @@ impl Direction {
             Northwest => Angle::FRAC_3PI_4(),
         }
     }
-}
 
-impl Neg for Cardinal {
-    type Output = Self;
-    fn neg(self) -> Self::Output {
-        use Cardinal::*;
-        match self {
-            North => South,
-            South => North,
-            East => West,
-            West => East,
-        }
+    pub fn unit_vec2<T: OrdinaryFloat>(self) -> Vec2<T> {
+        self.angle().unit_vec2()
     }
 }
 

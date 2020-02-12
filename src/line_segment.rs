@@ -1,8 +1,6 @@
-use crate::{Point, Ray, Vec2};
-use num_traits::Float;
+use crate::{OrdinaryFloat, OrdinaryNum, Point, Ray, Vec2};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::Sub;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -12,33 +10,26 @@ pub struct LineSegment<T> {
     pub to:   Point<T>,
 }
 
-impl<T> LineSegment<T> {
+impl<T: OrdinaryNum> LineSegment<T> {
     pub fn new(from: Point<T>, to: Point<T>) -> Self {
         Self { from, to }
     }
 
-    pub fn length(self) -> T
+    pub fn length(&self) -> T
     where
-        T: Float,
+        T: OrdinaryFloat,
     {
         (self.to - self.from).magnitude()
     }
-}
 
-impl<T: Copy> LineSegment<T>
-where
-    Point<T>: Sub<Output = Vec2<T>>,
-{
-    pub fn vector(&self) -> Vec2<T> {
-        self.from - self.to
+    pub fn vec2(&self) -> Vec2<T> {
+        self.to - self.from
     }
-}
 
-impl<T: Float> LineSegment<T>
-where
-    Point<T>: Sub<Output = Vec2<T>>,
-{
-    pub fn ray(&self) -> Ray<T> {
-        Ray::new(self.from, self.vector().angle())
+    pub fn ray(&self) -> Ray<T>
+    where
+        T: OrdinaryFloat,
+    {
+        Ray::new(self.from, self.vec2().angle())
     }
 }

@@ -1,10 +1,13 @@
-use crate::{cast, LineSegment, OrdinaryNum, Point, Size, Vec2};
+use crate::{
+    cast, HorizontalLocation, LineSegment, OrdinaryFloat, OrdinaryNum, Point, RectLocation,
+    RectPosition, Size, Vec2, VerticalLocation,
+};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
     fmt::Debug,
-    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign},
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -35,12 +38,27 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 
     pub fn new(top: T, right: T, bottom: T, left: T) -> Self {
-        Self::try_new(top, right, bottom, left)
-            .expect("invalid Rect (left > right and/or top > bottom)")
+        if cfg!(not(feature = "unchecked-ctors")) {
+            Self::try_new(top, right, bottom, left)
+                .expect("invalid Rect (left > right and/or top > bottom)")
+        } else {
+            Self::new(top, right, bottom, left)
+        }
     }
 
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero(), T::zero(), T::zero())
+    }
+
+    pub fn with_position(rect_position: RectPosition<T>, size: Size<T>) -> Rect<T> {
+        let width = size.width();
+        let height = size.height();
+        Rect::new(
+            rect_position.top_with_height(height),
+            rect_position.right_with_width(width),
+            rect_position.bottom_with_height(height),
+            rect_position.left_with_width(width),
+        )
     }
 
     pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
@@ -237,7 +255,10 @@ impl<T: OrdinaryNum> Rect<T> {
         Size::new(self.width(), self.height())
     }
 
-    pub fn aspect_ratio(&self) -> T {
+    pub fn aspect_ratio(&self) -> T
+    where
+        T: OrdinaryFloat,
+    {
         self.size().aspect_ratio()
     }
 
@@ -253,12 +274,26 @@ impl<T: OrdinaryNum> Rect<T> {
         (self.top..self.bottom).contains(&y)
     }
 
-    pub fn contains(&self, point: &Point<T>) -> bool {
+    pub fn contains(&self, point: Point<T>) -> bool {
         self.contains_x(point.x) && self.contains_y(point.y)
     }
 
-    pub fn map<U: OrdinaryNum, F: Fn(T) -> U>(self, f: F) -> Rect<U> {
-        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
+    pub fn point_at(&self, location: RectLocation) -> Point<T> {
+        let x = match location.horizontal {
+            HorizontalLocation::Left => self.left(),
+            HorizontalLocation::Center => self.center_x(),
+            HorizontalLocation::Right => self.right(),
+        };
+        let y = match location.vertical {
+            VerticalLocation::Top => self.top(),
+            VerticalLocation::Center => self.center_y(),
+            VerticalLocation::Bottom => self.bottom(),
+        };
+        Point::new(x, y)
+    }
+
+    pub fn position_at(&self, location: RectLocation) -> RectPosition<T> {
+        RectPosition::new(location, self.point_at(location))
     }
 
     pub fn split_at_x(&self, x: T) -> Option<(Self, Self)> {
@@ -312,39 +347,21 @@ impl<T: OrdinaryNum> Rect<T> {
         self.padded_horiz_and_vert(pad, pad)
     }
 
-    pub fn scaled_from_top(&self, scale: T) -> Self {
-        Self::new(
-            self.top,
-            self.right,
-            self.top + self.height() * scale,
-            self.left,
+    pub fn resize(&self, fixed_location: RectLocation, size: Size<T>) -> Self {
+        Self::with_position(self.position_at(fixed_location), size)
+    }
+
+    pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
+        self.resize(
+            fixed_location | VerticalLocation::Top,
+            self.size().scale_width(scale),
         )
     }
 
-    pub fn scaled_from_bottom(&self, scale: T) -> Self {
-        Self::new(
-            self.bottom - self.height() * scale,
-            self.right,
-            self.bottom,
-            self.left,
-        )
-    }
-
-    pub fn scaled_from_left(&self, scale: T) -> Self {
-        Self::new(
-            self.top,
-            self.left + self.width() * scale,
-            self.bottom,
-            self.left,
-        )
-    }
-
-    pub fn scaled_from_right(&self, scale: T) -> Self {
-        Self::new(
-            self.top,
-            self.right,
-            self.bottom,
-            self.right - self.width() * scale,
+    pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
+        self.resize(
+            HorizontalLocation::Left | fixed_location,
+            self.size().scale_height(scale),
         )
     }
 
@@ -372,9 +389,9 @@ impl<T: OrdinaryNum> Rect<T> {
 
     pub fn union(&self, other: &Self) -> Self {
         let top = self.top.min(other.top);
-        let left = self.left.min(other.left);
-        let bottom = self.bottom.max(other.bottom);
         let right = self.right.max(other.right);
+        let bottom = self.bottom.max(other.bottom);
+        let left = self.left.min(other.left);
 
         // We are guaranteed a canonical rectangle if both inputs are canonical.
         Self::new_unchecked(top, left, bottom, right)
@@ -384,7 +401,7 @@ impl<T: OrdinaryNum> Rect<T> {
         self.width_slice_with_margin(num_items, index, T::zero())
     }
 
-    pub fn width_slices(self, num_items: usize) -> impl Iterator<Item = Self> {
+    pub fn width_slices(&self, num_items: usize) -> impl Iterator<Item = Self> {
         self.width_slices_with_margin(num_items, T::zero())
     }
 
@@ -392,12 +409,12 @@ impl<T: OrdinaryNum> Rect<T> {
         self.height_slice_with_margin(num_items, index, T::zero())
     }
 
-    pub fn height_slices(self, num_items: usize) -> impl Iterator<Item = Self> {
+    pub fn height_slices(&self, num_items: usize) -> impl Iterator<Item = Self> {
         self.height_slices_with_margin(num_items, T::zero())
     }
 
     pub fn width_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
-        let num_items = cast::num(num_items);
+        let num_items: T = cast::num(num_items);
         let index: T = cast::num(index);
         let total_margin = num_items * margin + margin;
         let items_width = self.width() - total_margin;
@@ -407,17 +424,18 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 
     pub fn width_slices_with_margin(
-        self,
+        &self,
         num_items: usize,
         margin: T,
     ) -> impl Iterator<Item = Self> {
+        let this = *self;
         (0..num_items)
             .into_iter()
-            .map(move |i| self.width_slice_with_margin(num_items, i, margin))
+            .map(move |i| this.width_slice_with_margin(num_items, i, margin))
     }
 
     pub fn height_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
-        let num_items = cast::num(num_items);
+        let num_items: T = cast::num(num_items);
         let index: T = cast::num(index);
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
@@ -427,49 +445,63 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 
     pub fn height_slices_with_margin(
-        self,
+        &self,
         num_items: usize,
         margin: T,
     ) -> impl Iterator<Item = Self> {
+        let this = *self;
         (0..num_items)
             .into_iter()
-            .map(move |i| self.height_slice_with_margin(num_items, i, margin))
+            .map(move |i| this.height_slice_with_margin(num_items, i, margin))
     }
 
     pub fn grid_slices(
-        self,
+        &self,
         num_items: Size<usize>,
     ) -> impl Iterator<Item = impl Iterator<Item = Self>> {
         self.grid_slices_with_margin(num_items, T::zero(), T::zero())
     }
 
     pub fn grid_slices_with_margin(
-        self,
+        &self,
         num_items: Size<usize>,
         margin_x: T,
         margin_y: T,
     ) -> impl Iterator<Item = impl Iterator<Item = Self>> {
-        self.width_slices_with_margin(num_items.width(), margin_x)
-            .map(move |x| x.height_slices_with_margin(num_items.height(), margin_y))
+        self.height_slices_with_margin(num_items.height(), margin_y)
+            .map(move |x| x.width_slices_with_margin(num_items.width(), margin_x))
     }
 
-    pub fn grid_cells(self, num_items: Size<usize>) -> impl Iterator<Item = (Point<usize>, Self)> {
+    pub fn grid_cells(&self, num_items: Size<usize>) -> impl Iterator<Item = (Point<usize>, Self)> {
         self.grid_cells_with_margin(num_items, T::zero(), T::zero())
     }
 
     pub fn grid_cells_with_margin(
-        self,
+        &self,
         num_items: Size<usize>,
         margin_x: T,
         margin_y: T,
     ) -> impl Iterator<Item = (Point<usize>, Self)> {
         self.grid_slices_with_margin(num_items, margin_x, margin_y)
             .enumerate()
-            .flat_map(|(x, column)| {
-                column
-                    .enumerate()
-                    .map(move |(y, cell)| (Point::new(x, y), cell))
+            .flat_map(|(y, row)| {
+                row.enumerate()
+                    .map(move |(x, cell)| (Point::new(x, y), cell))
             })
+    }
+
+    pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
+        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
+    }
+
+    impl_casts_and_cast!(Rect);
+
+    pub fn to_clockwise_array(self) -> [T; 4] {
+        [self.top, self.right, self.bottom, self.left]
+    }
+
+    pub fn to_clockwise_tuple(self) -> (T, T, T, T) {
+        (self.top, self.right, self.bottom, self.left)
     }
 }
 
@@ -488,6 +520,24 @@ impl<T: OrdinaryNum> Add<Vec2<T>> for Rect<T> {
 impl<T: OrdinaryNum> AddAssign<Vec2<T>> for Rect<T> {
     fn add_assign(&mut self, rhs: Vec2<T>) {
         *self = *self + rhs
+    }
+}
+
+impl<T: OrdinaryNum> Sub<Vec2<T>> for Rect<T> {
+    type Output = Self;
+    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+        Rect::new(
+            self.top - rhs.dy,
+            self.right - rhs.dx,
+            self.bottom - rhs.dy,
+            self.left - rhs.dx,
+        )
+    }
+}
+
+impl<T: OrdinaryNum> SubAssign<Vec2<T>> for Rect<T> {
+    fn sub_assign(&mut self, rhs: Vec2<T>) {
+        *self = *self - rhs
     }
 }
 
@@ -531,14 +581,14 @@ impl<T: OrdinaryNum> RemAssign<T> for Rect<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: Add<Output = T> + Copy> From<euclid::Rect<T>> for Rect<T> {
+impl<T: OrdinaryNum> From<euclid::Rect<T>> for Rect<T> {
     fn from(rect: euclid::Rect<T>) -> Self {
         Rect::with_top_left(rect.origin.into(), rect.size.into())
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: Copy + Sub<Output = T>> Into<euclid::Rect<T>> for Rect<T> {
+impl<T: OrdinaryNum> Into<euclid::Rect<T>> for Rect<T> {
     fn into(self) -> euclid::Rect<T> {
         euclid::Rect::new(self.top_left().into(), self.size().into())
     }
