@@ -22,6 +22,14 @@ impl<T: OrdinaryNum> Point<T> {
         Self::new(T::zero(), T::zero())
     }
 
+    pub fn reposition_x(self, x: T) -> Self {
+        Self::new(x, self.y)
+    }
+
+    pub fn reposition_y(self, y: T) -> Self {
+        Self::new(self.x, y)
+    }
+
     pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Point<U> {
         Point::new(f(self.x), f(self.x))
     }

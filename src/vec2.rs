@@ -20,6 +20,18 @@ impl<T: OrdinaryNum> Vec2<T> {
         Vec2 { dx, dy }
     }
 
+    pub fn uniform(d: T) -> Self {
+        Self::new(d, d)
+    }
+
+    pub fn from_dx(dx: T) -> Self {
+        Vec2 { dx, dy: T::zero() }
+    }
+
+    pub fn from_dy(dy: T) -> Self {
+        Vec2 { dx: T::zero(), dy }
+    }
+
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero())
     }

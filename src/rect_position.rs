@@ -137,6 +137,14 @@ impl RectLocation {
         HorizontalLocation::Right | VerticalLocation::Bottom
     }
 
+    pub fn relocate_horizontal(&self, horizontal: HorizontalLocation) -> Self {
+        Self::new(horizontal, self.vertical)
+    }
+
+    pub fn relocate_vertical(&self, vertical: VerticalLocation) -> Self {
+        Self::new(self.horizontal, vertical)
+    }
+
     pub fn point_from_rect<T: OrdinaryNum>(&self, rect: &Rect<T>) -> Point<T> {
         rect.point_at(*self)
     }
@@ -234,6 +242,42 @@ impl<T: OrdinaryNum> RectPosition<T> {
         Self::bottom_right(rect.bottom_right())
     }
 
+    pub fn relocate(&self, location: RectLocation) -> Self {
+        Self::new(location, self.point)
+    }
+
+    pub fn relocate_horizontal(&self, horizontal: HorizontalLocation) -> Self {
+        self.relocate(self.location.relocate_horizontal(horizontal))
+    }
+
+    pub fn relocate_vertical(&self, vertical: VerticalLocation) -> Self {
+        self.relocate(self.location.relocate_vertical(vertical))
+    }
+
+    pub fn reposition(&self, point: Point<T>) -> Self {
+        Self::new(self.location, point)
+    }
+
+    pub fn reposition_x(&self, x: T) -> Self {
+        self.reposition(self.point.reposition_x(x))
+    }
+
+    pub fn reposition_y(&self, y: T) -> Self {
+        self.reposition(self.point.reposition_y(y))
+    }
+
+    pub fn translate(&self, offset: Vec2<T>) -> Self {
+        *self + offset
+    }
+
+    pub fn translate_x(&self, offset_x: T) -> Self {
+        *self + Vec2::from_dx(offset_x)
+    }
+
+    pub fn translate_y(&self, offset_y: T) -> Self {
+        *self + Vec2::from_dy(offset_y)
+    }
+
     pub fn left_with_width(&self, width: T) -> T {
         use HorizontalLocation::*;
         assert!(width >= T::zero(), "invalid value for width: {:?}", width);
@@ -243,6 +287,7 @@ impl<T: OrdinaryNum> RectPosition<T> {
             Right => self.point.x - width,
         }
     }
+
     pub fn center_x_with_width(&self, width: T) -> T {
         use HorizontalLocation::*;
         assert!(width >= T::zero(), "invalid value for width: {:?}", width);
@@ -252,6 +297,7 @@ impl<T: OrdinaryNum> RectPosition<T> {
             Right => self.point.x - width.halved(),
         }
     }
+
     pub fn right_with_width(&self, width: T) -> T {
         use HorizontalLocation::*;
         assert!(width >= T::zero(), "invalid value for width: {:?}", width);
@@ -275,6 +321,7 @@ impl<T: OrdinaryNum> RectPosition<T> {
             Bottom => self.point.y - height,
         }
     }
+
     pub fn center_y_with_height(&self, height: T) -> T {
         use VerticalLocation::*;
         assert!(
@@ -288,6 +335,7 @@ impl<T: OrdinaryNum> RectPosition<T> {
             Bottom => self.point.y - height.halved(),
         }
     }
+
     pub fn bottom_with_height(&self, height: T) -> T {
         use VerticalLocation::*;
         assert!(

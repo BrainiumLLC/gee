@@ -77,20 +77,28 @@ impl<T: OrdinaryNum> Size<T> {
         self.width.max(self.height)
     }
 
-    pub fn scaled(self, coeff: T) -> Self {
-        self * coeff
+    pub fn resize_width(self, width: T) -> Self {
+        Self::new(width, self.height)
+    }
+
+    pub fn resize_height(self, height: T) -> Self {
+        Self::new(self.width, height)
+    }
+
+    pub fn scale(self, scale: Vec2<T>) -> Self {
+        self.scale_width(scale.dx).scale_height(scale.dy)
     }
 
     pub fn scale_width(self, coeff: T) -> Self {
-        Self::new(self.width * coeff, self.height)
+        self.resize_width(self.width * coeff)
     }
 
     pub fn scale_height(self, coeff: T) -> Self {
-        Self::new(self.width, self.height * coeff)
+        self.resize_height(self.height * coeff)
     }
 
-    pub fn scale_by_vec2(self, scale: Vec2<T>) -> Self {
-        self.scale_width(scale.dx).scale_height(scale.dy)
+    pub fn scale_uniform(self, coeff: T) -> Self {
+        self * coeff
     }
 
     pub fn fit_width(self, width_to_fit: T) -> Size<T> {
@@ -104,7 +112,7 @@ impl<T: OrdinaryNum> Size<T> {
     pub fn fill(self, rhs: Size<T>) -> Size<T> {
         let width = rhs.width / self.width;
         let height = rhs.height / self.height;
-        self.scaled(width.max(height))
+        self.scale_uniform(width.max(height))
     }
 
     /// Downscales the size to fit within `rhs` while preserving aspect ratio.

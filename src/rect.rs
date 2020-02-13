@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
     fmt::Debug,
-    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign},
+    ops::{Add, AddAssign, Sub, SubAssign},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -347,22 +347,76 @@ impl<T: OrdinaryNum> Rect<T> {
         self.padded_horiz_and_vert(pad, pad)
     }
 
-    pub fn resize(&self, fixed_location: RectLocation, size: Size<T>) -> Self {
+    pub fn resize(&self, size: Size<T>, fixed_location: RectLocation) -> Self {
         Self::with_position(self.position_at(fixed_location), size)
     }
 
-    pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
+    pub fn resize_width(&self, width: T, fixed_location: HorizontalLocation) -> Self {
         self.resize(
+            self.size().resize_width(width),
             fixed_location | VerticalLocation::Top,
-            self.size().scale_width(scale),
         )
     }
 
-    pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
+    pub fn resize_height(&self, height: T, fixed_location: VerticalLocation) -> Self {
         self.resize(
+            self.size().resize_height(height),
             HorizontalLocation::Left | fixed_location,
-            self.size().scale_height(scale),
         )
+    }
+
+    pub fn resize_uniform(&self, dim: T, fixed_location: RectLocation) -> Self {
+        self.resize(Size::square(dim), fixed_location)
+    }
+
+    pub fn reposition(&self, position: RectPosition<T>) -> Self {
+        Self::with_position(position, self.size())
+    }
+
+    pub fn reposition_x(&self, new_x: T, location: HorizontalLocation) -> Self {
+        self.reposition(
+            self.position_at(location | VerticalLocation::Top)
+                .reposition_x(new_x),
+        )
+    }
+
+    pub fn reposition_y(&self, new_y: T, location: VerticalLocation) -> Self {
+        self.reposition(
+            self.position_at(HorizontalLocation::Left | location)
+                .reposition_y(new_y),
+        )
+    }
+
+    pub fn scale(&self, scale: Vec2<T>, fixed_location: RectLocation) -> Self {
+        self.resize(self.size().scale(scale), fixed_location)
+    }
+
+    pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
+        self.map_width(fixed_location, move |width| width * scale)
+    }
+
+    pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
+        self.map_height(fixed_location, move |height| height * scale)
+    }
+
+    pub fn scale_uniform(&self, scale: T, fixed_location: RectLocation) -> Self {
+        self.resize(self.size().scale_uniform(scale), fixed_location)
+    }
+
+    pub fn translate(&self, offset: Vec2<T>) -> Self {
+        *self + offset
+    }
+
+    pub fn translate_x(&self, offset_x: T) -> Self {
+        self.translate(Vec2::from_dx(offset_x))
+    }
+
+    pub fn translate_y(&self, offset_y: T) -> Self {
+        self.translate(Vec2::from_dy(offset_y))
+    }
+
+    pub fn translate_uniform(&self, offset: T) -> Self {
+        self.translate(Vec2::uniform(offset))
     }
 
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
@@ -490,6 +544,22 @@ impl<T: OrdinaryNum> Rect<T> {
             })
     }
 
+    pub fn map_size(
+        self,
+        fixed_location: RectLocation,
+        f: impl FnOnce(Size<T>) -> Size<T>,
+    ) -> Self {
+        self.resize(f(self.size()), fixed_location)
+    }
+
+    pub fn map_width(self, fixed_location: HorizontalLocation, f: impl FnOnce(T) -> T) -> Self {
+        self.resize_width(f(self.width()), fixed_location)
+    }
+
+    pub fn map_height(self, fixed_location: VerticalLocation, f: impl FnOnce(T) -> T) -> Self {
+        self.resize_height(f(self.height()), fixed_location)
+    }
+
     pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
         Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
     }
@@ -538,45 +608,6 @@ impl<T: OrdinaryNum> Sub<Vec2<T>> for Rect<T> {
 impl<T: OrdinaryNum> SubAssign<Vec2<T>> for Rect<T> {
     fn sub_assign(&mut self, rhs: Vec2<T>) {
         *self = *self - rhs
-    }
-}
-
-impl<T: OrdinaryNum> Mul<T> for Rect<T> {
-    type Output = Self;
-    fn mul(self, rhs: T) -> Self::Output {
-        self.map(move |x| x * rhs)
-    }
-}
-
-impl<T: OrdinaryNum> MulAssign<T> for Rect<T> {
-    fn mul_assign(&mut self, rhs: T) {
-        *self = *self * rhs
-    }
-}
-
-impl<T: OrdinaryNum> Div<T> for Rect<T> {
-    type Output = Self;
-    fn div(self, rhs: T) -> Self::Output {
-        self.map(move |x| x / rhs)
-    }
-}
-
-impl<T: OrdinaryNum> DivAssign<T> for Rect<T> {
-    fn div_assign(&mut self, rhs: T) {
-        *self = *self / rhs
-    }
-}
-
-impl<T: OrdinaryNum> Rem<T> for Rect<T> {
-    type Output = Self;
-    fn rem(self, rhs: T) -> Self::Output {
-        self.map(move |x| x % rhs)
-    }
-}
-
-impl<T: OrdinaryNum> RemAssign<T> for Rect<T> {
-    fn rem_assign(&mut self, rhs: T) {
-        *self = *self % rhs
     }
 }
 
