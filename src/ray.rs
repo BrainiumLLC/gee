@@ -49,7 +49,7 @@ where
         self.intersection(line_segment.ray())
             .filter(|intersection| {
                 line_segment.vector().magnitude_squared()
-                    <= (*intersection - self.point).magnitude_squared()
+                    >= (*intersection - line_segment.from).magnitude_squared()
             })
     }
 }

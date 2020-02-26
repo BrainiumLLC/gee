@@ -30,7 +30,7 @@ where
     Point<T>: Sub<Output = Vec2<T>>,
 {
     pub fn vector(&self) -> Vec2<T> {
-        self.from - self.to
+        self.to - self.from
     }
 }
 
