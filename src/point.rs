@@ -1,7 +1,7 @@
 use crate::vec2::Vec2;
 #[cfg(feature = "euclid")]
 use euclid::Point2D;
-use num_traits::Zero;
+use num_traits::{Zero, Float};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
@@ -17,6 +17,10 @@ pub struct Point<T> {
 impl<T> Point<T> {
     pub fn new(x: T, y: T) -> Self {
         Point { x, y }
+    }
+
+    pub fn move_to_by(self, to: Self, by: T) -> Self where T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Float {
+        self + (to - self).normalized() * by
     }
 
     pub fn into_vec2(self) -> Vec2<T> {
