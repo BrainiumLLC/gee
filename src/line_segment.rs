@@ -23,6 +23,10 @@ impl<T> LineSegment<T> {
     {
         (self.to - self.from).magnitude()
     }
+
+    pub fn map<U>(self, mut f: impl FnMut(Point<T>) -> Point<U>) -> LineSegment<U> {
+        LineSegment::new(f(self.from), f(self.to))
+    }
 }
 
 impl<T: Copy> LineSegment<T>
