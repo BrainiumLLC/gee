@@ -8,8 +8,7 @@ mod circle;
 mod direction;
 mod lerp;
 mod line_segment;
-mod mat3x2;
-mod mat4;
+mod transform;
 mod max;
 mod min;
 mod ordinary_num;
@@ -19,16 +18,16 @@ mod rect;
 mod rect_position;
 mod size;
 mod vector;
-mod vec3;
-mod vec4;
 
 #[cfg(feature = "euclid")]
 pub use euclid;
 
+#[cfg(feature = "nalgebra-glm")]
+pub use nalgebra_glm;
+
 pub use self::{
-    angle::*, circle::*, direction::*, lerp::*, line_segment::*, mat3x2::*, mat4::*, max::*,
-    min::*, ordinary_num::*, point::*, ray::*, rect::*, rect_position::*, size::*, vector::*,
-    vec3::*, vec4::*,
+    angle::*, circle::*, direction::*, lerp::*, line_segment::*, transform::*, max::*, min::*,
+    ordinary_num::*, point::*, ray::*, rect::*, rect_position::*, size::*, vector::*,
 };
 
 #[cfg(test)]

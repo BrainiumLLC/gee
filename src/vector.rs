@@ -1,6 +1,4 @@
-use crate::{Angle, Cardinal, Direction, OrdinaryFloat, OrdinaryNum, Point, Size, Vec3, Vec4};
-#[cfg(feature = "euclid")]
-use euclid::Vector2D;
+use crate::{Angle, Cardinal, Direction, OrdinaryFloat, OrdinaryNum, Point, Size};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{
@@ -34,14 +32,6 @@ impl<T: OrdinaryNum> Vector<T> {
 
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero())
-    }
-
-    pub fn from_vec3(vec3: Vec3<T>) -> Self {
-        Self::new(vec3.dx, vec3.dy)
-    }
-
-    pub fn from_vec4(vec4: Vec4<T>) -> Self {
-        Self::new(vec4.dx, vec4.dy)
     }
 
     pub fn dot_product(self, rhs: Self) -> T {
@@ -115,14 +105,6 @@ impl<T: OrdinaryNum> Vector<T> {
 
     pub fn to_size(self) -> Size<T> {
         self.into()
-    }
-
-    pub fn to_vec3(self) -> Vec3<T> {
-        Vec3::new(self.dx, self.dy, T::zero())
-    }
-
-    pub fn to_vec4(self) -> Vec4<T> {
-        Vec4::new(self.dx, self.dy, T::zero(), T::zero())
     }
 }
 
@@ -235,15 +217,29 @@ impl<T: OrdinaryNum> From<Cardinal> for Vector<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> From<Vector2D<T>> for Vector<T> {
-    fn from(vector: Vector2D<T>) -> Self {
+impl<T: OrdinaryNum> From<euclid::Vector2D<T>> for Vector<T> {
+    fn from(vector: euclid::Vector2D<T>) -> Self {
         Self::new(vector.x, vector.y)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> Into<Vector2D<T>> for Vector<T> {
-    fn into(self) -> Vector2D<T> {
-        Vector2D::new(self.dx, self.dy)
+impl<T: OrdinaryNum> Into<euclid::Vector2D<T>> for Vector<T> {
+    fn into(self) -> euclid::Vector2D<T> {
+        euclid::Vector2D::new(self.dx, self.dy)
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + OrdinaryNum> From<nalgebra_glm::TVec2<T>> for Vector<T> {
+    fn from(vector: nalgebra_glm::TVec2<T>) -> Self {
+        Self::new(vector.x, vector.y)
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + OrdinaryNum> Into<nalgebra_glm::TVec2<T>> for Vector<T> {
+    fn into(self) -> nalgebra_glm::TVec2<T> {
+        nalgebra_glm::vec2(self.dx, self.dy)
     }
 }

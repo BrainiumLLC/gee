@@ -1,6 +1,4 @@
-use crate::{Angle, Mat4, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
-#[cfg(feature = "euclid")]
-use euclid::Transform2D;
+use crate::{Angle, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::Neg;
@@ -8,7 +6,7 @@ use std::ops::Neg;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
-pub struct Mat3x2<T> {
+pub struct Transform<T> {
     pub m11: T,
     pub m12: T,
     pub m21: T,
@@ -17,13 +15,13 @@ pub struct Mat3x2<T> {
     pub m32: T,
 }
 
-impl<T: OrdinaryNum> Default for Mat3x2<T> {
+impl<T: OrdinaryNum> Default for Transform<T> {
     fn default() -> Self {
         Self::identity()
     }
 }
 
-impl<T: OrdinaryNum> Mat3x2<T> {
+impl<T: OrdinaryNum> Transform<T> {
     pub fn row_major(m11: T, m12: T, m21: T, m22: T, m31: T, m32: T) -> Self {
         Self {
             m11,
@@ -128,11 +126,11 @@ impl<T: OrdinaryNum> Mat3x2<T> {
     }
 
     pub fn post_scale(&self, x: T, y: T) -> Self {
-        self.post_mul(&Mat3x2::create_scale(x, y))
+        self.post_mul(&Self::create_scale(x, y))
     }
 
     pub fn pre_scale(&self, x: T, y: T) -> Self {
-        self.pre_mul(&Mat3x2::create_scale(x, y))
+        self.pre_mul(&Self::create_scale(x, y))
     }
 
     pub fn post_rotate(&self, theta: Angle<T>) -> Self
@@ -169,32 +167,11 @@ impl<T: OrdinaryNum> Mat3x2<T> {
             inv_det * (self.m31 * self.m12 - self.m11 * self.m32),
         ))
     }
-
-    pub fn to_mat4(self) -> Mat4<T> {
-        Mat4::row_major(
-            self.m11,
-            self.m12,
-            T::zero(),
-            T::zero(),
-            self.m21,
-            self.m22,
-            T::zero(),
-            T::zero(),
-            T::zero(),
-            T::zero(),
-            T::one(),
-            T::zero(),
-            self.m31,
-            self.m32,
-            T::zero(),
-            T::one(),
-        )
-    }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> From<Transform2D<T>> for Mat3x2<T> {
-    fn from(transform: Transform2D<T>) -> Self {
+impl<T: OrdinaryNum> From<euclid::Transform2D<T>> for Transform<T> {
+    fn from(transform: euclid::Transform2D<T>) -> Self {
         Self::row_major(
             transform.m11,
             transform.m12,
@@ -207,9 +184,30 @@ impl<T: OrdinaryNum> From<Transform2D<T>> for Mat3x2<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> Into<Transform2D<T>> for Mat3x2<T> {
-    fn into(self) -> Transform2D<T> {
-        Transform2D::row_major(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
+impl<T: OrdinaryNum> Into<euclid::Transform2D<T>> for Transform<T> {
+    fn into(self) -> euclid::Transform2D<T> {
+        euclid::Transform2D::row_major(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + OrdinaryNum> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
+    fn from(transform: nalgebra_glm::TMat3x2<T>) -> Self {
+        Self::row_major(
+            transform.m11,
+            transform.m12,
+            transform.m21,
+            transform.m22,
+            transform.m31,
+            transform.m32,
+        )
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + OrdinaryNum> Into<nalgebra_glm::TMat3x2<T>> for Transform<T> {
+    fn into(self) -> nalgebra_glm::TMat3x2<T> {
+        nalgebra_glm::mat3x2(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
     }
 }
 
@@ -221,11 +219,11 @@ mod test {
     #[test]
     fn rotation() {
         let original = Vector::new(1.0, 1.0).normalized();
-        let rotated = Mat3x2::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
+        let rotated = Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
-        let rotated = Mat3x2::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
+        let rotated = Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }
