@@ -121,7 +121,7 @@ impl<T: OrdinaryNum> Mat4<T> {
         let yy = y * y;
         let zz = z * z;
 
-        let half_theta = theta.radians / _2;
+        let half_theta = theta.radians() / _2;
         let sc = half_theta.sin() * half_theta.cos();
         let sq = half_theta.sin() * half_theta.sin();
 
@@ -224,7 +224,7 @@ impl<T: OrdinaryNum> Mat4<T> {
     {
         let (_0, _1): (T, T) = (T::zero(), T::one());
         let _2 = _1 + _1;
-        let f = (fov.radians / _2).tan().recip();
+        let f = (fov.radians() / _2).tan().recip();
         let depth = near - far;
         Self::row_major(
             f / aspect,

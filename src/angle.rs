@@ -7,7 +7,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(transparent)]
 pub struct Angle<T> {
-    pub radians: T,
+    radians: T,
 }
 
 #[allow(non_snake_case)]
@@ -65,7 +65,7 @@ impl<T: OrdinaryFloat> Angle<T> {
     }
 
     pub fn from_radians(radians: T) -> Self {
-        Angle { radians }
+        Self { radians }
     }
 
     /// Returns an `Angle` in the range `(-PI,PI]`.
@@ -78,6 +78,10 @@ impl<T: OrdinaryFloat> Angle<T> {
         let tau = Self::TAU().radians;
         let radians = self.radians - tau * ((self.radians + Self::PI().radians) / tau).floor();
         Self::from_radians(radians)
+    }
+
+    pub fn radians(self) -> T {
+        self.radians
     }
 
     pub fn unit_vec2(self) -> Vec2<T> {
