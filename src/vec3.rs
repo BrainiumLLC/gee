@@ -1,4 +1,4 @@
-use crate::{OrdinaryFloat, OrdinaryNum, Vec2, Vec4};
+use crate::{OrdinaryFloat, OrdinaryNum, Vector, Vec4};
 #[cfg(feature = "euclid")]
 use euclid::Vector3D;
 #[cfg(feature = "serde")]
@@ -19,8 +19,8 @@ impl<T: OrdinaryNum> Vec3<T> {
         Vec3 { dx, dy, dz }
     }
 
-    pub fn from_vec2(vec2: Vec2<T>) -> Self {
-        Self::new(vec2.dx, vec2.dy, T::zero())
+    pub fn from_vector(vector: Vector<T>) -> Self {
+        Self::new(vector.dx, vector.dy, T::zero())
     }
 
     pub fn from_vec4(vec4: Vec4<T>) -> Self {
@@ -59,8 +59,8 @@ impl<T: OrdinaryNum> Vec3<T> {
 
     impl_casts_and_cast!(Vec3);
 
-    pub fn to_vec2(self) -> Vec2<T> {
-        Vec2::new(self.dx, self.dy)
+    pub fn to_vector(self) -> Vector<T> {
+        Vector::new(self.dx, self.dy)
     }
 
     pub fn to_vec4(self) -> Vec4<T> {

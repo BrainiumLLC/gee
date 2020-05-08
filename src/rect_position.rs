@@ -1,4 +1,4 @@
-use crate::{OrdinaryNum, Point, Rect, Size, Vec2};
+use crate::{OrdinaryNum, Point, Rect, Size, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, BitOr, Neg, Sub, SubAssign};
@@ -266,16 +266,16 @@ impl<T: OrdinaryNum> RectPosition<T> {
         self.reposition(self.point.reposition_y(y))
     }
 
-    pub fn translate(&self, offset: Vec2<T>) -> Self {
+    pub fn translate(&self, offset: Vector<T>) -> Self {
         *self + offset
     }
 
     pub fn translate_x(&self, offset_x: T) -> Self {
-        *self + Vec2::from_dx(offset_x)
+        *self + Vector::from_dx(offset_x)
     }
 
     pub fn translate_y(&self, offset_y: T) -> Self {
-        *self + Vec2::from_dy(offset_y)
+        *self + Vector::from_dy(offset_y)
     }
 
     pub fn left_with_width(&self, width: T) -> T {
@@ -355,9 +355,9 @@ impl<T: OrdinaryNum> RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> Add<Vec2<T>> for RectPosition<T> {
+impl<T: OrdinaryNum> Add<Vector<T>> for RectPosition<T> {
     type Output = Self;
-    fn add(self, rhs: Vec2<T>) -> Self::Output {
+    fn add(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point + rhs,
@@ -365,15 +365,15 @@ impl<T: OrdinaryNum> Add<Vec2<T>> for RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vec2<T>> for RectPosition<T> {
-    fn add_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> AddAssign<Vector<T>> for RectPosition<T> {
+    fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vec2<T>> for RectPosition<T> {
+impl<T: OrdinaryNum> Sub<Vector<T>> for RectPosition<T> {
     type Output = Self;
-    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
             location: self.location,
             point:    self.point - rhs,
@@ -381,8 +381,8 @@ impl<T: OrdinaryNum> Sub<Vec2<T>> for RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vec2<T>> for RectPosition<T> {
-    fn sub_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> SubAssign<Vector<T>> for RectPosition<T> {
+    fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }
@@ -468,8 +468,8 @@ mod test {
         let bottom = 4.0;
         let rect = Rect::new(top, right, bottom, left);
 
-        let width_offset: Vec2<f64> = Vec2::new(rect.width(), 0.0);
-        let height_offset: Vec2<f64> = Vec2::new(0.0, rect.height());
+        let width_offset: Vector<f64> = Vector::new(rect.width(), 0.0);
+        let height_offset: Vector<f64> = Vector::new(0.0, rect.height());
         let size_offset = width_offset + height_offset;
         assert_eq!(
             (RectPosition::top_left_from_rect(rect) + size_offset).point,

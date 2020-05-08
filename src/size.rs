@@ -1,4 +1,4 @@
-use crate::{OrdinaryNum, Vec2};
+use crate::{OrdinaryNum, Vector};
 #[cfg(feature = "euclid")]
 use euclid::Size2D;
 #[cfg(feature = "serde")]
@@ -85,7 +85,7 @@ impl<T: OrdinaryNum> Size<T> {
         Self::new(self.width, height)
     }
 
-    pub fn scale(self, scale: Vec2<T>) -> Self {
+    pub fn scale(self, scale: Vector<T>) -> Self {
         self.scale_width(scale.dx).scale_height(scale.dy)
     }
 
@@ -146,8 +146,8 @@ impl<T: OrdinaryNum> Size<T> {
         (self.width, self.height)
     }
 
-    pub fn to_vec2(self) -> Vec2<T> {
-        Vec2::from(self)
+    pub fn to_vector(self) -> Vector<T> {
+        Vector::from(self)
     }
 }
 
@@ -203,9 +203,9 @@ impl<T: OrdinaryNum> RemAssign<T> for Size<T> {
     }
 }
 
-impl<T: OrdinaryNum> From<Vec2<T>> for Size<T> {
-    fn from(vec2: Vec2<T>) -> Self {
-        Self::new(vec2.dx, vec2.dy)
+impl<T: OrdinaryNum> From<Vector<T>> for Size<T> {
+    fn from(vector: Vector<T>) -> Self {
+        Self::new(vector.dx, vector.dy)
     }
 }
 

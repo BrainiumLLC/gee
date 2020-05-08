@@ -1,4 +1,4 @@
-use crate::{OrdinaryNum, Vec2};
+use crate::{OrdinaryNum, Vector};
 #[cfg(feature = "euclid")]
 use euclid::Point2D;
 #[cfg(feature = "serde")]
@@ -44,40 +44,40 @@ impl<T: OrdinaryNum> Point<T> {
         (self.x, self.y)
     }
 
-    pub fn to_vec2(self) -> Vec2<T> {
-        Vec2::new(self.x, self.y)
+    pub fn to_vector(self) -> Vector<T> {
+        Vector::new(self.x, self.y)
     }
 }
 
-impl<T: OrdinaryNum> Add<Vec2<T>> for Point<T> {
+impl<T: OrdinaryNum> Add<Vector<T>> for Point<T> {
     type Output = Self;
-    fn add(self, rhs: Vec2<T>) -> Self::Output {
+    fn add(self, rhs: Vector<T>) -> Self::Output {
         Point::new(self.x + rhs.dx, self.y + rhs.dy)
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vec2<T>> for Point<T> {
-    fn add_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> AddAssign<Vector<T>> for Point<T> {
+    fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vec2<T>> for Point<T> {
+impl<T: OrdinaryNum> Sub<Vector<T>> for Point<T> {
     type Output = Self;
-    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
         Point::new(self.x - rhs.dx, self.y - rhs.dy)
     }
 }
 
 impl<T: OrdinaryNum> Sub<Point<T>> for Point<T> {
-    type Output = Vec2<T>;
+    type Output = Vector<T>;
     fn sub(self, rhs: Point<T>) -> Self::Output {
-        Vec2::new(self.x - rhs.x, self.y - rhs.y)
+        Vector::new(self.x - rhs.x, self.y - rhs.y)
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vec2<T>> for Point<T> {
-    fn sub_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> SubAssign<Vector<T>> for Point<T> {
+    fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }

@@ -1,4 +1,4 @@
-use crate::{OrdinaryFloat, OrdinaryNum, Point, Ray, Vec2};
+use crate::{OrdinaryFloat, OrdinaryNum, Point, Ray, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +22,7 @@ impl<T: OrdinaryNum> LineSegment<T> {
         (self.to - self.from).magnitude()
     }
 
-    pub fn vec2(&self) -> Vec2<T> {
+    pub fn vector(&self) -> Vector<T> {
         self.to - self.from
     }
 
@@ -30,6 +30,6 @@ impl<T: OrdinaryNum> LineSegment<T> {
     where
         T: OrdinaryFloat,
     {
-        Ray::new(self.from, self.vec2().angle())
+        Ray::new(self.from, self.vector().angle())
     }
 }

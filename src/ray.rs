@@ -1,4 +1,4 @@
-use crate::{Angle, LineSegment, OrdinaryFloat, OrdinaryNum, Point, Vec2};
+use crate::{Angle, LineSegment, OrdinaryFloat, OrdinaryNum, Point, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -21,8 +21,8 @@ impl<T: OrdinaryNum> Ray<T> {
     {
         // adapted from https://stackoverflow.com/a/2932601
         let d = other.point - self.point;
-        let self_unit = self.unit_vec2();
-        let other_unit = other.unit_vec2();
+        let self_unit = self.unit_vector();
+        let other_unit = other.unit_vector();
         let det = other_unit.dx * self_unit.dy - other_unit.dy * self_unit.dx;
         let u = (d.dy * other_unit.dx - d.dx * other_unit.dy) / det;
         let v = (d.dy * self_unit.dx - d.dx * self_unit.dy) / det;
@@ -39,15 +39,15 @@ impl<T: OrdinaryNum> Ray<T> {
     {
         self.intersection(line_segment.ray())
             .filter(|intersection| {
-                line_segment.vec2().magnitude_squared()
+                line_segment.vector().magnitude_squared()
                     <= (*intersection - self.point).magnitude_squared()
             })
     }
 
-    pub fn unit_vec2(&self) -> Vec2<T>
+    pub fn unit_vector(&self) -> Vector<T>
     where
         T: OrdinaryFloat,
     {
-        self.angle.unit_vec2()
+        self.angle.unit_vector()
     }
 }

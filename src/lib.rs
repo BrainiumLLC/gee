@@ -18,7 +18,7 @@ mod ray;
 mod rect;
 mod rect_position;
 mod size;
-mod vec2;
+mod vector;
 mod vec3;
 mod vec4;
 
@@ -27,7 +27,7 @@ pub use euclid;
 
 pub use self::{
     angle::*, circle::*, direction::*, lerp::*, line_segment::*, mat3x2::*, mat4::*, max::*,
-    min::*, ordinary_num::*, point::*, ray::*, rect::*, rect_position::*, size::*, vec2::*,
+    min::*, ordinary_num::*, point::*, ray::*, rect::*, rect_position::*, size::*, vector::*,
     vec3::*, vec4::*,
 };
 

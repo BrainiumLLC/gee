@@ -1,6 +1,6 @@
 use crate::{
     cast, HorizontalLocation, LineSegment, OrdinaryFloat, OrdinaryNum, Point, RectLocation,
-    RectPosition, Size, Vec2, VerticalLocation,
+    RectPosition, Size, Vector, VerticalLocation,
 };
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -387,7 +387,7 @@ impl<T: OrdinaryNum> Rect<T> {
         )
     }
 
-    pub fn scale(&self, scale: Vec2<T>, fixed_location: RectLocation) -> Self {
+    pub fn scale(&self, scale: Vector<T>, fixed_location: RectLocation) -> Self {
         self.resize(self.size().scale(scale), fixed_location)
     }
 
@@ -403,20 +403,20 @@ impl<T: OrdinaryNum> Rect<T> {
         self.resize(self.size().scale_uniform(scale), fixed_location)
     }
 
-    pub fn translate(&self, offset: Vec2<T>) -> Self {
+    pub fn translate(&self, offset: Vector<T>) -> Self {
         *self + offset
     }
 
     pub fn translate_x(&self, offset_x: T) -> Self {
-        self.translate(Vec2::from_dx(offset_x))
+        self.translate(Vector::from_dx(offset_x))
     }
 
     pub fn translate_y(&self, offset_y: T) -> Self {
-        self.translate(Vec2::from_dy(offset_y))
+        self.translate(Vector::from_dy(offset_y))
     }
 
     pub fn translate_uniform(&self, offset: T) -> Self {
-        self.translate(Vec2::uniform(offset))
+        self.translate(Vector::uniform(offset))
     }
 
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
@@ -575,9 +575,9 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> Add<Vec2<T>> for Rect<T> {
+impl<T: OrdinaryNum> Add<Vector<T>> for Rect<T> {
     type Output = Self;
-    fn add(self, rhs: Vec2<T>) -> Self::Output {
+    fn add(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
             self.top + rhs.dy,
             self.right + rhs.dx,
@@ -587,15 +587,15 @@ impl<T: OrdinaryNum> Add<Vec2<T>> for Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vec2<T>> for Rect<T> {
-    fn add_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> AddAssign<Vector<T>> for Rect<T> {
+    fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vec2<T>> for Rect<T> {
+impl<T: OrdinaryNum> Sub<Vector<T>> for Rect<T> {
     type Output = Self;
-    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
             self.top - rhs.dy,
             self.right - rhs.dx,
@@ -605,8 +605,8 @@ impl<T: OrdinaryNum> Sub<Vec2<T>> for Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vec2<T>> for Rect<T> {
-    fn sub_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> SubAssign<Vector<T>> for Rect<T> {
+    fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }

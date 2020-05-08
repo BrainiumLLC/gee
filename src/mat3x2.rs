@@ -1,4 +1,4 @@
-use crate::{Angle, Mat4, OrdinaryFloat, OrdinaryNum, Point, Rect, Vec2};
+use crate::{Angle, Mat4, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
 #[cfg(feature = "euclid")]
 use euclid::Transform2D;
 #[cfg(feature = "serde")]
@@ -82,13 +82,13 @@ impl<T: OrdinaryNum> Mat3x2<T> {
     }
 
     pub fn transform_point(&self, point: &Point<T>) -> Point<T> {
-        self.transform_vec2(&point.to_vec2()).to_point()
+        self.transform_vector(&point.to_vector()).to_point()
     }
 
-    pub fn transform_vec2(&self, vec2: &Vec2<T>) -> Vec2<T> {
-        Vec2::new(
-            vec2.dx * self.m11 + vec2.dy * self.m21,
-            vec2.dx * self.m12 + vec2.dy * self.m22,
+    pub fn transform_vector(&self, vector: &Vector<T>) -> Vector<T> {
+        Vector::new(
+            vector.dx * self.m11 + vector.dy * self.m21,
+            vector.dx * self.m12 + vector.dy * self.m22,
         )
     }
 
@@ -220,12 +220,12 @@ mod test {
 
     #[test]
     fn rotation() {
-        let original = Vec2::new(1.0, 1.0).normalized();
-        let rotated = Mat3x2::create_rotation(Angle::from_degrees(-45.0)).transform_vec2(&original);
+        let original = Vector::new(1.0, 1.0).normalized();
+        let rotated = Mat3x2::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
-        let rotated = Mat3x2::create_rotation(Angle::from_degrees(45.0)).transform_vec2(&original);
+        let rotated = Mat3x2::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }

@@ -1,4 +1,4 @@
-use crate::{cast, OrdinaryFloat, Vec2};
+use crate::{cast, OrdinaryFloat, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -84,9 +84,9 @@ impl<T: OrdinaryFloat> Angle<T> {
         self.radians
     }
 
-    pub fn unit_vec2(self) -> Vec2<T> {
+    pub fn unit_vector(self) -> Vector<T> {
         let (y, x) = self.radians.sin_cos();
-        Vec2::new(x, y)
+        Vector::new(x, y)
     }
 
     pub fn sin(self) -> T {

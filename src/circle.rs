@@ -1,4 +1,4 @@
-use crate::{cast, Angle, OrdinaryFloat, OrdinaryNum, Point, Rect, Vec2};
+use crate::{cast, Angle, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -66,7 +66,7 @@ impl<T: OrdinaryNum> Circle<T> {
     }
 
     pub fn bounding_rect(&self) -> Rect<T> {
-        let radius_offset: Vec2<T> = Vec2::new(self.radius, self.radius);
+        let radius_offset: Vector<T> = Vector::new(self.radius, self.radius);
         let top_left = self.center - radius_offset;
         let bottom_right = self.center + radius_offset;
         Rect::from_points(top_left, bottom_right)
@@ -86,7 +86,7 @@ impl<T: OrdinaryNum> Circle<T> {
         let steps_float = T::from(steps).unwrap();
         let increment = (end_angle - start_angle) / steps_float;
         (0..steps).map(move |index| {
-            let unit = (increment * cast::num(index) + start_angle).unit_vec2();
+            let unit = (increment * cast::num(index) + start_angle).unit_vector();
             center + unit * radius
         })
     }
@@ -122,30 +122,30 @@ impl<T: OrdinaryNum> Circle<T> {
     impl_casts!(Circle);
 }
 
-impl<T: OrdinaryNum> Add<Vec2<T>> for Circle<T> {
+impl<T: OrdinaryNum> Add<Vector<T>> for Circle<T> {
     type Output = Self;
-    fn add(self, rhs: Vec2<T>) -> Self::Output {
+    fn add(self, rhs: Vector<T>) -> Self::Output {
         // radius unmodified
         Circle::new_unchecked(self.center + rhs, self.radius)
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vec2<T>> for Circle<T> {
-    fn add_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> AddAssign<Vector<T>> for Circle<T> {
+    fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vec2<T>> for Circle<T> {
+impl<T: OrdinaryNum> Sub<Vector<T>> for Circle<T> {
     type Output = Self;
-    fn sub(self, rhs: Vec2<T>) -> Self::Output {
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
         // radius unmodified
         Circle::new_unchecked(self.center + rhs, self.radius)
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vec2<T>> for Circle<T> {
-    fn sub_assign(&mut self, rhs: Vec2<T>) {
+impl<T: OrdinaryNum> SubAssign<Vector<T>> for Circle<T> {
+    fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }
