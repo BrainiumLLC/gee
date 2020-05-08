@@ -1,4 +1,4 @@
-use crate::{Angle, OrdinaryFloat, Vector};
+use crate::{Angle, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{convert::TryFrom, ops::Neg};
@@ -14,11 +14,11 @@ pub enum Cardinal {
 }
 
 impl Cardinal {
-    pub fn angle<T: OrdinaryFloat>(self) -> Angle<T> {
+    pub fn angle<T: en::Float>(self) -> Angle<T> {
         Direction::from(self).angle()
     }
 
-    pub fn unit_vector<T: OrdinaryFloat>(self) -> Vector<T> {
+    pub fn unit_vector<T: en::Float>(self) -> Vector<T> {
         Direction::from(self).unit_vector()
     }
 }
@@ -50,7 +50,7 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn angle<T: OrdinaryFloat>(self) -> Angle<T> {
+    pub fn angle<T: en::Float>(self) -> Angle<T> {
         use Direction::*;
         match self {
             North => Angle::FRAC_PI_2(),
@@ -64,7 +64,7 @@ impl Direction {
         }
     }
 
-    pub fn unit_vector<T: OrdinaryFloat>(self) -> Vector<T> {
+    pub fn unit_vector<T: en::Float>(self) -> Vector<T> {
         self.angle().unit_vector()
     }
 }

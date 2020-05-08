@@ -1,4 +1,4 @@
-use crate::{OrdinaryNum, Vector};
+use crate::Vector;
 #[cfg(feature = "euclid")]
 use euclid::Size2D;
 #[cfg(feature = "serde")]
@@ -12,7 +12,7 @@ pub struct Size<T> {
     height: T,
 }
 
-impl<T: OrdinaryNum> Size<T> {
+impl<T: en::Num> Size<T> {
     pub fn new_unchecked(width: T, height: T) -> Self {
         Self { width, height }
     }
@@ -132,7 +132,7 @@ impl<T: OrdinaryNum> Size<T> {
         Self::new(width, height)
     }
 
-    pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Size<U> {
+    pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Size<U> {
         Size::new(f(self.width), f(self.height))
     }
 
@@ -151,73 +151,73 @@ impl<T: OrdinaryNum> Size<T> {
     }
 }
 
-impl<T: OrdinaryNum> Add for Size<T> {
+impl<T: en::Num> Add for Size<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.width + rhs.width, self.height + rhs.height)
     }
 }
 
-impl<T: OrdinaryNum> AddAssign for Size<T> {
+impl<T: en::Num> AddAssign for Size<T> {
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Mul<T> for Size<T> {
+impl<T: en::Num> Mul<T> for Size<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self::Output {
         self.map(move |x| x * rhs)
     }
 }
 
-impl<T: OrdinaryNum> MulAssign<T> for Size<T> {
+impl<T: en::Num> MulAssign<T> for Size<T> {
     fn mul_assign(&mut self, rhs: T) {
         *self = *self * rhs
     }
 }
 
-impl<T: OrdinaryNum> Div<T> for Size<T> {
+impl<T: en::Num> Div<T> for Size<T> {
     type Output = Self;
     fn div(self, rhs: T) -> Self::Output {
         self.map(move |x| x / rhs)
     }
 }
 
-impl<T: OrdinaryNum> DivAssign<T> for Size<T> {
+impl<T: en::Num> DivAssign<T> for Size<T> {
     fn div_assign(&mut self, rhs: T) {
         *self = *self / rhs
     }
 }
 
-impl<T: OrdinaryNum> Rem<T> for Size<T> {
+impl<T: en::Num> Rem<T> for Size<T> {
     type Output = Self;
     fn rem(self, rhs: T) -> Self::Output {
         self.map(move |x| x % rhs)
     }
 }
 
-impl<T: OrdinaryNum> RemAssign<T> for Size<T> {
+impl<T: en::Num> RemAssign<T> for Size<T> {
     fn rem_assign(&mut self, rhs: T) {
         *self = *self % rhs
     }
 }
 
-impl<T: OrdinaryNum> From<Vector<T>> for Size<T> {
+impl<T: en::Num> From<Vector<T>> for Size<T> {
     fn from(vector: Vector<T>) -> Self {
         Self::new(vector.dx, vector.dy)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> From<Size2D<T>> for Size<T> {
+impl<T: en::Num> From<Size2D<T>> for Size<T> {
     fn from(size: Size2D<T>) -> Self {
         Self::new(size.width, size.height)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> Into<Size2D<T>> for Size<T> {
+impl<T: en::Num> Into<Size2D<T>> for Size<T> {
     fn into(self) -> Size2D<T> {
         Size2D::new(self.width, self.height)
     }

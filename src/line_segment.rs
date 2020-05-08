@@ -1,4 +1,4 @@
-use crate::{OrdinaryFloat, OrdinaryNum, Point, Ray, Vector};
+use crate::{Point, Ray, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -10,14 +10,14 @@ pub struct LineSegment<T> {
     pub to:   Point<T>,
 }
 
-impl<T: OrdinaryNum> LineSegment<T> {
+impl<T: en::Num> LineSegment<T> {
     pub fn new(from: Point<T>, to: Point<T>) -> Self {
         Self { from, to }
     }
 
     pub fn length(&self) -> T
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         (self.to - self.from).magnitude()
     }
@@ -28,7 +28,7 @@ impl<T: OrdinaryNum> LineSegment<T> {
 
     pub fn ray(&self) -> Ray<T>
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         Ray::new(self.from, self.vector().angle())
     }

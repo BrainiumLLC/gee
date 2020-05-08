@@ -1,4 +1,4 @@
-use crate::{OrdinaryNum, Point, Rect, Size, Vector};
+use crate::{Point, Rect, Size, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, BitOr, Neg, Sub, SubAssign};
@@ -145,11 +145,11 @@ impl RectLocation {
         Self::new(self.horizontal, vertical)
     }
 
-    pub fn point_from_rect<T: OrdinaryNum>(&self, rect: &Rect<T>) -> Point<T> {
+    pub fn point_from_rect<T: en::Num>(&self, rect: &Rect<T>) -> Point<T> {
         rect.point_at(*self)
     }
 
-    pub fn position_from_rect<T: OrdinaryNum>(&self, rect: &Rect<T>) -> RectPosition<T> {
+    pub fn position_from_rect<T: en::Num>(&self, rect: &Rect<T>) -> RectPosition<T> {
         rect.position_at(*self)
     }
 }
@@ -161,7 +161,7 @@ pub struct RectPosition<T> {
     pub point:    Point<T>,
 }
 
-impl<T: OrdinaryNum> RectPosition<T> {
+impl<T: en::Num> RectPosition<T> {
     pub fn new(location: RectLocation, point: Point<T>) -> Self {
         Self { location, point }
     }
@@ -355,7 +355,7 @@ impl<T: OrdinaryNum> RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> Add<Vector<T>> for RectPosition<T> {
+impl<T: en::Num> Add<Vector<T>> for RectPosition<T> {
     type Output = Self;
     fn add(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
@@ -365,13 +365,13 @@ impl<T: OrdinaryNum> Add<Vector<T>> for RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vector<T>> for RectPosition<T> {
+impl<T: en::Num> AddAssign<Vector<T>> for RectPosition<T> {
     fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vector<T>> for RectPosition<T> {
+impl<T: en::Num> Sub<Vector<T>> for RectPosition<T> {
     type Output = Self;
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
@@ -381,7 +381,7 @@ impl<T: OrdinaryNum> Sub<Vector<T>> for RectPosition<T> {
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vector<T>> for RectPosition<T> {
+impl<T: en::Num> SubAssign<Vector<T>> for RectPosition<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }

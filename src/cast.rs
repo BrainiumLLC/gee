@@ -1,24 +1,7 @@
-use num_traits::{NumCast, ToPrimitive};
-use std::{any::type_name, fmt::Debug};
-
-#[cold]
-fn cast_num_fail<T, U: Debug>(value: U) -> ! {
-    panic!(
-        "cast failed: value {:?} of type `{}` could not be represented by type `{}`",
-        value,
-        type_name::<U>(),
-        type_name::<T>(),
-    )
-}
-
-pub fn num<T: NumCast, U: Copy + Debug + ToPrimitive>(n: U) -> T {
-    T::from(n).unwrap_or_else(move || cast_num_fail::<T, U>(n))
-}
-
 macro_rules! impl_casts_and_cast {
     ($hkt:ident) => {
-        pub fn cast<U: OrdinaryNum>(self) -> $hkt<U> {
-            self.map($crate::cast::num)
+        pub fn cast<U: en::Num>(self) -> $hkt<U> {
+            self.map(en::cast)
         }
 
         impl_casts!($hkt);

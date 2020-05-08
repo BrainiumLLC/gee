@@ -1,4 +1,4 @@
-use crate::{Angle, LineSegment, OrdinaryFloat, OrdinaryNum, Point, Vector};
+use crate::{Angle, LineSegment, Point, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -10,14 +10,14 @@ pub struct Ray<T> {
     pub angle: Angle<T>,
 }
 
-impl<T: OrdinaryNum> Ray<T> {
+impl<T: en::Num> Ray<T> {
     pub fn new(point: Point<T>, angle: Angle<T>) -> Self {
         Ray { point, angle }
     }
 
     pub fn intersection(&self, other: Self) -> Option<Point<T>>
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         // adapted from https://stackoverflow.com/a/2932601
         let d = other.point - self.point;
@@ -35,7 +35,7 @@ impl<T: OrdinaryNum> Ray<T> {
 
     pub fn line_segment_intersection(&self, line_segment: LineSegment<T>) -> Option<Point<T>>
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.intersection(line_segment.ray())
             .filter(|intersection| {
@@ -46,7 +46,7 @@ impl<T: OrdinaryNum> Ray<T> {
 
     pub fn unit_vector(&self) -> Vector<T>
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.angle.unit_vector()
     }

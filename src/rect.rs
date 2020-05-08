@@ -1,6 +1,6 @@
 use crate::{
-    cast, HorizontalLocation, LineSegment, OrdinaryFloat, OrdinaryNum, Point, RectLocation,
-    RectPosition, Size, Vector, VerticalLocation,
+    HorizontalLocation, LineSegment, Point, RectLocation, RectPosition, Size,
+    Vector, VerticalLocation,
 };
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,7 @@ pub struct Rect<T> {
     left:   T,
 }
 
-impl<T: OrdinaryNum> Rect<T> {
+impl<T: en::Num> Rect<T> {
     pub fn new_unchecked(top: T, right: T, bottom: T, left: T) -> Self {
         Self {
             top,
@@ -257,7 +257,7 @@ impl<T: OrdinaryNum> Rect<T> {
 
     pub fn aspect_ratio(&self) -> T
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.size().aspect_ratio()
     }
@@ -468,8 +468,8 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 
     pub fn width_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
-        let num_items: T = cast::num(num_items);
-        let index: T = cast::num(index);
+        let num_items: T = en::cast(num_items);
+        let index: T = en::cast(index);
         let total_margin = num_items * margin + margin;
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
@@ -489,8 +489,8 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 
     pub fn height_slice_with_margin(&self, num_items: usize, index: usize, margin: T) -> Self {
-        let num_items: T = cast::num(num_items);
-        let index: T = cast::num(index);
+        let num_items: T = en::cast(num_items);
+        let index: T = en::cast(index);
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
@@ -560,7 +560,7 @@ impl<T: OrdinaryNum> Rect<T> {
         self.resize_height(f(self.height()), fixed_location)
     }
 
-    pub fn map<U: OrdinaryNum>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
+    pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
         Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
     }
 
@@ -575,7 +575,7 @@ impl<T: OrdinaryNum> Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> Add<Vector<T>> for Rect<T> {
+impl<T: en::Num> Add<Vector<T>> for Rect<T> {
     type Output = Self;
     fn add(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
@@ -587,13 +587,13 @@ impl<T: OrdinaryNum> Add<Vector<T>> for Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vector<T>> for Rect<T> {
+impl<T: en::Num> AddAssign<Vector<T>> for Rect<T> {
     fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vector<T>> for Rect<T> {
+impl<T: en::Num> Sub<Vector<T>> for Rect<T> {
     type Output = Self;
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
@@ -605,21 +605,21 @@ impl<T: OrdinaryNum> Sub<Vector<T>> for Rect<T> {
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vector<T>> for Rect<T> {
+impl<T: en::Num> SubAssign<Vector<T>> for Rect<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> From<euclid::Rect<T>> for Rect<T> {
+impl<T: en::Num> From<euclid::Rect<T>> for Rect<T> {
     fn from(rect: euclid::Rect<T>) -> Self {
         Rect::with_top_left(rect.origin.into(), rect.size.into())
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> Into<euclid::Rect<T>> for Rect<T> {
+impl<T: en::Num> Into<euclid::Rect<T>> for Rect<T> {
     fn into(self) -> euclid::Rect<T> {
         euclid::Rect::new(self.top_left().into(), self.size().into())
     }

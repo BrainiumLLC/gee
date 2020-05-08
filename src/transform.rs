@@ -1,4 +1,4 @@
-use crate::{Angle, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
+use crate::{Angle, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::Neg;
@@ -15,13 +15,13 @@ pub struct Transform<T> {
     pub m32: T,
 }
 
-impl<T: OrdinaryNum> Default for Transform<T> {
+impl<T: en::Num> Default for Transform<T> {
     fn default() -> Self {
         Self::identity()
     }
 }
 
-impl<T: OrdinaryNum> Transform<T> {
+impl<T: en::Num> Transform<T> {
     pub fn row_major(m11: T, m12: T, m21: T, m22: T, m31: T, m32: T) -> Self {
         Self {
             m11,
@@ -64,7 +64,7 @@ impl<T: OrdinaryNum> Transform<T> {
 
     pub fn create_rotation(theta: Angle<T>) -> Self
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         let _0 = T::zero();
         let (sin, cos) = theta.sin_cos();
@@ -92,7 +92,7 @@ impl<T: OrdinaryNum> Transform<T> {
 
     pub fn transform_rect(&self, rect: &Rect<T>) -> Rect<T>
     where
-        T: OrdinaryNum,
+        T: en::Num,
     {
         Rect::from_points_iter(&[
             self.transform_point(&rect.top_left()),
@@ -135,14 +135,14 @@ impl<T: OrdinaryNum> Transform<T> {
 
     pub fn post_rotate(&self, theta: Angle<T>) -> Self
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.post_mul(&Self::create_rotation(theta))
     }
 
     pub fn pre_rotate(&self, theta: Angle<T>) -> Self
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.pre_mul(&Self::create_rotation(theta))
     }
@@ -170,7 +170,7 @@ impl<T: OrdinaryNum> Transform<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> From<euclid::Transform2D<T>> for Transform<T> {
+impl<T: en::Num> From<euclid::Transform2D<T>> for Transform<T> {
     fn from(transform: euclid::Transform2D<T>) -> Self {
         Self::row_major(
             transform.m11,
@@ -184,14 +184,14 @@ impl<T: OrdinaryNum> From<euclid::Transform2D<T>> for Transform<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: OrdinaryNum> Into<euclid::Transform2D<T>> for Transform<T> {
+impl<T: en::Num> Into<euclid::Transform2D<T>> for Transform<T> {
     fn into(self) -> euclid::Transform2D<T> {
         euclid::Transform2D::row_major(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
     }
 }
 
 #[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + OrdinaryNum> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
+impl<T: 'static + en::Num> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
     fn from(transform: nalgebra_glm::TMat3x2<T>) -> Self {
         Self::row_major(
             transform.m11,
@@ -205,7 +205,7 @@ impl<T: 'static + OrdinaryNum> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
 }
 
 #[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + OrdinaryNum> Into<nalgebra_glm::TMat3x2<T>> for Transform<T> {
+impl<T: 'static + en::Num> Into<nalgebra_glm::TMat3x2<T>> for Transform<T> {
     fn into(self) -> nalgebra_glm::TMat3x2<T> {
         nalgebra_glm::mat3x2(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
     }

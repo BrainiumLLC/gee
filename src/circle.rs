@@ -1,4 +1,4 @@
-use crate::{cast, Angle, OrdinaryFloat, OrdinaryNum, Point, Rect, Vector};
+use crate::{Angle, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -10,13 +10,13 @@ pub struct Circle<T> {
     radius: T,
 }
 
-impl<T: OrdinaryNum> Default for Circle<T> {
+impl<T: en::Num> Default for Circle<T> {
     fn default() -> Self {
         Self::unit()
     }
 }
 
-impl<T: OrdinaryNum> Circle<T> {
+impl<T: en::Num> Circle<T> {
     pub fn new_unchecked(center: Point<T>, radius: T) -> Self {
         Self { center, radius }
     }
@@ -79,14 +79,14 @@ impl<T: OrdinaryNum> Circle<T> {
         end_angle: Angle<T>,
     ) -> impl Iterator<Item = Point<T>> + Clone
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         let radius = self.radius;
         let center = self.center;
         let steps_float = T::from(steps).unwrap();
         let increment = (end_angle - start_angle) / steps_float;
         (0..steps).map(move |index| {
-            let unit = (increment * cast::num(index) + start_angle).unit_vector();
+            let unit = (increment * en::cast(index) + start_angle).unit_vector();
             center + unit * radius
         })
     }
@@ -97,12 +97,12 @@ impl<T: OrdinaryNum> Circle<T> {
         start_angle: Angle<T>,
     ) -> impl Iterator<Item = Point<T>> + Clone
     where
-        T: OrdinaryFloat,
+        T: en::Float,
     {
         self.arc_points(steps, start_angle, start_angle + Angle::TAU())
     }
 
-    pub fn map<U: OrdinaryNum>(self, f: impl FnOnce(Point<T>, T) -> (Point<U>, U)) -> Circle<U> {
+    pub fn map<U: en::Num>(self, f: impl FnOnce(Point<T>, T) -> (Point<U>, U)) -> Circle<U> {
         let (center, radius) = f(self.center, self.radius);
         Circle::new(center, radius)
     }
@@ -115,14 +115,14 @@ impl<T: OrdinaryNum> Circle<T> {
         self.map(move |center, radius| (center, f(radius)))
     }
 
-    pub fn cast<U: OrdinaryNum>(self) -> Circle<U> {
-        self.map(move |center, radius| (center.cast(), cast::num(radius)))
+    pub fn cast<U: en::Num>(self) -> Circle<U> {
+        self.map(move |center, radius| (center.cast(), en::cast(radius)))
     }
 
     impl_casts!(Circle);
 }
 
-impl<T: OrdinaryNum> Add<Vector<T>> for Circle<T> {
+impl<T: en::Num> Add<Vector<T>> for Circle<T> {
     type Output = Self;
     fn add(self, rhs: Vector<T>) -> Self::Output {
         // radius unmodified
@@ -130,13 +130,13 @@ impl<T: OrdinaryNum> Add<Vector<T>> for Circle<T> {
     }
 }
 
-impl<T: OrdinaryNum> AddAssign<Vector<T>> for Circle<T> {
+impl<T: en::Num> AddAssign<Vector<T>> for Circle<T> {
     fn add_assign(&mut self, rhs: Vector<T>) {
         *self = *self + rhs
     }
 }
 
-impl<T: OrdinaryNum> Sub<Vector<T>> for Circle<T> {
+impl<T: en::Num> Sub<Vector<T>> for Circle<T> {
     type Output = Self;
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         // radius unmodified
@@ -144,46 +144,46 @@ impl<T: OrdinaryNum> Sub<Vector<T>> for Circle<T> {
     }
 }
 
-impl<T: OrdinaryNum> SubAssign<Vector<T>> for Circle<T> {
+impl<T: en::Num> SubAssign<Vector<T>> for Circle<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
     }
 }
 
-impl<T: OrdinaryNum> Mul<T> for Circle<T> {
+impl<T: en::Num> Mul<T> for Circle<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self::Output {
         Circle::new(self.center * rhs, self.radius * rhs)
     }
 }
 
-impl<T: OrdinaryNum> MulAssign<T> for Circle<T> {
+impl<T: en::Num> MulAssign<T> for Circle<T> {
     fn mul_assign(&mut self, rhs: T) {
         *self = *self * rhs
     }
 }
 
-impl<T: OrdinaryNum> Div<T> for Circle<T> {
+impl<T: en::Num> Div<T> for Circle<T> {
     type Output = Self;
     fn div(self, rhs: T) -> Self::Output {
         Circle::new(self.center / rhs, self.radius / rhs)
     }
 }
 
-impl<T: OrdinaryNum> DivAssign<T> for Circle<T> {
+impl<T: en::Num> DivAssign<T> for Circle<T> {
     fn div_assign(&mut self, rhs: T) {
         *self = *self / rhs
     }
 }
 
-impl<T: OrdinaryNum> Rem<T> for Circle<T> {
+impl<T: en::Num> Rem<T> for Circle<T> {
     type Output = Self;
     fn rem(self, rhs: T) -> Self::Output {
         Circle::new(self.center % rhs, self.radius % rhs)
     }
 }
 
-impl<T: OrdinaryNum> RemAssign<T> for Circle<T> {
+impl<T: en::Num> RemAssign<T> for Circle<T> {
     fn rem_assign(&mut self, rhs: T) {
         *self = *self % rhs
     }
