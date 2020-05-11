@@ -47,6 +47,10 @@ impl<T: en::Num> Point<T> {
     pub fn to_vector(self) -> Vector<T> {
         Vector::new(self.x, self.y)
     }
+
+    pub fn move_to_by(self, to: Self, by: T) -> Self where T: en::Float {
+        self + (to - self).normalized() * by
+    }
 }
 
 impl<T: en::Num> Add<Vector<T>> for Point<T> {

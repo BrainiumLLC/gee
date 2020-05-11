@@ -22,6 +22,10 @@ impl<T: en::Num> LineSegment<T> {
         (self.to - self.from).magnitude()
     }
 
+    pub fn map<U: en::Num>(self, mut f: impl FnMut(Point<T>) -> Point<U>) -> LineSegment<U> {
+        LineSegment::new(f(self.from), f(self.to))
+    }
+
     pub fn vector(&self) -> Vector<T> {
         self.to - self.from
     }
