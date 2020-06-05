@@ -1,7 +1,6 @@
 use crate::{Angle, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::Neg;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -44,20 +43,6 @@ impl<T: en::Num> Transform<T> {
         )
     }
 
-    pub fn ortho(left: T, right: T, bottom: T, top: T) -> Self
-    where
-        T: Neg<Output = T>,
-    {
-        let tx = -((right + left) / (right - left));
-        let ty = -((top + bottom) / (top - bottom));
-
-        let (_0, _1): (T, T) = (T::zero(), T::one());
-        let _2 = _1 + _1;
-        let sx = _2 / (right - left);
-        let sy = _2 / (top - bottom);
-        Self::row_major(sx, _0, _0, sy, tx, ty)
-    }
-
     pub fn create_scale(x: T, y: T) -> Self {
         Self::row_major(x, T::zero(), T::zero(), y, T::zero(), T::zero())
     }
@@ -66,9 +51,8 @@ impl<T: en::Num> Transform<T> {
     where
         T: en::Float,
     {
-        let _0 = T::zero();
         let (sin, cos) = theta.sin_cos();
-        Self::row_major(cos, sin, _0 - sin, cos, _0, _0)
+        Self::row_major(cos, -sin, sin, cos, T::zero(), T::zero())
     }
 
     pub fn create_translation(x: T, y: T) -> Self {
@@ -170,8 +154,8 @@ impl<T: en::Num> Transform<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> From<euclid::Transform2D<T>> for Transform<T> {
-    fn from(transform: euclid::Transform2D<T>) -> Self {
+impl<T: en::Num, Src, Dst> From<euclid::Transform2D<T, Src, Dst>> for Transform<T> {
+    fn from(transform: euclid::Transform2D<T, Src, Dst>) -> Self {
         Self::row_major(
             transform.m11,
             transform.m12,
@@ -184,9 +168,14 @@ impl<T: en::Num> From<euclid::Transform2D<T>> for Transform<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> Into<euclid::Transform2D<T>> for Transform<T> {
-    fn into(self) -> euclid::Transform2D<T> {
-        euclid::Transform2D::row_major(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
+impl<T: en::Num, Src, Dst> Into<euclid::Transform2D<T, Src, Dst>> for Transform<T> {
+    #[rustfmt::skip]
+    fn into(self) -> euclid::Transform2D<T, Src, Dst> {
+        euclid::Transform2D::row_major(
+            self.m11, self.m12,
+            self.m21, self.m22,
+            self.m31, self.m32,
+        )
     }
 }
 
@@ -206,8 +195,61 @@ impl<T: 'static + en::Num> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
 
 #[cfg(feature = "nalgebra-glm")]
 impl<T: 'static + en::Num> Into<nalgebra_glm::TMat3x2<T>> for Transform<T> {
+    #[rustfmt::skip]
     fn into(self) -> nalgebra_glm::TMat3x2<T> {
-        nalgebra_glm::mat3x2(self.m11, self.m12, self.m21, self.m22, self.m31, self.m32)
+        nalgebra_glm::mat3x2(
+            self.m11, self.m12,
+            self.m21, self.m22,
+            self.m31, self.m32,
+        )
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Into<nalgebra_glm::TMat3<T>> for Transform<T> {
+    #[rustfmt::skip]
+    fn into(self) -> nalgebra_glm::TMat3<T> {
+        let (_0, _1) = (T::zero(), T::one());
+        nalgebra_glm::mat3(
+            self.m11, self.m12, _0,
+            self.m21, self.m22, _0,
+            self.m31, self.m32, _1,
+        )
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Into<nalgebra_glm::TMat4<T>> for Transform<T> {
+    #[rustfmt::skip]
+    fn into(self) -> nalgebra_glm::TMat4<T> {
+        let (_0, _1) = (T::zero(), T::one());
+        // Using the provided `nalgebra_glm::mat3_to_mat4` function would
+        // require adding a `nalgebra_glm::Number` bound...
+        nalgebra_glm::mat4(
+            self.m11, self.m12, _0, _0,
+            self.m21, self.m22, _0, _0,
+            self.m31, self.m32, _1, _0,
+            _0, _0, _0, _1,
+        )
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Transform<T> {
+    pub fn from_glm_mat3x2(transform: nalgebra_glm::TMat3x2<T>) -> Self {
+        Self::from(transform)
+    }
+
+    pub fn to_glm_mat3x2(self) -> nalgebra_glm::TMat3x2<T> {
+        self.into()
+    }
+
+    pub fn to_glm_mat3(self) -> nalgebra_glm::TMat3<T> {
+        self.into()
+    }
+
+    pub fn to_glm_mat4(self) -> nalgebra_glm::TMat4<T> {
+        self.into()
     }
 }
 
@@ -219,11 +261,13 @@ mod test {
     #[test]
     fn rotation() {
         let original = Vector::new(1.0, 1.0).normalized();
-        let rotated = Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
+        let rotated =
+            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
-        let rotated = Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
+        let rotated =
+            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }

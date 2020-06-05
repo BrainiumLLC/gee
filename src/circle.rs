@@ -67,7 +67,7 @@ impl<T: en::Num> Circle<T> {
 
     pub fn bounding_rect(&self) -> Rect<T> {
         let radius_offset: Vector<T> = Vector::new(self.radius, self.radius);
-        let top_left = self.center - radius_offset;
+        let top_left = self.center + radius_offset;
         let bottom_right = self.center + radius_offset;
         Rect::from_points(top_left, bottom_right)
     }
@@ -83,11 +83,11 @@ impl<T: en::Num> Circle<T> {
     {
         let radius = self.radius;
         let center = self.center;
-        let steps_float = T::from(steps).unwrap();
+        let steps_float = en::cast(steps);
         let increment = (end_angle - start_angle) / steps_float;
         (0..steps).map(move |index| {
             let unit = (increment * en::cast(index) + start_angle).unit_vector();
-            center + unit * radius
+            center - unit * radius
         })
     }
 

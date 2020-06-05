@@ -61,7 +61,7 @@ impl<T: en::Float> Angle<T> {
     }
 
     pub fn from_degrees(degrees: T) -> Self {
-        Angle::from_radians(degrees * T::PI() / en::cast::<T, _>(180))
+        Self::from_radians(degrees * T::PI() / en::cast::<T, _>(180))
     }
 
     pub fn from_radians(radians: T) -> Self {
@@ -70,13 +70,12 @@ impl<T: en::Float> Angle<T> {
 
     /// Returns an `Angle` in the range `(-PI,PI]`.
     pub fn from_xy(x: T, y: T) -> Self {
-        Angle::from_radians(y.atan2(x))
+        Self::from_radians(y.atan2(x))
     }
 
-    /// Returns an angle in the range [-PI,PI).
+    /// Returns an `Angle` in the range `[-PI,PI)`.
     pub fn normalize(self) -> Self {
-        let tau = Self::TAU().radians;
-        let radians = self.radians - tau * ((self.radians + Self::PI().radians) / tau).floor();
+        let radians = self.radians - T::TAU() * (self.radians / T::TAU() + T::one().halved()).floor();
         Self::from_radians(radians)
     }
 

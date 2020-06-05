@@ -24,7 +24,7 @@ pub use en;
 #[cfg(feature = "euclid")]
 pub use euclid;
 #[cfg(feature = "nalgebra-glm")]
-pub use nalgebra_glm;
+pub use nalgebra_glm as glm;
 
 #[cfg(test)]
 pub(crate) mod test {

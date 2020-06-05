@@ -1,6 +1,4 @@
 use crate::Vector;
-#[cfg(feature = "euclid")]
-use euclid::Size2D;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
@@ -210,15 +208,15 @@ impl<T: en::Num> From<Vector<T>> for Size<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> From<Size2D<T>> for Size<T> {
-    fn from(size: Size2D<T>) -> Self {
+impl<T: en::Num, U> From<euclid::Size2D<T, U>> for Size<T> {
+    fn from(size: euclid::Size2D<T, U>) -> Self {
         Self::new(size.width, size.height)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> Into<Size2D<T>> for Size<T> {
-    fn into(self) -> Size2D<T> {
-        Size2D::new(self.width, self.height)
+impl<T: en::Num, U> Into<euclid::Size2D<T, U>> for Size<T> {
+    fn into(self) -> euclid::Size2D<T, U> {
+        euclid::Size2D::new(self.width, self.height)
     }
 }

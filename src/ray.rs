@@ -12,7 +12,7 @@ pub struct Ray<T> {
 
 impl<T: en::Num> Ray<T> {
     pub fn new(point: Point<T>, angle: Angle<T>) -> Self {
-        Ray { point, angle }
+        Self { point, angle }
     }
 
     pub fn intersection(&self, other: Self) -> Option<Point<T>>

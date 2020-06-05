@@ -1,6 +1,4 @@
 use crate::Vector;
-#[cfg(feature = "euclid")]
-use euclid::Point2D;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -15,7 +13,7 @@ pub struct Point<T> {
 
 impl<T: en::Num> Point<T> {
     pub fn new(x: T, y: T) -> Self {
-        Point { x, y }
+        Self { x, y }
     }
 
     pub fn zero() -> Self {
@@ -31,7 +29,7 @@ impl<T: en::Num> Point<T> {
     }
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Point<U> {
-        Point::new(f(self.x), f(self.x))
+        Point::new(f(self.x), f(self.y))
     }
 
     impl_casts_and_cast!(Point);
@@ -48,7 +46,10 @@ impl<T: en::Num> Point<T> {
         Vector::new(self.x, self.y)
     }
 
-    pub fn move_to_by(self, to: Self, by: T) -> Self where T: en::Float {
+    pub fn move_to_by(self, to: Self, by: T) -> Self
+    where
+        T: en::Float,
+    {
         self + (to - self).normalized() * by
     }
 }
@@ -126,15 +127,15 @@ impl<T: en::Num> RemAssign<T> for Point<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> From<Point2D<T>> for Point<T> {
-    fn from(point: Point2D<T>) -> Self {
+impl<T: en::Num, U> From<euclid::Point2D<T, U>> for Point<T> {
+    fn from(point: euclid::Point2D<T, U>) -> Self {
         Point::new(point.x, point.y)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> Into<Point2D<T>> for Point<T> {
-    fn into(self) -> Point2D<T> {
-        Point2D::new(self.x, self.y)
+impl<T: en::Num, U> Into<euclid::Point2D<T, U>> for Point<T> {
+    fn into(self) -> euclid::Point2D<T, U> {
+        euclid::Point2D::new(self.x, self.y)
     }
 }

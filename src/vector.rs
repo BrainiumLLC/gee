@@ -217,15 +217,15 @@ impl<T: en::Num> From<Cardinal> for Vector<T> {
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> From<euclid::Vector2D<T>> for Vector<T> {
-    fn from(vector: euclid::Vector2D<T>) -> Self {
+impl<T: en::Num, U> From<euclid::Vector2D<T, U>> for Vector<T> {
+    fn from(vector: euclid::Vector2D<T, U>) -> Self {
         Self::new(vector.x, vector.y)
     }
 }
 
 #[cfg(feature = "euclid")]
-impl<T: en::Num> Into<euclid::Vector2D<T>> for Vector<T> {
-    fn into(self) -> euclid::Vector2D<T> {
+impl<T: en::Num, U> Into<euclid::Vector2D<T, U>> for Vector<T> {
+    fn into(self) -> euclid::Vector2D<T, U> {
         euclid::Vector2D::new(self.dx, self.dy)
     }
 }
@@ -241,5 +241,38 @@ impl<T: 'static + en::Num> From<nalgebra_glm::TVec2<T>> for Vector<T> {
 impl<T: 'static + en::Num> Into<nalgebra_glm::TVec2<T>> for Vector<T> {
     fn into(self) -> nalgebra_glm::TVec2<T> {
         nalgebra_glm::vec2(self.dx, self.dy)
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Into<nalgebra_glm::TVec3<T>> for Vector<T> {
+    fn into(self) -> nalgebra_glm::TVec3<T> {
+        nalgebra_glm::vec3(self.dx, self.dy, T::zero())
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Into<nalgebra_glm::TVec4<T>> for Vector<T> {
+    fn into(self) -> nalgebra_glm::TVec4<T> {
+        nalgebra_glm::vec4(self.dx, self.dy, T::zero(), T::zero())
+    }
+}
+
+#[cfg(feature = "nalgebra-glm")]
+impl<T: 'static + en::Num> Vector<T> {
+    pub fn from_glm_vec2(vector: nalgebra_glm::TVec2<T>) -> Self {
+        Self::from(vector)
+    }
+
+    pub fn to_glm_vec2(self) -> nalgebra_glm::TVec2<T> {
+        self.into()
+    }
+
+    pub fn to_glm_vec3(self) -> nalgebra_glm::TVec3<T> {
+        self.into()
+    }
+
+    pub fn to_glm_vec4(self) -> nalgebra_glm::TVec4<T> {
+        self.into()
     }
 }
