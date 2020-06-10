@@ -262,12 +262,12 @@ mod test {
     fn rotation() {
         let original = Vector::new(1.0, 1.0).normalized();
         let rotated =
-            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
+            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
         let rotated =
-            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
+            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }
