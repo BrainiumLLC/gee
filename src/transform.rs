@@ -52,7 +52,7 @@ impl<T: en::Num> Transform<T> {
         T: en::Float,
     {
         let (sin, cos) = theta.sin_cos();
-        Self::row_major(cos, -sin, sin, cos, T::zero(), T::zero())
+        Self::row_major(cos, sin, -sin, cos, T::zero(), T::zero())
     }
 
     pub fn create_translation(x: T, y: T) -> Self {
@@ -262,12 +262,12 @@ mod test {
     fn rotation() {
         let original = Vector::new(1.0, 1.0).normalized();
         let rotated =
-            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
+            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
         let rotated =
-            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
+            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }

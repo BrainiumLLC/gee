@@ -70,7 +70,7 @@ impl<T: en::Float> Angle<T> {
 
     /// Returns an `Angle` in the range `(-PI,PI]`.
     pub fn from_xy(x: T, y: T) -> Self {
-        Self::from_radians((-y).atan2(x))
+        Self::from_radians(y.atan2(x))
     }
 
     /// Returns an `Angle` in the range `[-PI,PI)`.
@@ -86,7 +86,7 @@ impl<T: en::Float> Angle<T> {
 
     pub fn unit_vector(self) -> Vector<T> {
         let (y, x) = self.radians.sin_cos();
-        Vector::new(x, -y)
+        Vector::new(x, y)
     }
 
     pub fn sin(self) -> T {

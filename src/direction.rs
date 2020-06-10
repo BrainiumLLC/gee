@@ -53,14 +53,14 @@ impl Direction {
     pub fn angle<T: en::Float>(self) -> Angle<T> {
         use Direction::*;
         match self {
-            North => Angle::FRAC_3PI_2(),
-            South => Angle::FRAC_PI_2(),
+            North => Angle::FRAC_PI_2(),
+            South => Angle::FRAC_3PI_2(),
             East => Angle::ZERO(),
             West => Angle::PI(),
-            Northeast => Angle::FRAC_7PI_4(),
-            Southeast => Angle::FRAC_PI_4(),
-            Southwest => Angle::FRAC_3PI_4(),
-            Northwest => Angle::FRAC_5PI_4(),
+            Northeast => Angle::FRAC_PI_4(),
+            Southeast => Angle::FRAC_7PI_4(),
+            Southwest => Angle::FRAC_5PI_4(),
+            Northwest => Angle::FRAC_3PI_4(),
         }
     }
 
