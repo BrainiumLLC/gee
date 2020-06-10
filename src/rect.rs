@@ -578,6 +578,24 @@ impl<T: en::Num> Rect<T> {
     pub fn to_clockwise_tuple(self) -> (T, T, T, T) {
         (self.top, self.right, self.bottom, self.left)
     }
+
+    pub fn to_clockwise_points_array(self) -> [Point<T>; 4] {
+        [
+            self.top_left(),
+            self.top_right(),
+            self.bottom_right(),
+            self.bottom_left(),
+        ]
+    }
+
+    pub fn to_clockwise_points_tuple(self) -> (Point<T>, Point<T>, Point<T>, Point<T>) {
+        (
+            self.top_left(),
+            self.top_right(),
+            self.bottom_right(),
+            self.bottom_left(),
+        )
+    }
 }
 
 impl<T: en::Num> Add<Vector<T>> for Rect<T> {
