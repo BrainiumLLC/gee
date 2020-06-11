@@ -502,7 +502,7 @@ impl<T: en::Num> Rect<T> {
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
         let item_bottom = self.bottom + margin + index * (margin + item_height);
-        Rect::new(
+        Self::new(
             item_bottom + item_height,
             self.right,
             item_bottom,
