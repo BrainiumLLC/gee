@@ -251,7 +251,7 @@ impl<T: en::Num> Rect<T> {
         Point::new(self.right, self.bottom)
     }
 
-    pub fn clockwise_points(&self) -> impl Iterator<Item = Point<T>> + Clone {
+    pub fn clockwise_points(&self) -> impl Iterator<Item = Point<T>> + Clone + DoubleEndedIterator {
         std::iter::once(self.top_left())
             .chain(std::iter::once(self.top_right()))
             .chain(std::iter::once(self.bottom_right()))
