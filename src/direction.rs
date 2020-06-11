@@ -89,10 +89,10 @@ impl Neg for Direction {
 impl From<Cardinal> for Direction {
     fn from(cardinal: Cardinal) -> Self {
         match cardinal {
-            Cardinal::North => Direction::South,
-            Cardinal::South => Direction::North,
-            Cardinal::East => Direction::West,
-            Cardinal::West => Direction::East,
+            Cardinal::North => Direction::North,
+            Cardinal::South => Direction::South,
+            Cardinal::East => Direction::East,
+            Cardinal::West => Direction::West,
         }
     }
 }
@@ -101,10 +101,10 @@ impl TryFrom<Direction> for Cardinal {
     type Error = ();
     fn try_from(direction: Direction) -> Result<Self, Self::Error> {
         match direction {
-            Direction::North => Ok(Cardinal::South),
-            Direction::East => Ok(Cardinal::West),
-            Direction::South => Ok(Cardinal::North),
-            Direction::West => Ok(Cardinal::East),
+            Direction::North => Ok(Cardinal::North),
+            Direction::East => Ok(Cardinal::East),
+            Direction::South => Ok(Cardinal::South),
+            Direction::West => Ok(Cardinal::West),
             _ => Err(()),
         }
     }

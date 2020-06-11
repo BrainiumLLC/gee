@@ -83,11 +83,10 @@ impl<T: en::Num> Circle<T> {
     {
         let radius = self.radius;
         let center = self.center;
-        let steps_float = en::cast(steps);
-        let increment = (end_angle - start_angle) / steps_float;
+        let increment = (end_angle - start_angle) / en::cast(steps);
         (0..steps).map(move |index| {
             let unit = (increment * en::cast(index) + start_angle).unit_vector();
-            center - unit * radius
+            center + unit * radius
         })
     }
 
