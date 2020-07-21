@@ -23,6 +23,12 @@ impl Cardinal {
     }
 }
 
+impl<T: en::Float> Into<Angle<T>> for Cardinal {
+    fn into(self) -> Angle<T> {
+        self.angle()
+    }
+}
+
 impl Neg for Cardinal {
     type Output = Self;
     fn neg(self) -> Self::Output {
@@ -83,6 +89,12 @@ impl Neg for Direction {
             West => East,
             Northwest => Southeast,
         }
+    }
+}
+
+impl<T: en::Float> Into<Angle<T>> for Direction {
+    fn into(self) -> Angle<T> {
+        self.angle()
     }
 }
 
