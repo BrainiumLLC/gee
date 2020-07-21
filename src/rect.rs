@@ -285,6 +285,17 @@ impl<T: en::Num> Rect<T> {
         self.contains_x(point.x) && self.contains_y(point.y)
     }
 
+    pub fn grow_to_contain(&self, point: Point<T>) -> Self {
+        if self.contains(point) {
+            *self
+        } else {
+            let a = std::iter::once(self.bottom_right());
+            let b = std::iter::once(self.top_left());
+            let c = std::iter::once(point);
+            Self::from_points_iter(a.chain(b).chain(c))
+        }
+    }
+
     pub fn point_at(&self, location: RectLocation) -> Point<T> {
         let x = match location.horizontal {
             HorizontalLocation::Left => self.left(),
@@ -710,5 +721,18 @@ mod test {
         ));
 
         assert_eq!(rect.size(), Size::new(width, height));
+    }
+
+    #[test]
+    fn grow_to_contain() {
+        let rect = Rect::with_bottom_left(Point::new(10, 10), Size::new(10, 10));
+        assert_eq!(
+            rect.grow_to_contain(Point::new(0, 20)),
+            Rect::with_bottom_left(Point::new(0, 10), Size::new(20, 10))
+        );
+        assert_eq!(
+            rect.grow_to_contain(Point::new(20, 0)),
+            Rect::with_bottom_left(Point::new(10, 0), Size::new(10, 20))
+        );
     }
 }
