@@ -285,16 +285,16 @@ impl<T: en::Num> Rect<T> {
         self.contains_x(point.x) && self.contains_y(point.y)
     }
 
-    pub fn grow_to_contain(&self, point: Point<T>) -> Self {
+    /// Note that the resulting rect won't necessarily contain the specified
+    /// point!
+    pub fn grow_to(&self, point: Point<T>) -> Self {
         if self.contains(point) {
             *self
         } else {
             let a = std::iter::once(self.bottom_right());
             let b = std::iter::once(self.top_left());
             let c = std::iter::once(point);
-            let rect = Self::from_points_iter(a.chain(b).chain(c));
-            debug_assert!(rect.contains(point));
-            rect
+            Self::from_points_iter(a.chain(b).chain(c))
         }
     }
 
@@ -726,14 +726,14 @@ mod test {
     }
 
     #[test]
-    fn grow_to_contain() {
+    fn grow_to() {
         let rect = Rect::with_bottom_left(Point::new(10, 10), Size::new(10, 10));
         assert_eq!(
-            rect.grow_to_contain(Point::new(0, 20)),
+            rect.grow_to(Point::new(0, 20)),
             Rect::with_bottom_left(Point::new(0, 10), Size::new(20, 10))
         );
         assert_eq!(
-            rect.grow_to_contain(Point::new(20, 0)),
+            rect.grow_to(Point::new(20, 0)),
             Rect::with_bottom_left(Point::new(10, 0), Size::new(10, 20))
         );
     }
