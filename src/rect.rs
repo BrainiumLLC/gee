@@ -292,7 +292,9 @@ impl<T: en::Num> Rect<T> {
             let a = std::iter::once(self.bottom_right());
             let b = std::iter::once(self.top_left());
             let c = std::iter::once(point);
-            Self::from_points_iter(a.chain(b).chain(c))
+            let rect = Self::from_points_iter(a.chain(b).chain(c));
+            debug_assert!(rect.contains(point));
+            rect
         }
     }
 
