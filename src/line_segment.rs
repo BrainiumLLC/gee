@@ -36,4 +36,8 @@ impl<T: en::Num> LineSegment<T> {
     {
         Ray::new(self.from, self.vector().angle())
     }
+
+    pub fn points(&self) -> impl Iterator<Item = Point<T>> + Clone + DoubleEndedIterator {
+        std::iter::once(self.from).chain(std::iter::once(self.to))
+    }
 }
