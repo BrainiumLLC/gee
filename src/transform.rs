@@ -69,8 +69,8 @@ impl<T: en::Num> Transform<T> {
 
     pub fn transform_vector(&self, vector: &Vector<T>) -> Vector<T> {
         Vector::new(
-            vector.dx * self.m11 + vector.dy * self.m21,
-            vector.dx * self.m12 + vector.dy * self.m22,
+            vector.dx * self.m11 + vector.dy * self.m21 + self.m31,
+            vector.dx * self.m12 + vector.dy * self.m22 + self.m32,
         )
     }
 
