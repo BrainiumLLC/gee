@@ -285,16 +285,28 @@ impl<T: en::Num> Rect<T> {
         self.contains_x(point.x) && self.contains_y(point.y)
     }
 
-    /// Note that the resulting rect won't necessarily contain the specified
-    /// point!
+    pub fn contains_inclusive_x(&self, x: T) -> bool {
+        (self.left..=self.right).contains(&x)
+    }
+
+    pub fn contains_inclusive_y(&self, y: T) -> bool {
+        (self.bottom..=self.top).contains(&y)
+    }
+
+    pub fn contains_inclusive(&self, point: Point<T>) -> bool {
+        self.contains_inclusive_x(point.x) && self.contains_inclusive_y(point.y)
+    }
+
     pub fn grow_to(&self, point: Point<T>) -> Self {
-        if self.contains(point) {
+        if self.contains_inclusive(point) {
             *self
         } else {
             let a = std::iter::once(self.bottom_right());
             let b = std::iter::once(self.top_left());
             let c = std::iter::once(point);
-            Self::from_points_iter(a.chain(b).chain(c))
+            let rect = Self::from_points_iter(a.chain(b).chain(c));
+            debug_assert!(rect.contains_inclusive(point));
+            rect
         }
     }
 
