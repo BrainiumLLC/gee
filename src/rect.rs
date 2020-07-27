@@ -362,7 +362,8 @@ impl<T: en::Num> Rect<T> {
         }
     }
 
-    pub fn padded(&self, top: T, right: T, bottom: T, left: T) -> Self {
+    // Inspired by https://api.flutter.dev/flutter/painting/EdgeInsets-class.html
+    pub fn inset(&self, top: T, right: T, bottom: T, left: T) -> Self {
         Self::new(
             self.top - top,
             self.right - right,
@@ -371,12 +372,29 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn padded_horiz_and_vert(&self, horiz: T, vert: T) -> Self {
-        self.padded(vert, horiz, vert, horiz)
+    pub fn inset_symmetric(&self, horiz: T, vert: T) -> Self {
+        self.inset(vert, horiz, vert, horiz)
     }
 
-    pub fn padded_uniform(&self, pad: T) -> Self {
-        self.padded_horiz_and_vert(pad, pad)
+    pub fn inset_all(&self, inset: T) -> Self {
+        self.inset_symmetric(inset, inset)
+    }
+
+    pub fn outset(&self, top: T, right: T, bottom: T, left: T) -> Self {
+        Self::new(
+            self.top + top,
+            self.right + right,
+            self.bottom - bottom,
+            self.left - left,
+        )
+    }
+
+    pub fn outset_symmetric(&self, horiz: T, vert: T) -> Self {
+        self.outset(vert, horiz, vert, horiz)
+    }
+
+    pub fn outset_all(&self, outset: T) -> Self {
+        self.outset_symmetric(outset, outset)
     }
 
     pub fn resize(&self, size: Size<T>, fixed_location: RectLocation) -> Self {
