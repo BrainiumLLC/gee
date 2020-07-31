@@ -34,6 +34,14 @@ impl<T: en::Num> Vector<T> {
         Self::new(T::zero(), T::zero())
     }
 
+    pub fn from_array([dx, dy]: [T; 2]) -> Self {
+        Self::new(dx, dy)
+    }
+
+    pub fn from_tuple((dx, dy): (T, T)) -> Self {
+        Self::new(dx, dy)
+    }
+
     pub fn dot_product(self, rhs: Self) -> T {
         self.dx * rhs.dx + self.dy * rhs.dy
     }

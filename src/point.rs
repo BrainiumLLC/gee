@@ -20,6 +20,14 @@ impl<T: en::Num> Point<T> {
         Self::new(T::zero(), T::zero())
     }
 
+    pub fn from_array([x, y]: [T; 2]) -> Self {
+        Self::new(x, y)
+    }
+
+    pub fn from_tuple((x, y): (T, T)) -> Self {
+        Self::new(x, y)
+    }
+
     pub fn reposition_x(self, x: T) -> Self {
         Self::new(x, self.y)
     }

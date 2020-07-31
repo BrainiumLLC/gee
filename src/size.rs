@@ -39,6 +39,14 @@ impl<T: en::Num> Size<T> {
         Self::square(T::zero())
     }
 
+    pub fn from_array([width, height]: [T; 2]) -> Self {
+        Self::new(width, height)
+    }
+
+    pub fn from_tuple((width, height): (T, T)) -> Self {
+        Self::new(width, height)
+    }
+
     pub fn width(self) -> T {
         self.width
     }
