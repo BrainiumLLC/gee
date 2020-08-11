@@ -5,7 +5,7 @@ macro_rules! impl_casts_and_cast {
         }
 
         impl_casts!($hkt);
-    }
+    };
 }
 
 macro_rules! impl_casts {
