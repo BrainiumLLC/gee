@@ -1,4 +1,4 @@
-use crate::{Angle, Point, Rect, Vector};
+use crate::Angle;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -43,11 +43,11 @@ impl<T: en::Num> Transform<T> {
         )
     }
 
-    pub fn create_scale(x: T, y: T) -> Self {
+    pub fn from_scale(x: T, y: T) -> Self {
         Self::row_major(x, T::zero(), T::zero(), y, T::zero(), T::zero())
     }
 
-    pub fn create_rotation(theta: Angle<T>) -> Self
+    pub fn from_rotation(theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
@@ -55,35 +55,12 @@ impl<T: en::Num> Transform<T> {
         Self::row_major(cos, sin, -sin, cos, T::zero(), T::zero())
     }
 
-    pub fn create_translation(x: T, y: T) -> Self {
+    pub fn from_translation(x: T, y: T) -> Self {
         Self::row_major(T::one(), T::zero(), T::zero(), T::one(), x, y)
     }
 
     pub fn determinant(&self) -> T {
         self.m11 * self.m22 - self.m12 * self.m21
-    }
-
-    pub fn transform_point(&self, point: &Point<T>) -> Point<T> {
-        self.transform_vector(&point.to_vector()).to_point()
-    }
-
-    pub fn transform_vector(&self, vector: &Vector<T>) -> Vector<T> {
-        Vector::new(
-            vector.dx * self.m11 + vector.dy * self.m21 + self.m31,
-            vector.dx * self.m12 + vector.dy * self.m22 + self.m32,
-        )
-    }
-
-    pub fn transform_rect(&self, rect: &Rect<T>) -> Rect<T>
-    where
-        T: en::Num,
-    {
-        Rect::from_points_iter(&[
-            self.transform_point(&rect.top_left()),
-            self.transform_point(&rect.top_right()),
-            self.transform_point(&rect.bottom_left()),
-            self.transform_point(&rect.bottom_right()),
-        ])
     }
 
     pub fn post_mul(&self, mat: &Self) -> Self {
@@ -102,33 +79,33 @@ impl<T: en::Num> Transform<T> {
     }
 
     pub fn post_translate(&self, x: T, y: T) -> Self {
-        self.post_mul(&Self::create_translation(x, y))
+        self.post_mul(&Self::from_translation(x, y))
     }
 
     pub fn pre_translate(&self, x: T, y: T) -> Self {
-        self.pre_mul(&Self::create_translation(x, y))
+        self.pre_mul(&Self::from_translation(x, y))
     }
 
     pub fn post_scale(&self, x: T, y: T) -> Self {
-        self.post_mul(&Self::create_scale(x, y))
+        self.post_mul(&Self::from_scale(x, y))
     }
 
     pub fn pre_scale(&self, x: T, y: T) -> Self {
-        self.pre_mul(&Self::create_scale(x, y))
+        self.pre_mul(&Self::from_scale(x, y))
     }
 
     pub fn post_rotate(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.post_mul(&Self::create_rotation(theta))
+        self.post_mul(&Self::from_rotation(theta))
     }
 
     pub fn pre_rotate(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.pre_mul(&Self::create_rotation(theta))
+        self.pre_mul(&Self::from_rotation(theta))
     }
 
     pub fn inverse(&self) -> Option<Self> {
@@ -153,121 +130,19 @@ impl<T: en::Num> Transform<T> {
     }
 }
 
-#[cfg(feature = "euclid")]
-impl<T: en::Num, Src, Dst> From<euclid::Transform2D<T, Src, Dst>> for Transform<T> {
-    fn from(transform: euclid::Transform2D<T, Src, Dst>) -> Self {
-        Self::row_major(
-            transform.m11,
-            transform.m12,
-            transform.m21,
-            transform.m22,
-            transform.m31,
-            transform.m32,
-        )
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, Src, Dst> Into<euclid::Transform2D<T, Src, Dst>> for Transform<T> {
-    #[rustfmt::skip]
-    fn into(self) -> euclid::Transform2D<T, Src, Dst> {
-        euclid::Transform2D::row_major(
-            self.m11, self.m12,
-            self.m21, self.m22,
-            self.m31, self.m32,
-        )
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> From<nalgebra_glm::TMat3x2<T>> for Transform<T> {
-    fn from(transform: nalgebra_glm::TMat3x2<T>) -> Self {
-        Self::row_major(
-            transform.m11,
-            transform.m12,
-            transform.m21,
-            transform.m22,
-            transform.m31,
-            transform.m32,
-        )
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TMat3x2<T>> for Transform<T> {
-    #[rustfmt::skip]
-    fn into(self) -> nalgebra_glm::TMat3x2<T> {
-        nalgebra_glm::mat3x2(
-            self.m11, self.m12,
-            self.m21, self.m22,
-            self.m31, self.m32,
-        )
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TMat3<T>> for Transform<T> {
-    #[rustfmt::skip]
-    fn into(self) -> nalgebra_glm::TMat3<T> {
-        let (_0, _1) = (T::zero(), T::one());
-        nalgebra_glm::mat3(
-            self.m11, self.m12, _0,
-            self.m21, self.m22, _0,
-            self.m31, self.m32, _1,
-        )
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TMat4<T>> for Transform<T> {
-    #[rustfmt::skip]
-    fn into(self) -> nalgebra_glm::TMat4<T> {
-        let (_0, _1) = (T::zero(), T::one());
-        // Using the provided `nalgebra_glm::mat3_to_mat4` function would
-        // require adding a `nalgebra_glm::Number` bound...
-        nalgebra_glm::mat4(
-            self.m11, self.m12, _0, _0,
-            self.m21, self.m22, _0, _0,
-            self.m31, self.m32, _1, _0,
-            _0, _0, _0, _1,
-        )
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Transform<T> {
-    pub fn from_glm_mat3x2(transform: nalgebra_glm::TMat3x2<T>) -> Self {
-        Self::from(transform)
-    }
-
-    pub fn to_glm_mat3x2(self) -> nalgebra_glm::TMat3x2<T> {
-        self.into()
-    }
-
-    pub fn to_glm_mat3(self) -> nalgebra_glm::TMat3<T> {
-        self.into()
-    }
-
-    pub fn to_glm_mat4(self) -> nalgebra_glm::TMat4<T> {
-        self.into()
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::assert_approx_eq;
+    use crate::{assert_approx_eq, Vector};
 
     #[test]
     fn rotation() {
         let original = Vector::new(1.0, 1.0).normalized();
-        let rotated =
-            Transform::create_rotation(Angle::from_degrees(-45.0)).transform_vector(&original);
+        let rotated = original.transform(Transform::from_rotation(Angle::from_degrees(-45.0)));
         assert_approx_eq!(rotated.dx, 1.0);
         assert_approx_eq!(rotated.dy, 0.0);
 
-        let rotated =
-            Transform::create_rotation(Angle::from_degrees(45.0)).transform_vector(&original);
+        let rotated = original.transform(Transform::from_rotation(Angle::from_degrees(45.0)));
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
     }

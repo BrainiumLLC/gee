@@ -1,4 +1,4 @@
-use crate::Vector;
+use crate::{Transform, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
@@ -28,12 +28,16 @@ impl<T: en::Num> Point<T> {
         Self::new(x, y)
     }
 
-    pub fn reposition_x(self, x: T) -> Self {
+    pub fn with_x(self, x: T) -> Self {
         Self::new(x, self.y)
     }
 
-    pub fn reposition_y(self, y: T) -> Self {
+    pub fn with_y(self, y: T) -> Self {
         Self::new(self.x, y)
+    }
+
+    pub fn transform(self, transform: Transform<T>) -> Self {
+        self.to_vector().transform(transform).to_point()
     }
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Point<U> {
@@ -64,6 +68,7 @@ impl<T: en::Num> Point<T> {
 
 impl<T: en::Num> Add<Vector<T>> for Point<T> {
     type Output = Self;
+
     fn add(self, rhs: Vector<T>) -> Self::Output {
         Point::new(self.x + rhs.dx, self.y + rhs.dy)
     }
@@ -77,6 +82,7 @@ impl<T: en::Num> AddAssign<Vector<T>> for Point<T> {
 
 impl<T: en::Num> Sub<Vector<T>> for Point<T> {
     type Output = Self;
+
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         Point::new(self.x - rhs.dx, self.y - rhs.dy)
     }
@@ -84,6 +90,7 @@ impl<T: en::Num> Sub<Vector<T>> for Point<T> {
 
 impl<T: en::Num> Sub<Point<T>> for Point<T> {
     type Output = Vector<T>;
+
     fn sub(self, rhs: Point<T>) -> Self::Output {
         Vector::new(self.x - rhs.x, self.y - rhs.y)
     }
@@ -97,6 +104,7 @@ impl<T: en::Num> SubAssign<Vector<T>> for Point<T> {
 
 impl<T: en::Num> Mul<T> for Point<T> {
     type Output = Point<T>;
+
     fn mul(self, rhs: T) -> Self::Output {
         self.map(move |x| x * rhs)
     }
@@ -110,6 +118,7 @@ impl<T: en::Num> MulAssign<T> for Point<T> {
 
 impl<T: en::Num> Div<T> for Point<T> {
     type Output = Point<T>;
+
     fn div(self, rhs: T) -> Self::Output {
         self.map(move |x| x / rhs)
     }
@@ -123,6 +132,7 @@ impl<T: en::Num> DivAssign<T> for Point<T> {
 
 impl<T: en::Num> Rem<T> for Point<T> {
     type Output = Self;
+
     fn rem(self, rhs: T) -> Self::Output {
         self.map(move |x| x % rhs)
     }
@@ -131,19 +141,5 @@ impl<T: en::Num> Rem<T> for Point<T> {
 impl<T: en::Num> RemAssign<T> for Point<T> {
     fn rem_assign(&mut self, rhs: T) {
         *self = *self % rhs
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> From<euclid::Point2D<T, U>> for Point<T> {
-    fn from(point: euclid::Point2D<T, U>) -> Self {
-        Point::new(point.x, point.y)
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> Into<euclid::Point2D<T, U>> for Point<T> {
-    fn into(self) -> euclid::Point2D<T, U> {
-        euclid::Point2D::new(self.x, self.y)
     }
 }

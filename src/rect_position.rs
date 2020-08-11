@@ -242,45 +242,32 @@ impl<T: en::Num> RectPosition<T> {
         Self::bottom_right(rect.bottom_right())
     }
 
-    pub fn relocate(self, location: RectLocation) -> Self {
+    pub fn with_location(self, location: RectLocation) -> Self {
         Self::new(location, self.point)
     }
 
-    pub fn relocate_horizontal(self, horizontal: HorizontalLocation) -> Self {
-        self.relocate(self.location.relocate_horizontal(horizontal))
+    pub fn with_horizontal(self, horizontal: HorizontalLocation) -> Self {
+        self.with_location(self.location.relocate_horizontal(horizontal))
     }
 
-    pub fn relocate_vertical(self, vertical: VerticalLocation) -> Self {
-        self.relocate(self.location.relocate_vertical(vertical))
+    pub fn with_vertical(self, vertical: VerticalLocation) -> Self {
+        self.with_location(self.location.relocate_vertical(vertical))
     }
 
-    pub fn reposition(self, point: Point<T>) -> Self {
+    pub fn with_point(self, point: Point<T>) -> Self {
         Self::new(self.location, point)
     }
 
-    pub fn reposition_x(self, x: T) -> Self {
-        self.reposition(self.point.reposition_x(x))
+    pub fn with_x(self, x: T) -> Self {
+        self.with_point(self.point.with_x(x))
     }
 
-    pub fn reposition_y(self, y: T) -> Self {
-        self.reposition(self.point.reposition_y(y))
+    pub fn with_y(self, y: T) -> Self {
+        self.with_point(self.point.with_y(y))
     }
 
-    pub fn translate(self, offset: Vector<T>) -> Self {
-        self + offset
-    }
-
-    pub fn translate_x(self, offset_x: T) -> Self {
-        self + Vector::from_dx(offset_x)
-    }
-
-    pub fn translate_y(self, offset_y: T) -> Self {
-        self + Vector::from_dy(offset_y)
-    }
-
-    pub fn left_with_width(self, width: T) -> T {
+    pub(crate) fn left_with_width(self, width: T) -> T {
         use HorizontalLocation::*;
-        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
         match self.location.horizontal {
             Left => self.point.x,
             Center => self.point.x - width.halved(),
@@ -288,19 +275,8 @@ impl<T: en::Num> RectPosition<T> {
         }
     }
 
-    pub fn center_x_with_width(self, width: T) -> T {
+    pub(crate) fn right_with_width(self, width: T) -> T {
         use HorizontalLocation::*;
-        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
-        match self.location.horizontal {
-            Left => self.point.x + width.halved(),
-            Center => self.point.x,
-            Right => self.point.x - width.halved(),
-        }
-    }
-
-    pub fn right_with_width(self, width: T) -> T {
-        use HorizontalLocation::*;
-        assert!(width >= T::zero(), "invalid value for width: {:?}", width);
         match self.location.horizontal {
             Left => self.point.x + width,
             Center => self.point.x + width.halved(),
@@ -308,13 +284,8 @@ impl<T: en::Num> RectPosition<T> {
         }
     }
 
-    pub fn top_with_height(self, height: T) -> T {
+    pub(crate) fn top_with_height(self, height: T) -> T {
         use VerticalLocation::*;
-        assert!(
-            height >= T::zero(),
-            "invalid value for height: {:?}",
-            height
-        );
         match self.location.vertical {
             Top => self.point.y,
             Center => self.point.y + height.halved(),
@@ -322,27 +293,8 @@ impl<T: en::Num> RectPosition<T> {
         }
     }
 
-    pub fn center_y_with_height(self, height: T) -> T {
+    pub(crate) fn bottom_with_height(self, height: T) -> T {
         use VerticalLocation::*;
-        assert!(
-            height >= T::zero(),
-            "invalid value for height: {:?}",
-            height
-        );
-        match self.location.vertical {
-            Top => self.point.y - height.halved(),
-            Center => self.point.y,
-            Bottom => self.point.y + height.halved(),
-        }
-    }
-
-    pub fn bottom_with_height(self, height: T) -> T {
-        use VerticalLocation::*;
-        assert!(
-            height >= T::zero(),
-            "invalid value for height: {:?}",
-            height
-        );
         match self.location.vertical {
             Top => self.point.y - height,
             Center => self.point.y - height.halved(),
@@ -350,8 +302,8 @@ impl<T: en::Num> RectPosition<T> {
         }
     }
 
-    pub fn rect_with_size(self, size: Size<T>) -> Rect<T> {
-        Rect::with_position(self, size)
+    pub fn to_rect(self, size: Size<T>) -> Rect<T> {
+        Rect::from_position(self, size)
     }
 }
 
@@ -502,39 +454,39 @@ mod test {
         let rect = Rect::new(top, right, bottom, left);
 
         assert_eq!(
-            RectPosition::top_left_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::top_left_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::top_center_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::top_center_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::top_right_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::top_right_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::center_left_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::center_left_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::center_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::center_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::center_right_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::center_right_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::bottom_left_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::bottom_left_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::bottom_left_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::bottom_left_from_rect(rect).to_rect(rect.size()),
             rect
         );
         assert_eq!(
-            RectPosition::bottom_left_from_rect(rect).rect_with_size(rect.size()),
+            RectPosition::bottom_left_from_rect(rect).to_rect(rect.size()),
             rect
         );
     }

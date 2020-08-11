@@ -1,5 +1,5 @@
 use crate::{
-    HorizontalLocation, LineSegment, Point, RectLocation, RectPosition, Size, Vector,
+    HorizontalLocation, LineSegment, Point, RectLocation, RectPosition, Size, Transform, Vector,
     VerticalLocation,
 };
 #[cfg(feature = "serde")]
@@ -20,7 +20,7 @@ pub struct Rect<T> {
 }
 
 impl<T: en::Num> Rect<T> {
-    pub fn new_unchecked(top: T, right: T, bottom: T, left: T) -> Self {
+    pub fn new(top: T, right: T, bottom: T, left: T) -> Self {
         Self {
             top,
             right,
@@ -29,31 +29,14 @@ impl<T: en::Num> Rect<T> {
         }
     }
 
-    pub fn try_new(top: T, right: T, bottom: T, left: T) -> Option<Self> {
-        if top >= bottom && left <= right {
-            Some(Self::new_unchecked(top, right, bottom, left))
-        } else {
-            None
-        }
-    }
-
-    pub fn new(top: T, right: T, bottom: T, left: T) -> Self {
-        if cfg!(not(feature = "unchecked-ctors")) {
-            Self::try_new(top, right, bottom, left)
-                .expect("invalid Rect (left > right and/or top < bottom)")
-        } else {
-            Self::new(top, right, bottom, left)
-        }
-    }
-
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero(), T::zero(), T::zero())
     }
 
-    pub fn with_position(rect_position: RectPosition<T>, size: Size<T>) -> Rect<T> {
+    pub fn from_position(rect_position: RectPosition<T>, size: Size<T>) -> Self {
         let width = size.width();
         let height = size.height();
-        Rect::new(
+        Self::new(
             rect_position.top_with_height(height),
             rect_position.right_with_width(width),
             rect_position.bottom_with_height(height),
@@ -61,7 +44,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_top_left(top_left: Point<T>, size: Size<T>) -> Self {
+    pub fn from_top_left(top_left: Point<T>, size: Size<T>) -> Self {
         Self::new(
             top_left.y,
             top_left.x + size.width(),
@@ -70,7 +53,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_top_center(top_center: Point<T>, size: Size<T>) -> Self {
+    pub fn from_top_center(top_center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
         Self::new(
             top_center.y,
@@ -80,7 +63,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_top_right(top_right: Point<T>, size: Size<T>) -> Self {
+    pub fn from_top_right(top_right: Point<T>, size: Size<T>) -> Self {
         Self::new(
             top_right.y,
             top_right.x,
@@ -89,7 +72,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_center_left(left_center: Point<T>, size: Size<T>) -> Self {
+    pub fn from_center_left(left_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
         Self::new(
             left_center.y + half_height,
@@ -99,7 +82,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_center(center: Point<T>, size: Size<T>) -> Self {
+    pub fn from_center(center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
         let half_height = size.height().halved();
         Self::new(
@@ -110,7 +93,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_center_right(right_center: Point<T>, size: Size<T>) -> Self {
+    pub fn from_center_right(right_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
         Self::new(
             right_center.y + half_height,
@@ -120,7 +103,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
+    pub fn from_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
         Self::new(
             bottom_right.y + size.height(),
             bottom_right.x,
@@ -129,7 +112,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
+    pub fn from_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
         Self::new(
             bottom_center.y + size.height(),
@@ -139,7 +122,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn with_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
+    pub fn from_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
         Self::new(
             bottom_left.y + size.height(),
             bottom_left.x + size.width(),
@@ -148,7 +131,7 @@ impl<T: en::Num> Rect<T> {
         )
     }
 
-    pub fn from_points_iter<I>(points: I) -> Self
+    pub fn from_iter<I>(points: I) -> Self
     where
         I: IntoIterator,
         I::Item: Borrow<Point<T>>,
@@ -258,6 +241,14 @@ impl<T: en::Num> Rect<T> {
             .chain(std::iter::once(self.bottom_left()))
     }
 
+    pub fn to_clockwise_array(&self) -> [T; 4] {
+        [self.top, self.right, self.bottom, self.left]
+    }
+
+    pub fn to_clockwise_tuple(&self) -> (T, T, T, T) {
+        (self.top, self.right, self.bottom, self.left)
+    }
+
     pub fn size(&self) -> Size<T> {
         Size::new(self.width(), self.height())
     }
@@ -269,8 +260,8 @@ impl<T: en::Num> Rect<T> {
         self.size().aspect_ratio()
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.top == self.bottom || self.left == self.right
+    pub fn has_area(&self) -> bool {
+        self.top > self.bottom && self.left > self.right
     }
 
     pub fn contains_x(&self, x: T) -> bool {
@@ -304,7 +295,7 @@ impl<T: en::Num> Rect<T> {
             let a = std::iter::once(self.bottom_right());
             let b = std::iter::once(self.top_left());
             let c = std::iter::once(point);
-            let rect = Self::from_points_iter(a.chain(b).chain(c));
+            let rect = Self::from_iter(a.chain(b).chain(c));
             debug_assert!(rect.contains_inclusive(point));
             rect
         }
@@ -362,6 +353,70 @@ impl<T: en::Num> Rect<T> {
         }
     }
 
+    pub fn with_position(&self, position: RectPosition<T>) -> Self {
+        Self::from_position(position, self.size())
+    }
+
+    pub fn with_x(&self, new_x: T, location: HorizontalLocation) -> Self {
+        self.with_position(
+            self.position_at(location | VerticalLocation::Top)
+                .with_x(new_x),
+        )
+    }
+
+    pub fn with_y(&self, new_y: T, location: VerticalLocation) -> Self {
+        self.with_position(
+            self.position_at(HorizontalLocation::Left | location)
+                .with_y(new_y),
+        )
+    }
+
+    pub fn with_size(&self, size: Size<T>, fixed_location: RectLocation) -> Self {
+        Self::from_position(self.position_at(fixed_location), size)
+    }
+
+    pub fn with_width(&self, width: T, fixed_location: HorizontalLocation) -> Self {
+        self.with_size(
+            self.size().with_width(width),
+            fixed_location | VerticalLocation::Top,
+        )
+    }
+
+    pub fn with_height(&self, height: T, fixed_location: VerticalLocation) -> Self {
+        self.with_size(
+            self.size().with_height(height),
+            HorizontalLocation::Left | fixed_location,
+        )
+    }
+
+    pub fn scale(&self, scale: Vector<T>, fixed_location: RectLocation) -> Self {
+        self.with_size(self.size().scale(scale), fixed_location)
+    }
+
+    pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
+        self.map_width(fixed_location, move |width| width * scale)
+    }
+
+    pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
+        self.map_height(fixed_location, move |height| height * scale)
+    }
+
+    pub fn scale_uniform(&self, scale: T, fixed_location: RectLocation) -> Self {
+        self.with_size(self.size().scale_uniform(scale), fixed_location)
+    }
+
+    pub fn translate(&self, offset: Vector<T>) -> Self {
+        *self + offset
+    }
+
+    pub fn translate_x(&self, offset_x: T) -> Self {
+        self.translate(Vector::from_dx(offset_x))
+    }
+
+    pub fn translate_y(&self, offset_y: T) -> Self {
+        self.translate(Vector::from_dy(offset_y))
+    }
+
     // Inspired by https://api.flutter.dev/flutter/painting/EdgeInsets-class.html
     pub fn inset(&self, top: T, right: T, bottom: T, left: T) -> Self {
         Self::new(
@@ -376,7 +431,7 @@ impl<T: en::Num> Rect<T> {
         self.inset(vert, horiz, vert, horiz)
     }
 
-    pub fn inset_all(&self, inset: T) -> Self {
+    pub fn inset_uniform(&self, inset: T) -> Self {
         self.inset_symmetric(inset, inset)
     }
 
@@ -393,80 +448,15 @@ impl<T: en::Num> Rect<T> {
         self.outset(vert, horiz, vert, horiz)
     }
 
-    pub fn outset_all(&self, outset: T) -> Self {
+    pub fn outset_uniform(&self, outset: T) -> Self {
         self.outset_symmetric(outset, outset)
     }
 
-    pub fn resize(&self, size: Size<T>, fixed_location: RectLocation) -> Self {
-        Self::with_position(self.position_at(fixed_location), size)
-    }
-
-    pub fn resize_width(&self, width: T, fixed_location: HorizontalLocation) -> Self {
-        self.resize(
-            self.size().resize_width(width),
-            fixed_location | VerticalLocation::Top,
+    pub fn transform(self, transform: Transform<T>) -> Self {
+        Self::from_iter(
+            self.clockwise_points()
+                .map(|point| point.transform(transform)),
         )
-    }
-
-    pub fn resize_height(&self, height: T, fixed_location: VerticalLocation) -> Self {
-        self.resize(
-            self.size().resize_height(height),
-            HorizontalLocation::Left | fixed_location,
-        )
-    }
-
-    pub fn resize_uniform(&self, dim: T, fixed_location: RectLocation) -> Self {
-        self.resize(Size::square(dim), fixed_location)
-    }
-
-    pub fn reposition(&self, position: RectPosition<T>) -> Self {
-        Self::with_position(position, self.size())
-    }
-
-    pub fn reposition_x(&self, new_x: T, location: HorizontalLocation) -> Self {
-        self.reposition(
-            self.position_at(location | VerticalLocation::Top)
-                .reposition_x(new_x),
-        )
-    }
-
-    pub fn reposition_y(&self, new_y: T, location: VerticalLocation) -> Self {
-        self.reposition(
-            self.position_at(HorizontalLocation::Left | location)
-                .reposition_y(new_y),
-        )
-    }
-
-    pub fn scale(&self, scale: Vector<T>, fixed_location: RectLocation) -> Self {
-        self.resize(self.size().scale(scale), fixed_location)
-    }
-
-    pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
-        self.map_width(fixed_location, move |width| width * scale)
-    }
-
-    pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
-        self.map_height(fixed_location, move |height| height * scale)
-    }
-
-    pub fn scale_uniform(&self, scale: T, fixed_location: RectLocation) -> Self {
-        self.resize(self.size().scale_uniform(scale), fixed_location)
-    }
-
-    pub fn translate(&self, offset: Vector<T>) -> Self {
-        *self + offset
-    }
-
-    pub fn translate_x(&self, offset_x: T) -> Self {
-        self.translate(Vector::from_dx(offset_x))
-    }
-
-    pub fn translate_y(&self, offset_y: T) -> Self {
-        self.translate(Vector::from_dy(offset_y))
-    }
-
-    pub fn translate_uniform(&self, offset: T) -> Self {
-        self.translate(Vector::uniform(offset))
     }
 
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
@@ -487,8 +477,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.min(other.right);
         let bottom = self.bottom.max(other.bottom);
         let left = self.left.max(other.left);
-
-        Self::try_new(top, left, bottom, right)
+        Some(Self::new(top, left, bottom, right)).filter(Self::has_area)
     }
 
     pub fn union(&self, other: &Self) -> Self {
@@ -496,9 +485,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.max(other.right);
         let bottom = self.bottom.min(other.bottom);
         let left = self.left.min(other.left);
-
-        // We are guaranteed a canonical rectangle if both inputs are canonical.
-        Self::new_unchecked(top, left, bottom, right)
+        Self::new(top, left, bottom, right)
     }
 
     pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
@@ -599,39 +586,32 @@ impl<T: en::Num> Rect<T> {
             })
     }
 
+    pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
+        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
+    }
+
     pub fn map_size(
         self,
         fixed_location: RectLocation,
         f: impl FnOnce(Size<T>) -> Size<T>,
     ) -> Self {
-        self.resize(f(self.size()), fixed_location)
+        self.with_size(f(self.size()), fixed_location)
     }
 
     pub fn map_width(self, fixed_location: HorizontalLocation, f: impl FnOnce(T) -> T) -> Self {
-        self.resize_width(f(self.width()), fixed_location)
+        self.with_width(f(self.width()), fixed_location)
     }
 
     pub fn map_height(self, fixed_location: VerticalLocation, f: impl FnOnce(T) -> T) -> Self {
-        self.resize_height(f(self.height()), fixed_location)
-    }
-
-    pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
-        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
+        self.with_height(f(self.height()), fixed_location)
     }
 
     impl_casts_and_cast!(Rect);
-
-    pub fn to_clockwise_array(self) -> [T; 4] {
-        [self.top, self.right, self.bottom, self.left]
-    }
-
-    pub fn to_clockwise_tuple(self) -> (T, T, T, T) {
-        (self.top, self.right, self.bottom, self.left)
-    }
 }
 
 impl<T: en::Num> Add<Vector<T>> for Rect<T> {
     type Output = Self;
+
     fn add(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
             self.top + rhs.dy,
@@ -650,6 +630,7 @@ impl<T: en::Num> AddAssign<Vector<T>> for Rect<T> {
 
 impl<T: en::Num> Sub<Vector<T>> for Rect<T> {
     type Output = Self;
+
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         Rect::new(
             self.top - rhs.dy,
@@ -663,20 +644,6 @@ impl<T: en::Num> Sub<Vector<T>> for Rect<T> {
 impl<T: en::Num> SubAssign<Vector<T>> for Rect<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> From<euclid::Rect<T, U>> for Rect<T> {
-    fn from(rect: euclid::Rect<T, U>) -> Self {
-        Rect::with_top_left(rect.origin.into(), rect.size.into())
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> Into<euclid::Rect<T, U>> for Rect<T> {
-    fn into(self) -> euclid::Rect<T, U> {
-        euclid::Rect::new(self.top_left().into(), self.size().into())
     }
 }
 
@@ -715,39 +682,39 @@ mod test {
             assert_eq!(rect.bottom_right(), Point::new(right, bottom));
         };
         rect_asserts(rect);
-        rect_asserts(Rect::with_top_left(
+        rect_asserts(Rect::from_top_left(
             Point::new(left, top),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_top_center(
+        rect_asserts(Rect::from_top_center(
             Point::new(center_x, top),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_top_right(
+        rect_asserts(Rect::from_top_right(
             Point::new(right, top),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_center_left(
+        rect_asserts(Rect::from_center_left(
             Point::new(left, center_y),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_center(
+        rect_asserts(Rect::from_center(
             Point::new(center_x, center_y),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_center_right(
+        rect_asserts(Rect::from_center_right(
             Point::new(right, center_y),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_bottom_left(
+        rect_asserts(Rect::from_bottom_left(
             Point::new(left, bottom),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_bottom_center(
+        rect_asserts(Rect::from_bottom_center(
             Point::new(center_x, bottom),
             Size::new(width, height),
         ));
-        rect_asserts(Rect::with_bottom_right(
+        rect_asserts(Rect::from_bottom_right(
             Point::new(right, bottom),
             Size::new(width, height),
         ));
@@ -757,14 +724,14 @@ mod test {
 
     #[test]
     fn grow_to() {
-        let rect = Rect::with_bottom_left(Point::new(10, 10), Size::new(10, 10));
+        let rect = Rect::from_bottom_left(Point::new(10, 10), Size::new(10, 10));
         assert_eq!(
             rect.grow_to(Point::new(0, 20)),
-            Rect::with_bottom_left(Point::new(0, 10), Size::new(20, 10))
+            Rect::from_bottom_left(Point::new(0, 10), Size::new(20, 10))
         );
         assert_eq!(
             rect.grow_to(Point::new(20, 0)),
-            Rect::with_bottom_left(Point::new(10, 0), Size::new(10, 20))
+            Rect::from_bottom_left(Point::new(10, 0), Size::new(10, 20))
         );
     }
 }

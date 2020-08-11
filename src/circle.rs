@@ -17,36 +17,34 @@ impl<T: en::Num> Default for Circle<T> {
 }
 
 impl<T: en::Num> Circle<T> {
-    pub fn new_unchecked(center: Point<T>, radius: T) -> Self {
+    pub fn new(center: Point<T>, radius: T) -> Self {
         Self { center, radius }
     }
 
-    pub fn try_new(center: Point<T>, radius: T) -> Option<Self> {
-        if radius >= T::zero() {
-            Some(Self::new_unchecked(center, radius))
-        } else {
-            None
-        }
-    }
-
-    pub fn new(center: Point<T>, radius: T) -> Self {
-        Self::try_new(center, radius).expect("radius is less than 0")
-    }
-
     pub fn unit() -> Self {
-        Self::with_radius(T::one())
+        Self::new(Point::zero(), T::one())
     }
 
     pub fn zero() -> Self {
-        Self::with_radius(T::zero())
+        Self::from_radius(T::zero())
     }
 
-    pub fn with_radius(radius: T) -> Self {
-        Self::new(Point::zero(), radius)
+    pub fn from_radius(radius: T) -> Self {
+        Self::default().with_radius(radius)
     }
 
-    pub fn with_center(center: Point<T>) -> Self {
-        Self::new(center, T::one())
+    pub fn from_center(center: Point<T>) -> Self {
+        Self::default().with_center(center)
+    }
+
+    pub fn with_radius(mut self, radius: T) -> Self {
+        self.radius = radius;
+        self
+    }
+
+    pub fn with_center(mut self, center: Point<T>) -> Self {
+        self.center = center;
+        self
     }
 
     pub fn center(&self) -> Point<T> {
@@ -57,19 +55,11 @@ impl<T: en::Num> Circle<T> {
         self.radius
     }
 
-    pub fn added_radius(&self, by: T) -> Self {
-        self.map_radius(move |radius: T| radius + by)
-    }
-
-    pub fn scaled_radius(&self, coeff: T) -> Self {
-        self.map_radius(move |radius: T| radius * coeff)
-    }
-
     pub fn bounding_rect(&self) -> Rect<T> {
-        let radius_offset: Vector<T> = Vector::new(self.radius, self.radius);
-        let top_left = self.center + radius_offset;
-        let bottom_right = self.center + radius_offset;
-        Rect::from_points(top_left, bottom_right)
+        let offset = Vector::uniform(self.radius);
+        let bottom_left = self.center - offset;
+        let top_right = self.center + offset;
+        Rect::from_points(bottom_left, top_right)
     }
 
     pub fn arc_points(
@@ -124,8 +114,7 @@ impl<T: en::Num> Circle<T> {
 impl<T: en::Num> Add<Vector<T>> for Circle<T> {
     type Output = Self;
     fn add(self, rhs: Vector<T>) -> Self::Output {
-        // radius unmodified
-        Circle::new_unchecked(self.center + rhs, self.radius)
+        Circle::new(self.center + rhs, self.radius)
     }
 }
 
@@ -138,8 +127,7 @@ impl<T: en::Num> AddAssign<Vector<T>> for Circle<T> {
 impl<T: en::Num> Sub<Vector<T>> for Circle<T> {
     type Output = Self;
     fn sub(self, rhs: Vector<T>) -> Self::Output {
-        // radius unmodified
-        Circle::new_unchecked(self.center + rhs, self.radius)
+        Circle::new(self.center + rhs, self.radius)
     }
 }
 

@@ -11,12 +11,9 @@ categories = ["games", "graphics", "science"]
 
 [features]
 default = []
-unchecked-ctors = []
 
 [dependencies]
 en = { git = "https://github.com/BrainiumLLC/en" }
-euclid = { version = "0.20.13", optional = true }
-nalgebra-glm = { version = "0.7.0", optional = true }
 serde = { version = "1.0.106", features = ["serde_derive"], optional = true }
 strum = "0.18.0"
 strum_macros = "0.18.0"

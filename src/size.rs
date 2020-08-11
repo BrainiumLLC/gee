@@ -6,29 +6,13 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check size validity in deserialize
 pub struct Size<T> {
-    width:  T,
-    height: T,
+    pub width:  T,
+    pub height: T,
 }
 
 impl<T: en::Num> Size<T> {
-    pub fn new_unchecked(width: T, height: T) -> Self {
-        Self { width, height }
-    }
-
     pub fn new(width: T, height: T) -> Self {
-        if cfg!(not(feature = "unchecked-ctors")) {
-            Self::try_new(width, height).expect("width or height is less than 0")
-        } else {
-            Self::new_unchecked(width, height)
-        }
-    }
-
-    pub fn try_new(width: T, height: T) -> Option<Self> {
-        if width >= T::zero() && height >= T::zero() {
-            Some(Self::new_unchecked(width, height))
-        } else {
-            None
-        }
+        Self { width, height }
     }
 
     pub fn square(dim: T) -> Self {
@@ -83,11 +67,11 @@ impl<T: en::Num> Size<T> {
         self.width.max(self.height)
     }
 
-    pub fn resize_width(self, width: T) -> Self {
+    pub fn with_width(self, width: T) -> Self {
         Self::new(width, self.height)
     }
 
-    pub fn resize_height(self, height: T) -> Self {
+    pub fn with_height(self, height: T) -> Self {
         Self::new(self.width, height)
     }
 
@@ -96,11 +80,11 @@ impl<T: en::Num> Size<T> {
     }
 
     pub fn scale_width(self, coeff: T) -> Self {
-        self.resize_width(self.width * coeff)
+        self.with_width(self.width * coeff)
     }
 
     pub fn scale_height(self, coeff: T) -> Self {
-        self.resize_height(self.height * coeff)
+        self.with_height(self.height * coeff)
     }
 
     pub fn scale_uniform(self, coeff: T) -> Self {
@@ -159,6 +143,7 @@ impl<T: en::Num> Size<T> {
 
 impl<T: en::Num> Add for Size<T> {
     type Output = Self;
+
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.width + rhs.width, self.height + rhs.height)
     }
@@ -172,6 +157,7 @@ impl<T: en::Num> AddAssign for Size<T> {
 
 impl<T: en::Num> Mul<T> for Size<T> {
     type Output = Self;
+
     fn mul(self, rhs: T) -> Self::Output {
         self.map(move |x| x * rhs)
     }
@@ -185,6 +171,7 @@ impl<T: en::Num> MulAssign<T> for Size<T> {
 
 impl<T: en::Num> Div<T> for Size<T> {
     type Output = Self;
+
     fn div(self, rhs: T) -> Self::Output {
         self.map(move |x| x / rhs)
     }
@@ -198,6 +185,7 @@ impl<T: en::Num> DivAssign<T> for Size<T> {
 
 impl<T: en::Num> Rem<T> for Size<T> {
     type Output = Self;
+
     fn rem(self, rhs: T) -> Self::Output {
         self.map(move |x| x % rhs)
     }
@@ -212,19 +200,5 @@ impl<T: en::Num> RemAssign<T> for Size<T> {
 impl<T: en::Num> From<Vector<T>> for Size<T> {
     fn from(vector: Vector<T>) -> Self {
         Self::new(vector.dx, vector.dy)
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> From<euclid::Size2D<T, U>> for Size<T> {
-    fn from(size: euclid::Size2D<T, U>) -> Self {
-        Self::new(size.width, size.height)
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> Into<euclid::Size2D<T, U>> for Size<T> {
-    fn into(self) -> euclid::Size2D<T, U> {
-        euclid::Size2D::new(self.width, self.height)
     }
 }

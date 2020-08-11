@@ -177,20 +177,6 @@ impl<T: en::Float> Neg for Angle<T> {
     }
 }
 
-#[cfg(feature = "euclid")]
-impl<T: en::Float> From<euclid::Angle<T>> for Angle<T> {
-    fn from(angle: euclid::Angle<T>) -> Self {
-        Angle::from_radians(angle.radians)
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Float> Into<euclid::Angle<T>> for Angle<T> {
-    fn into(self) -> euclid::Angle<T> {
-        euclid::Angle::radians(self.radians)
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;

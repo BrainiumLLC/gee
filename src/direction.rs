@@ -31,6 +31,7 @@ impl<T: en::Float> Into<Angle<T>> for Cardinal {
 
 impl Neg for Cardinal {
     type Output = Self;
+
     fn neg(self) -> Self::Output {
         use Cardinal::*;
         match self {
@@ -77,6 +78,7 @@ impl Direction {
 
 impl Neg for Direction {
     type Output = Self;
+
     fn neg(self) -> Self::Output {
         use Direction::*;
         match self {
@@ -111,6 +113,7 @@ impl From<Cardinal> for Direction {
 
 impl TryFrom<Direction> for Cardinal {
     type Error = ();
+
     fn try_from(direction: Direction) -> Result<Self, Self::Error> {
         match direction {
             Direction::North => Ok(Cardinal::North),

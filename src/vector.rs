@@ -1,4 +1,4 @@
-use crate::{Angle, Cardinal, Direction, Point, Size};
+use crate::{Angle, Cardinal, Direction, Point, Size, Transform};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{
@@ -40,6 +40,14 @@ impl<T: en::Num> Vector<T> {
 
     pub fn from_tuple((dx, dy): (T, T)) -> Self {
         Self::new(dx, dy)
+    }
+
+    pub fn with_dx(self, dx: T) -> Self {
+        Self::new(dx, self.dy)
+    }
+
+    pub fn with_dy(self, dy: T) -> Self {
+        Self::new(self.dx, dy)
     }
 
     pub fn dot_product(self, rhs: Self) -> T {
@@ -91,6 +99,13 @@ impl<T: en::Num> Vector<T> {
 
     pub fn yx(self) -> Self {
         Self::new(self.dy, self.dx)
+    }
+
+    pub fn transform(&self, transform: Transform<T>) -> Self {
+        Self::new(
+            self.dx * transform.m11 + self.dy * transform.m21 + transform.m31,
+            self.dx * transform.m12 + self.dy * transform.m22 + transform.m32,
+        )
     }
 
     pub fn map<U: en::Num>(&self, mut f: impl FnMut(T) -> U) -> Vector<U> {
@@ -221,66 +236,5 @@ impl<T: en::Num> From<Cardinal> for Vector<T> {
             West => Vector::new(-1, 0),
         }
         .cast()
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> From<euclid::Vector2D<T, U>> for Vector<T> {
-    fn from(vector: euclid::Vector2D<T, U>) -> Self {
-        Self::new(vector.x, vector.y)
-    }
-}
-
-#[cfg(feature = "euclid")]
-impl<T: en::Num, U> Into<euclid::Vector2D<T, U>> for Vector<T> {
-    fn into(self) -> euclid::Vector2D<T, U> {
-        euclid::Vector2D::new(self.dx, self.dy)
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> From<nalgebra_glm::TVec2<T>> for Vector<T> {
-    fn from(vector: nalgebra_glm::TVec2<T>) -> Self {
-        Self::new(vector.x, vector.y)
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TVec2<T>> for Vector<T> {
-    fn into(self) -> nalgebra_glm::TVec2<T> {
-        nalgebra_glm::vec2(self.dx, self.dy)
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TVec3<T>> for Vector<T> {
-    fn into(self) -> nalgebra_glm::TVec3<T> {
-        nalgebra_glm::vec3(self.dx, self.dy, T::zero())
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Into<nalgebra_glm::TVec4<T>> for Vector<T> {
-    fn into(self) -> nalgebra_glm::TVec4<T> {
-        nalgebra_glm::vec4(self.dx, self.dy, T::zero(), T::zero())
-    }
-}
-
-#[cfg(feature = "nalgebra-glm")]
-impl<T: 'static + en::Num> Vector<T> {
-    pub fn from_glm_vec2(vector: nalgebra_glm::TVec2<T>) -> Self {
-        Self::from(vector)
-    }
-
-    pub fn to_glm_vec2(self) -> nalgebra_glm::TVec2<T> {
-        self.into()
-    }
-
-    pub fn to_glm_vec3(self) -> nalgebra_glm::TVec3<T> {
-        self.into()
-    }
-
-    pub fn to_glm_vec4(self) -> nalgebra_glm::TVec4<T> {
-        self.into()
     }
 }

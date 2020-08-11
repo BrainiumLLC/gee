@@ -8,23 +8,19 @@ mod circle;
 mod direction;
 mod lerp;
 mod line_segment;
-mod transform;
 mod point;
 mod ray;
 mod rect;
 mod rect_position;
 mod size;
+mod transform;
 mod vector;
 
 pub use self::{
-    angle::*, circle::*, direction::*, lerp::*, line_segment::*, transform::*, point::*,
-    ray::*, rect::*, rect_position::*, size::*, vector::*,
+    angle::*, circle::*, direction::*, lerp::*, line_segment::*, point::*, ray::*, rect::*,
+    rect_position::*, size::*, transform::*, vector::*,
 };
 pub use en;
-#[cfg(feature = "euclid")]
-pub use euclid;
-#[cfg(feature = "nalgebra-glm")]
-pub use nalgebra_glm as glm;
 
 #[cfg(test)]
 pub(crate) mod test {
