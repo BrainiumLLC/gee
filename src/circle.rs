@@ -47,6 +47,14 @@ impl<T: en::Num> Circle<T> {
         self
     }
 
+    pub fn add_radius(self, by: T) -> Self {
+        self.map_radius(move |radius: T| radius + by)
+    }
+
+    pub fn scale_radius(self, coeff: T) -> Self {
+        self.map_radius(move |radius: T| radius * coeff)
+    }
+
     pub fn center(&self) -> Point<T> {
         self.center
     }
