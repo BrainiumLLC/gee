@@ -7,7 +7,7 @@ description = "A convenience-first geometry library tailor-made for 2D games! ðŸ
 documentation = "https://docs.rs/gee"
 repository = "https://github.com/BrainiumLLC/gee"
 readme = "README.md"
-keywords = ["geometry"]
+keywords = ["geometry", "math", "matrix", "vector"]
 categories = ["graphics"]
 license = "Apache-2.0/MIT"
 
