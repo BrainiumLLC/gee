@@ -1,13 +1,13 @@
 [package]
 name = "gee"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Brainium Studios LLC"]
 edition = "2018"
 description = "A convenience-first geometry library tailor-made for 2D games! 📐"
 documentation = "https://docs.rs/gee"
 repository = "https://github.com/BrainiumLLC/gee"
 readme = "README.md"
-keywords = ["geometry", "math", "matrix", "vector"]
+keywords = ["geometry", "math", "mathematics", "matrix", "vector"]
 categories = ["graphics"]
 license = "Apache-2.0/MIT"
 
@@ -15,7 +15,7 @@ license = "Apache-2.0/MIT"
 default = []
 
 [dependencies]
-en = { git = "https://github.com/BrainiumLLC/en" }
+en = "0.1.0"
 serde = { version = "1.0.115", features = ["serde_derive"], optional = true }
 strum = "0.19.2"
 strum_macros = "0.19.2"
