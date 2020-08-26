@@ -353,6 +353,20 @@ impl<T: en::Num> Rect<T> {
         }
     }
 
+    pub fn split_at_percent_width(&self, percent: T) -> Option<(Self, Self)>
+    where
+        T: en::Float,
+    {
+        self.split_at_x(self.width() * percent)
+    }
+
+    pub fn split_at_percent_height(&self, percent: T) -> Option<(Self, Self)>
+    where
+        T: en::Float,
+    {
+        self.split_at_y(self.height() * percent)
+    }
+
     pub fn with_position(&self, position: RectPosition<T>) -> Self {
         Self::from_position(position, self.size())
     }
