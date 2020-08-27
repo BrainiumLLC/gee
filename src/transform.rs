@@ -1,4 +1,4 @@
-use crate::Angle;
+use crate::{Angle, Point};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -53,6 +53,15 @@ impl<T: en::Num> Transform<T> {
     {
         let (sin, cos) = theta.sin_cos();
         Self::row_major(cos, sin, -sin, cos, T::zero(), T::zero())
+    }
+
+    pub fn from_rotation_with_fixed_point(theta: Angle<T>, point: Point<T>) -> Self
+    where
+        T: en::Float,
+    {
+        Self::from_rotation(theta)
+            .pre_translate(-point.x, -point.y)
+            .post_translate(point.x, point.y)
     }
 
     pub fn from_translation(x: T, y: T) -> Self {
