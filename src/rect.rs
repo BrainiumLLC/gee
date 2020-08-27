@@ -408,11 +408,11 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn scale_width(&self, scale: T, fixed_location: HorizontalLocation) -> Self {
-        self.map_width(fixed_location, move |width| width * scale)
+        self.map_width(move |width| width * scale, fixed_location)
     }
 
     pub fn scale_height(&self, scale: T, fixed_location: VerticalLocation) -> Self {
-        self.map_height(fixed_location, move |height| height * scale)
+        self.map_height(move |height| height * scale, fixed_location)
     }
 
     pub fn scale_uniform(&self, scale: T, fixed_location: RectLocation) -> Self {
@@ -606,17 +606,17 @@ impl<T: en::Num> Rect<T> {
 
     pub fn map_size(
         self,
-        fixed_location: RectLocation,
         f: impl FnOnce(Size<T>) -> Size<T>,
+        fixed_location: RectLocation,
     ) -> Self {
         self.with_size(f(self.size()), fixed_location)
     }
 
-    pub fn map_width(self, fixed_location: HorizontalLocation, f: impl FnOnce(T) -> T) -> Self {
+    pub fn map_width(self, f: impl FnOnce(T) -> T, fixed_location: HorizontalLocation) -> Self {
         self.with_width(f(self.width()), fixed_location)
     }
 
-    pub fn map_height(self, fixed_location: VerticalLocation, f: impl FnOnce(T) -> T) -> Self {
+    pub fn map_height(self, f: impl FnOnce(T) -> T, fixed_location: VerticalLocation) -> Self {
         self.with_height(f(self.height()), fixed_location)
     }
 
