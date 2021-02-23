@@ -1,12 +1,12 @@
 use crate::Vector;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check size validity in deserialize
 pub struct Size<T> {
-    pub width:  T,
+    pub width: T,
     pub height: T,
 }
 
@@ -149,9 +149,37 @@ impl<T: en::Num> Add for Size<T> {
     }
 }
 
+impl<T: en::Num> Add<Vector<T>> for Size<T> {
+    type Output = Self;
+
+    fn add(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.width + rhs.dx, self.height + rhs.dy)
+    }
+}
+
 impl<T: en::Num> AddAssign for Size<T> {
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs
+    }
+}
+
+impl<T: en::Num> AddAssign<Vector<T>> for Size<T> {
+    fn add_assign(&mut self, rhs: Vector<T>) {
+        *self = *self + rhs
+    }
+}
+
+impl<T: en::Num> Sub<Vector<T>> for Size<T> {
+    type Output = Self;
+
+    fn sub(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.width - rhs.dx, self.height - rhs.dy)
+    }
+}
+
+impl<T: en::Num> SubAssign<Vector<T>> for Size<T> {
+    fn sub_assign(&mut self, rhs: Vector<T>) {
+        *self = *self - rhs
     }
 }
 
@@ -163,8 +191,22 @@ impl<T: en::Num> Mul<T> for Size<T> {
     }
 }
 
+impl<T: en::Num> Mul<Vector<T>> for Size<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.width * rhs.dx, self.height * rhs.dy)
+    }
+}
+
 impl<T: en::Num> MulAssign<T> for Size<T> {
     fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs
+    }
+}
+
+impl<T: en::Num> MulAssign<Vector<T>> for Size<T> {
+    fn mul_assign(&mut self, rhs: Vector<T>) {
         *self = *self * rhs
     }
 }
@@ -177,8 +219,22 @@ impl<T: en::Num> Div<T> for Size<T> {
     }
 }
 
+impl<T: en::Num> Div<Vector<T>> for Size<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.width / rhs.dx, self.height / rhs.dy)
+    }
+}
+
 impl<T: en::Num> DivAssign<T> for Size<T> {
     fn div_assign(&mut self, rhs: T) {
+        *self = *self / rhs
+    }
+}
+
+impl<T: en::Num> DivAssign<Vector<T>> for Size<T> {
+    fn div_assign(&mut self, rhs: Vector<T>) {
         *self = *self / rhs
     }
 }
@@ -191,8 +247,22 @@ impl<T: en::Num> Rem<T> for Size<T> {
     }
 }
 
+impl<T: en::Num> Rem<Vector<T>> for Size<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.width % rhs.dx, self.height % rhs.dy)
+    }
+}
+
 impl<T: en::Num> RemAssign<T> for Size<T> {
     fn rem_assign(&mut self, rhs: T) {
+        *self = *self % rhs
+    }
+}
+
+impl<T: en::Num> RemAssign<Vector<T>> for Size<T> {
+    fn rem_assign(&mut self, rhs: Vector<T>) {
         *self = *self % rhs
     }
 }
