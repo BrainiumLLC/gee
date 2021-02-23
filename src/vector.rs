@@ -112,6 +112,14 @@ impl<T: en::Num> Vector<T> {
         Vector::new(f(self.dx), f(self.dy))
     }
 
+    pub fn map_dx(&self, mut f: impl FnMut(T) -> T) -> Self {
+        self.with_dx(f(self.dx))
+    }
+
+    pub fn map_dy(&self, mut f: impl FnMut(T) -> T) -> Self {
+        self.with_dy(f(self.dy))
+    }
+
     impl_casts_and_cast!(Vector);
 
     pub fn to_array(self) -> [T; 2] {
