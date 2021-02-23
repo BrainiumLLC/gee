@@ -13,10 +13,10 @@ use std::{
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check rect validity in deserialize
 pub struct Rect<T> {
-    top:    T,
-    right:  T,
+    top: T,
+    right: T,
     bottom: T,
-    left:   T,
+    left: T,
 }
 
 impl<T: en::Num> Rect<T> {
@@ -261,7 +261,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn has_area(&self) -> bool {
-        self.top > self.bottom && self.left > self.right
+        self.width() != T::zero() && self.height() != T::zero()
     }
 
     pub fn contains_x(&self, x: T) -> bool {
@@ -491,7 +491,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.min(other.right);
         let bottom = self.bottom.max(other.bottom);
         let left = self.left.max(other.left);
-        Some(Self::new(top, left, bottom, right)).filter(Self::has_area)
+        Some(Self::new(top, right, bottom, left)).filter(Self::has_area)
     }
 
     pub fn union(&self, other: &Self) -> Self {
@@ -734,6 +734,38 @@ mod test {
         ));
 
         assert_eq!(rect.size(), Size::new(width, height));
+    }
+
+    #[test]
+    fn has_area() {
+        let normal = Rect::from_bottom_left(Point::zero(), Size::square(100));
+        assert!(
+            normal.has_area(),
+            "erroneously found `{:?}` to have no area",
+            normal
+        );
+        let empty = Rect::from_bottom_left(Point::new(50, 50), Size::zero());
+        assert!(
+            !empty.has_area(),
+            "erroneously found `{:?}` to have an area",
+            empty
+        );
+    }
+
+    #[test]
+    fn intersection() {
+        let offset = Point::new(50, 50);
+        let size = Size::square(100);
+        let a = Rect::from_bottom_left(Point::zero(), size);
+        let b = Rect::from_bottom_left(offset, size);
+        let c = Rect::from_bottom_left(offset, size - offset.to_vector());
+        assert_eq!(
+            a.intersection(&b),
+            Some(c),
+            "erroneously found no intersection between `{:?}` and `{:?}`",
+            a,
+            b
+        );
     }
 
     #[test]
