@@ -261,7 +261,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn has_area(&self) -> bool {
-        self.width() != T::zero() && self.height() != T::zero()
+        self.size().area() != T::zero()
     }
 
     pub fn contains_x(&self, x: T) -> bool {
