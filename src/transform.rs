@@ -1,4 +1,4 @@
-use crate::{Angle, Point};
+use crate::{Angle, Point, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -47,6 +47,10 @@ impl<T: en::Num> Transform<T> {
         Self::row_major(x, T::zero(), T::zero(), y, T::zero(), T::zero())
     }
 
+    pub fn from_scale_vector(scale: Vector<T>) -> Self {
+        Self::from_scale(scale.dx, scale.dy)
+    }
+
     pub fn from_rotation(theta: Angle<T>) -> Self
     where
         T: en::Float,
@@ -66,6 +70,10 @@ impl<T: en::Num> Transform<T> {
 
     pub fn from_translation(x: T, y: T) -> Self {
         Self::row_major(T::one(), T::zero(), T::zero(), T::one(), x, y)
+    }
+
+    pub fn from_translation_vector(translation: Vector<T>) -> Self {
+        Self::from_translation(translation.dx, translation.dy)
     }
 
     pub fn determinant(&self) -> T {
@@ -91,16 +99,32 @@ impl<T: en::Num> Transform<T> {
         self.post_mul(&Self::from_translation(x, y))
     }
 
+    pub fn post_translate_vector(&self, translation: Vector<T>) -> Self {
+        self.post_mul(&Self::from_translation_vector(translation))
+    }
+
     pub fn pre_translate(&self, x: T, y: T) -> Self {
         self.pre_mul(&Self::from_translation(x, y))
+    }
+
+    pub fn pre_translate_vector(&self, translation: Vector<T>) -> Self {
+        self.pre_mul(&Self::from_translation_vector(translation))
     }
 
     pub fn post_scale(&self, x: T, y: T) -> Self {
         self.post_mul(&Self::from_scale(x, y))
     }
 
+    pub fn post_scale_vector(&self, scale: Vector<T>) -> Self {
+        self.post_mul(&Self::from_scale_vector(scale))
+    }
+
     pub fn pre_scale(&self, x: T, y: T) -> Self {
         self.pre_mul(&Self::from_scale(x, y))
+    }
+
+    pub fn pre_scale_vector(&self, scale: Vector<T>) -> Self {
+        self.pre_mul(&Self::from_scale_vector(scale))
     }
 
     pub fn post_rotate(&self, theta: Angle<T>) -> Self
