@@ -110,8 +110,22 @@ impl<T: en::Num> Mul<T> for Point<T> {
     }
 }
 
+impl<T: en::Num> Mul<Vector<T>> for Point<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.x * rhs.dx, self.y * rhs.dy)
+    }
+}
+
 impl<T: en::Num> MulAssign<T> for Point<T> {
     fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs
+    }
+}
+
+impl<T: en::Num> MulAssign<Vector<T>> for Point<T> {
+    fn mul_assign(&mut self, rhs: Vector<T>) {
         *self = *self * rhs
     }
 }
@@ -124,8 +138,22 @@ impl<T: en::Num> Div<T> for Point<T> {
     }
 }
 
+impl<T: en::Num> Div<Vector<T>> for Point<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Vector<T>) -> Self::Output {
+        Self::new(self.x / rhs.dx, self.y / rhs.dy)
+    }
+}
+
 impl<T: en::Num> DivAssign<T> for Point<T> {
     fn div_assign(&mut self, rhs: T) {
+        *self = *self / rhs
+    }
+}
+
+impl<T: en::Num> DivAssign<Vector<T>> for Point<T> {
+    fn div_assign(&mut self, rhs: Vector<T>) {
         *self = *self / rhs
     }
 }
@@ -138,8 +166,22 @@ impl<T: en::Num> Rem<T> for Point<T> {
     }
 }
 
+impl<T: en::Num> Rem<Vector<T>> for Point<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Vector<T>) -> Self::Output {
+        Point::new(self.x % rhs.dx, self.y % rhs.dy)
+    }
+}
+
 impl<T: en::Num> RemAssign<T> for Point<T> {
     fn rem_assign(&mut self, rhs: T) {
+        *self = *self % rhs
+    }
+}
+
+impl<T: en::Num> RemAssign<Vector<T>> for Point<T> {
+    fn rem_assign(&mut self, rhs: Vector<T>) {
         *self = *self % rhs
     }
 }
