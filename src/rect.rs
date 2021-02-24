@@ -260,8 +260,9 @@ impl<T: en::Num> Rect<T> {
         self.size().aspect_ratio()
     }
 
+    /// Returns `true` if the rect's area is greater than 0.
     pub fn has_area(&self) -> bool {
-        self.size().area() != T::zero()
+        self.size().min_dim() > T::zero()
     }
 
     pub fn contains_x(&self, x: T) -> bool {
@@ -749,6 +750,12 @@ mod test {
             !empty.has_area(),
             "erroneously found `{:?}` to have an area",
             empty
+        );
+        let inverted = Rect::from_bottom_left(Point::zero(), Size::square(-100));
+        assert!(
+            !inverted.has_area(),
+            "erroneously found `{:?}` to have an area",
+            inverted
         );
     }
 
