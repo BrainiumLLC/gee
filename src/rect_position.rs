@@ -66,7 +66,7 @@ impl Neg for VerticalLocation {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct RectLocation {
     pub horizontal: HorizontalLocation,
-    pub vertical:   VerticalLocation,
+    pub vertical: VerticalLocation,
 }
 
 impl Neg for RectLocation {
@@ -158,7 +158,7 @@ impl RectLocation {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct RectPosition<T> {
     pub location: RectLocation,
-    pub point:    Point<T>,
+    pub point: Point<T>,
 }
 
 impl<T: en::Num> RectPosition<T> {
@@ -312,7 +312,7 @@ impl<T: en::Num> Add<Vector<T>> for RectPosition<T> {
     fn add(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
             location: self.location,
-            point:    self.point + rhs,
+            point: self.point + rhs,
         }
     }
 }
@@ -328,7 +328,7 @@ impl<T: en::Num> Sub<Vector<T>> for RectPosition<T> {
     fn sub(self, rhs: Vector<T>) -> Self::Output {
         RectPosition {
             location: self.location,
-            point:    self.point - rhs,
+            point: self.point - rhs,
         }
     }
 }

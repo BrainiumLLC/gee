@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[repr(C)]
 pub struct LineSegment<T> {
     pub from: Point<T>,
-    pub to:   Point<T>,
+    pub to: Point<T>,
 }
 
 impl<T: en::Num> LineSegment<T> {
