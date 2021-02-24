@@ -165,9 +165,23 @@ impl<T: en::Num> Sub for Vector<T> {
     }
 }
 
-impl<T: en::Num> SubAssign<Self> for Vector<T> {
+impl<T: en::Num> SubAssign for Vector<T> {
     fn sub_assign(&mut self, rhs: Self) {
         *self = *self - rhs
+    }
+}
+
+impl<T: en::Num> Mul for Vector<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self::new(self.dx * rhs.dx, self.dy * rhs.dy)
+    }
+}
+
+impl<T: en::Num> MulAssign for Vector<T> {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs
     }
 }
 
@@ -184,6 +198,20 @@ impl<T: en::Num> MulAssign<T> for Vector<T> {
     }
 }
 
+impl<T: en::Num> Div for Vector<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Self::new(self.dx / rhs.dx, self.dy / rhs.dy)
+    }
+}
+
+impl<T: en::Num> DivAssign for Vector<T> {
+    fn div_assign(&mut self, rhs: Self) {
+        *self = *self / rhs
+    }
+}
+
 impl<T: en::Num> Div<T> for Vector<T> {
     type Output = Self;
     fn div(self, rhs: T) -> Self::Output {
@@ -194,6 +222,20 @@ impl<T: en::Num> Div<T> for Vector<T> {
 impl<T: en::Num> DivAssign<T> for Vector<T> {
     fn div_assign(&mut self, rhs: T) {
         *self = *self / rhs
+    }
+}
+
+impl<T: en::Num> Rem for Vector<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        Self::new(self.dx % rhs.dx, self.dy % rhs.dy)
+    }
+}
+
+impl<T: en::Num> RemAssign for Vector<T> {
+    fn rem_assign(&mut self, rhs: Self) {
+        *self = *self % rhs
     }
 }
 
