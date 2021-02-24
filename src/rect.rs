@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     borrow::Borrow,
     fmt::Debug,
-    ops::{Add, AddAssign, Sub, SubAssign},
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign},
 };
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -659,6 +659,63 @@ impl<T: en::Num> Sub<Vector<T>> for Rect<T> {
 impl<T: en::Num> SubAssign<Vector<T>> for Rect<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
+    }
+}
+
+impl<T: en::Num> Mul<Vector<T>> for Rect<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: Vector<T>) -> Self::Output {
+        Rect::from_top_right_bottom_left(
+            self.top * rhs.dy,
+            self.right * rhs.dx,
+            self.bottom * rhs.dy,
+            self.left * rhs.dx,
+        )
+    }
+}
+
+impl<T: en::Num> MulAssign<Vector<T>> for Rect<T> {
+    fn mul_assign(&mut self, rhs: Vector<T>) {
+        *self = *self * rhs
+    }
+}
+
+impl<T: en::Num> Div<Vector<T>> for Rect<T> {
+    type Output = Self;
+
+    fn div(self, rhs: Vector<T>) -> Self::Output {
+        Rect::from_top_right_bottom_left(
+            self.top / rhs.dy,
+            self.right / rhs.dx,
+            self.bottom / rhs.dy,
+            self.left / rhs.dx,
+        )
+    }
+}
+
+impl<T: en::Num> DivAssign<Vector<T>> for Rect<T> {
+    fn div_assign(&mut self, rhs: Vector<T>) {
+        *self = *self / rhs
+    }
+}
+
+impl<T: en::Num> Rem<Vector<T>> for Rect<T> {
+    type Output = Self;
+
+    fn rem(self, rhs: Vector<T>) -> Self::Output {
+        Rect::from_top_right_bottom_left(
+            self.top % rhs.dy,
+            self.right % rhs.dx,
+            self.bottom % rhs.dy,
+            self.left % rhs.dx,
+        )
+    }
+}
+
+impl<T: en::Num> RemAssign<Vector<T>> for Rect<T> {
+    fn rem_assign(&mut self, rhs: Vector<T>) {
+        *self = *self % rhs
     }
 }
 
