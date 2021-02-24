@@ -20,7 +20,7 @@ pub struct Rect<T> {
 }
 
 impl<T: en::Num> Rect<T> {
-    pub fn new(top: T, right: T, bottom: T, left: T) -> Self {
+    pub fn from_top_right_bottom_left(top: T, right: T, bottom: T, left: T) -> Self {
         Self {
             top,
             right,
@@ -30,13 +30,13 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero(), T::zero(), T::zero())
+        Self::from_top_right_bottom_left(T::zero(), T::zero(), T::zero(), T::zero())
     }
 
     pub fn from_position(rect_position: RectPosition<T>, size: Size<T>) -> Self {
         let width = size.width();
         let height = size.height();
-        Self::new(
+        Self::from_top_right_bottom_left(
             rect_position.top_with_height(height),
             rect_position.right_with_width(width),
             rect_position.bottom_with_height(height),
@@ -45,7 +45,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn from_top_left(top_left: Point<T>, size: Size<T>) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             top_left.y,
             top_left.x + size.width(),
             top_left.y - size.height(),
@@ -55,7 +55,7 @@ impl<T: en::Num> Rect<T> {
 
     pub fn from_top_center(top_center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
-        Self::new(
+        Self::from_top_right_bottom_left(
             top_center.y,
             top_center.x + half_width,
             top_center.y - size.height(),
@@ -64,7 +64,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn from_top_right(top_right: Point<T>, size: Size<T>) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             top_right.y,
             top_right.x,
             top_right.y - size.height(),
@@ -74,7 +74,7 @@ impl<T: en::Num> Rect<T> {
 
     pub fn from_center_left(left_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
-        Self::new(
+        Self::from_top_right_bottom_left(
             left_center.y + half_height,
             left_center.x + size.width(),
             left_center.y - half_height,
@@ -85,7 +85,7 @@ impl<T: en::Num> Rect<T> {
     pub fn from_center(center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
         let half_height = size.height().halved();
-        Self::new(
+        Self::from_top_right_bottom_left(
             center.y + half_height,
             center.x + half_width,
             center.y - half_height,
@@ -95,7 +95,7 @@ impl<T: en::Num> Rect<T> {
 
     pub fn from_center_right(right_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
-        Self::new(
+        Self::from_top_right_bottom_left(
             right_center.y + half_height,
             right_center.x,
             right_center.y - half_height,
@@ -104,7 +104,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn from_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             bottom_right.y + size.height(),
             bottom_right.x,
             bottom_right.y,
@@ -114,7 +114,7 @@ impl<T: en::Num> Rect<T> {
 
     pub fn from_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
-        Self::new(
+        Self::from_top_right_bottom_left(
             bottom_center.y + size.height(),
             bottom_center.x + half_width,
             bottom_center.y,
@@ -123,7 +123,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn from_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             bottom_left.y + size.height(),
             bottom_left.x + size.width(),
             bottom_left.y,
@@ -159,11 +159,11 @@ impl<T: en::Num> Rect<T> {
                 max_y = p.y
             }
         }
-        Self::new(max_y, max_x, min_y, min_x)
+        Self::from_top_right_bottom_left(max_y, max_x, min_y, min_x)
     }
 
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
-        Self::new(a.y.max(b.y), a.x.max(b.x), a.y.min(b.y), a.x.min(b.x))
+        Self::from_top_right_bottom_left(a.y.max(b.y), a.x.max(b.x), a.y.min(b.y), a.x.min(b.x))
     }
 
     pub fn top(&self) -> T {
@@ -329,8 +329,8 @@ impl<T: en::Num> Rect<T> {
                 left,
             } = *self;
             Some((
-                Self::new(top, x, bottom, left),
-                Self::new(top, right, bottom, x),
+                Self::from_top_right_bottom_left(top, x, bottom, left),
+                Self::from_top_right_bottom_left(top, right, bottom, x),
             ))
         } else {
             None
@@ -346,8 +346,8 @@ impl<T: en::Num> Rect<T> {
                 left,
             } = *self;
             Some((
-                Self::new(y, right, bottom, left),
-                Self::new(top, right, y, left),
+                Self::from_top_right_bottom_left(y, right, bottom, left),
+                Self::from_top_right_bottom_left(top, right, y, left),
             ))
         } else {
             None
@@ -434,7 +434,7 @@ impl<T: en::Num> Rect<T> {
 
     // Inspired by https://api.flutter.dev/flutter/painting/EdgeInsets-class.html
     pub fn inset(&self, top: T, right: T, bottom: T, left: T) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             self.top - top,
             self.right - right,
             self.bottom + bottom,
@@ -451,7 +451,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn outset(&self, top: T, right: T, bottom: T, left: T) -> Self {
-        Self::new(
+        Self::from_top_right_bottom_left(
             self.top + top,
             self.right + right,
             self.bottom - bottom,
@@ -492,7 +492,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.min(other.right);
         let bottom = self.bottom.max(other.bottom);
         let left = self.left.max(other.left);
-        Some(Self::new(top, right, bottom, left)).filter(Self::has_area)
+        Some(Self::from_top_right_bottom_left(top, right, bottom, left)).filter(Self::has_area)
     }
 
     pub fn union(&self, other: &Self) -> Self {
@@ -500,7 +500,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.max(other.right);
         let bottom = self.bottom.min(other.bottom);
         let left = self.left.min(other.left);
-        Self::new(top, left, bottom, right)
+        Self::from_top_right_bottom_left(top, left, bottom, right)
     }
 
     pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
@@ -526,7 +526,7 @@ impl<T: en::Num> Rect<T> {
         let items_width = self.width() - total_margin;
         let item_width = items_width / num_items;
         let item_left = self.left + margin + index * (margin + item_width);
-        Self::new(self.top, item_left + item_width, self.bottom, item_left)
+        Self::from_top_right_bottom_left(self.top, item_left + item_width, self.bottom, item_left)
     }
 
     pub fn width_slices_with_margin(
@@ -547,7 +547,7 @@ impl<T: en::Num> Rect<T> {
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
         let item_bottom = self.bottom + margin + index * (margin + item_height);
-        Self::new(
+        Self::from_top_right_bottom_left(
             item_bottom + item_height,
             self.right,
             item_bottom,
@@ -602,7 +602,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Rect<U> {
-        Rect::new(f(self.top), f(self.right), f(self.bottom), f(self.left))
+        Rect::from_top_right_bottom_left(f(self.top), f(self.right), f(self.bottom), f(self.left))
     }
 
     pub fn map_size(
@@ -628,7 +628,7 @@ impl<T: en::Num> Add<Vector<T>> for Rect<T> {
     type Output = Self;
 
     fn add(self, rhs: Vector<T>) -> Self::Output {
-        Rect::new(
+        Rect::from_top_right_bottom_left(
             self.top + rhs.dy,
             self.right + rhs.dx,
             self.bottom + rhs.dy,
@@ -647,7 +647,7 @@ impl<T: en::Num> Sub<Vector<T>> for Rect<T> {
     type Output = Self;
 
     fn sub(self, rhs: Vector<T>) -> Self::Output {
-        Rect::new(
+        Rect::from_top_right_bottom_left(
             self.top - rhs.dy,
             self.right - rhs.dx,
             self.bottom - rhs.dy,
@@ -676,7 +676,7 @@ mod test {
         let center_y = 3;
         let width = 6;
         let height = 8;
-        let rect = Rect::new(top, right, bottom, left);
+        let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 
         let rect_asserts = |rect: Rect<i32>| {
             assert_eq!(rect.top(), top);

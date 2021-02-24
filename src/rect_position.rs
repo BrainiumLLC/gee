@@ -379,7 +379,7 @@ mod test {
         let bottom = -2.0;
         let center_x = (left + right) / 2.0;
         let center_y = (top + bottom) / 2.0;
-        let rect = Rect::new(top, right, bottom, left);
+        let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 
         let top_left = RectLocation::top_left().point_from_rect(rect);
         assert_eq!(top_left.x, left);
@@ -418,7 +418,7 @@ mod test {
         let top = 4.0;
         let right = 3.0;
         let bottom = -2.0;
-        let rect = Rect::new(top, right, bottom, left);
+        let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 
         let width_offset: Vector<f64> = Vector::new(rect.width(), 0.0);
         let height_offset: Vector<f64> = Vector::new(0.0, rect.height());
@@ -451,7 +451,7 @@ mod test {
         let right = 3.0;
         let bottom = -2.0;
         let left = -1.0;
-        let rect = Rect::new(top, right, bottom, left);
+        let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 
         assert_eq!(
             RectPosition::top_left_from_rect(rect).to_rect(rect.size()),

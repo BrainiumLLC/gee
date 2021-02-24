@@ -1,5 +1,6 @@
 # Unreleased
 
+- **Breaking:** Renamed `Rect::new` to `Rect::from_top_right_bottom_left`.
 - Added `Vector::map_dx` and `Vector::map_dy`.
 - Implemented `Vector` math ops for `Point`.
 - Fixed `Rect::has_area` being completely wrong.
