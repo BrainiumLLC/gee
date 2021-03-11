@@ -68,12 +68,52 @@ impl<T: en::Num> Transform<T> {
             .post_translate(point.x, point.y)
     }
 
+    pub fn from_skew(theta: Angle<T>) -> Self
+    where
+        T: en::Float,
+    {
+        let (sin, cos) = theta.sin_cos();
+        Self::row_major(T::one(), T::zero(), -sin, cos, T::zero(), T::zero())
+    }
+
     pub fn from_translation(x: T, y: T) -> Self {
         Self::row_major(T::one(), T::zero(), T::zero(), T::one(), x, y)
     }
 
     pub fn from_translation_vector(translation: Vector<T>) -> Self {
         Self::from_translation(translation.dx, translation.dy)
+    }
+
+    pub fn from_decomposition(
+        translation: Vector<T>,
+        rotation: Angle<T>,
+        skew: Angle<T>,
+        scale: Vector<T>,
+    ) -> Self
+    where
+        T: en::Float,
+    {
+        let (s1, c1) = rotation.sin_cos();
+
+        // Ensure skew angle has same meaning if there is a flip
+        let k = if scale.dx * scale.dy < T::zero() {
+            Angle::from_radians(-skew.radians())
+        } else {
+            skew
+        };
+
+        let (s2, c2) = (rotation + k).sin_cos();
+
+        let m11 = c1 * scale.dx;
+        let m12 = s1 * scale.dx;
+
+        let m21 = -s2 * scale.dy;
+        let m22 = c2 * scale.dy;
+
+        let m31 = translation.dx;
+        let m32 = translation.dy;
+
+        Self::row_major(m11, m12, m21, m22, m31, m32)
     }
 
     pub fn determinant(&self) -> T {
@@ -141,6 +181,20 @@ impl<T: en::Num> Transform<T> {
         self.pre_mul(&Self::from_rotation(theta))
     }
 
+    pub fn post_skew(&self, theta: Angle<T>) -> Self
+    where
+        T: en::Float,
+    {
+        self.post_mul(&Self::from_skew(theta))
+    }
+
+    pub fn pre_skew(&self, theta: Angle<T>) -> Self
+    where
+        T: en::Float,
+    {
+        self.pre_mul(&Self::from_skew(theta))
+    }
+
     pub fn inverse(&self) -> Option<Self> {
         let det = self.determinant();
 
@@ -161,6 +215,36 @@ impl<T: en::Num> Transform<T> {
             inv_det * (self.m31 * self.m12 - self.m11 * self.m32),
         ))
     }
+
+    pub fn decompose(&self) -> (Vector<T>, Angle<T>, Angle<T>, Vector<T>)
+    where
+        T: en::Float,
+    {
+        let mut y_flip = T::one();
+        let translation = Vector::new(self.m31, self.m32);
+
+        let rotation_x = Angle::from_xy(self.m11, self.m12);
+        let rotation_y = Angle::from_xy(self.m21, self.m22);
+        let mut skew = (rotation_y - rotation_x).normalize();
+
+        // The reflection axis is undefined, assume Y
+        // i.e. rotating   0º and flipping X
+        //    = rotating 180º and flipping Y
+        if skew.radians() < T::zero() {
+            skew = Angle::from_radians(skew.radians().abs());
+            y_flip = -T::one();
+        }
+
+        // 90º XY angle = 0 skew
+        skew -= Angle::FRAC_PI_2();
+
+        let scale = Vector::new(
+            Vector::new(self.m11, self.m12).magnitude(),
+            Vector::new(self.m21, self.m22).magnitude() * y_flip,
+        );
+
+        (translation, rotation_x, skew, scale)
+    }
 }
 
 #[cfg(test)]
@@ -178,5 +262,81 @@ mod test {
         let rotated = original.transform(Transform::from_rotation(Angle::from_degrees(45.0)));
         assert_approx_eq!(rotated.dx, 0.0);
         assert_approx_eq!(rotated.dy, 1.0);
+    }
+
+    #[test]
+    fn decompose_translation() {
+        let transform = Transform::from_translation(1.0, 2.0);
+        let (t, r, k, s) = transform.decompose();
+        assert_approx_eq!(t.dx, 1.0);
+        assert_approx_eq!(t.dy, 2.0);
+        assert_approx_eq!(s.dx, 1.0);
+        assert_approx_eq!(s.dy, 1.0);
+        assert_approx_eq!(r.radians(), 0.0);
+        assert_approx_eq!(k.radians(), 0.0);
+    }
+
+    #[test]
+    fn decompose_rotation() {
+        let angle = Angle::from_degrees(30.0);
+        let transform = Transform::from_rotation(angle);
+        let (t, r, k, s) = transform.decompose();
+        assert_approx_eq!(t.dx, 0.0);
+        assert_approx_eq!(t.dy, 0.0);
+        assert_approx_eq!(s.dx, 1.0);
+        assert_approx_eq!(s.dy, 1.0);
+        assert_approx_eq!(r.radians(), angle.radians());
+        assert_approx_eq!(k.radians(), 0.0);
+    }
+
+    #[test]
+    fn decompose_scale() {
+        let transform = Transform::from_scale(2.0, 3.0);
+        let (t, r, k, s) = transform.decompose();
+        assert_approx_eq!(t.dx, 0.0);
+        assert_approx_eq!(t.dy, 0.0);
+        assert_approx_eq!(s.dx, 2.0);
+        assert_approx_eq!(s.dy, 3.0);
+        assert_approx_eq!(r.radians(), 0.0);
+        assert_approx_eq!(k.radians(), 0.0);
+    }
+
+    #[test]
+    fn decompose_skew() {
+        let angle = Angle::from_degrees(30.0);
+        let transform = Transform::from_skew(angle);
+        let (t, r, k, s) = transform.decompose();
+        assert_approx_eq!(t.dx, 0.0);
+        assert_approx_eq!(t.dy, 0.0);
+        assert_approx_eq!(s.dx, 1.0);
+        assert_approx_eq!(s.dy, 1.0);
+        assert_approx_eq!(r.radians(), 0.0);
+        assert_approx_eq!(k.radians(), angle.radians());
+    }
+
+    #[test]
+    fn recompose() {
+        let input = Transform::row_major(1.0, 0.5, -0.5, 0.866025, 0.3, 0.6);
+        let (t, r, k, s) = input.decompose();
+        let output = Transform::from_decomposition(t, r, k, s);
+        assert_approx_eq!(input.m11, output.m11);
+        assert_approx_eq!(input.m12, output.m12);
+        assert_approx_eq!(input.m21, output.m21);
+        assert_approx_eq!(input.m22, output.m22);
+        assert_approx_eq!(input.m31, output.m31);
+        assert_approx_eq!(input.m32, output.m32);
+    }
+
+    #[test]
+    fn recompose_reflection() {
+        let input = Transform::row_major(1.0, 0.5, 0.5, -0.866025, 0.3, 0.6);
+        let (t, r, k, s) = input.decompose();
+        let output = Transform::from_decomposition(t, r, k, s);
+        assert_approx_eq!(input.m11, output.m11);
+        assert_approx_eq!(input.m12, output.m12);
+        assert_approx_eq!(input.m21, output.m21);
+        assert_approx_eq!(input.m22, output.m22);
+        assert_approx_eq!(input.m31, output.m31);
+        assert_approx_eq!(input.m32, output.m32);
     }
 }
