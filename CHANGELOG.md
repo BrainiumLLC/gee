@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added `degrees`, `map_radians`, and `map_degrees` to `Angle`.
 - Added missing `Vector` math ops for `Vector`.
 - Added missing `Vector` math ops for `Rect`.
 - **Breaking:** Renamed `Rect::new` to `Rect::from_top_right_bottom_left`.

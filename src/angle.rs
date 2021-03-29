@@ -60,8 +60,12 @@ impl<T: en::Float> Angle<T> {
         Self::from_radians(T::PI()) * T::two()
     }
 
+    fn half_turn_degrees() -> T {
+        en::cast::<T, _>(180)
+    }
+
     pub fn from_degrees(degrees: T) -> Self {
-        Self::from_radians(degrees * T::PI() / en::cast::<T, _>(180))
+        Self::from_radians(degrees * T::PI() / Self::half_turn_degrees())
     }
 
     pub fn from_radians(radians: T) -> Self {
@@ -82,6 +86,10 @@ impl<T: en::Float> Angle<T> {
 
     pub fn radians(self) -> T {
         self.radians
+    }
+
+    pub fn degrees(self) -> T {
+        self.radians / T::PI() * Self::half_turn_degrees()
     }
 
     pub fn unit_vector(self) -> Vector<T> {
@@ -105,8 +113,16 @@ impl<T: en::Float> Angle<T> {
         self.radians.tan()
     }
 
+    pub fn map_radians<U: en::Float>(self, f: impl FnOnce(T) -> U) -> Angle<U> {
+        Angle::from_radians(f(self.radians()))
+    }
+
+    pub fn map_degrees<U: en::Float>(self, f: impl FnOnce(T) -> U) -> Angle<U> {
+        Angle::from_degrees(f(self.degrees()))
+    }
+
     pub fn cast<U: en::Float>(&self) -> Angle<U> {
-        Angle::from_radians(en::cast(self.radians))
+        self.map_radians(en::cast)
     }
 
     pub fn to_f32(self) -> Angle<f32> {
@@ -203,5 +219,13 @@ mod test {
         assert_approx_eq!(x.radians, Angle::from_radians(-3.0831854).radians);
         let x = Angle::from_radians(-3.2).normalize();
         assert_approx_eq!(x.radians, Angle::from_radians(3.0831854).radians);
+    }
+
+    #[test]
+    fn degrees() {
+        let deg = 360.0;
+        let x = Angle::from_degrees(deg);
+        assert_eq!(x, Angle::TAU());
+        assert_eq!(x.degrees(), deg);
     }
 }
