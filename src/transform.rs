@@ -245,6 +245,19 @@ impl<T: en::Num> Transform<T> {
 
         (translation, rotation_x, skew, scale)
     }
+
+    pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Transform<U> {
+        Transform::row_major(
+            f(self.m11),
+            f(self.m12),
+            f(self.m21),
+            f(self.m22),
+            f(self.m31),
+            f(self.m32),
+        )
+    }
+
+    impl_casts_and_cast!(Transform);
 }
 
 #[cfg(test)]

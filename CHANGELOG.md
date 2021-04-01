@@ -1,5 +1,8 @@
 # Unreleased
 
+- Added cast methods to `Transform`.
+- Added methods for decomposing and recomposing `Transform`.
+- Added methods for skewing `Transform`.
 - Added `degrees`, `map_radians`, and `map_degrees` to `Angle`.
 - Added missing `Vector` math ops for `Vector`.
 - Added missing `Vector` math ops for `Rect`.
