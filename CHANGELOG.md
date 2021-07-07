@@ -1,5 +1,6 @@
 # Unreleased
 
+- `T` defaults to `f32`.
 - Added cast methods to `Transform`.
 - Added methods for decomposing and recomposing `Transform`.
 - Added methods for skewing `Transform`.

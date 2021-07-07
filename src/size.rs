@@ -5,7 +5,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, S
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check size validity in deserialize
-pub struct Size<T> {
+pub struct Size<T = f32> {
     pub width: T,
     pub height: T,
 }

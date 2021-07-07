@@ -12,7 +12,7 @@ use std::{
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))] // TODO: check rect validity in deserialize
-pub struct Rect<T> {
+pub struct Rect<T = f32> {
     top: T,
     right: T,
     bottom: T,

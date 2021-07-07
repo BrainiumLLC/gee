@@ -8,7 +8,7 @@ use std::ops::{
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
-pub struct Vector<T> {
+pub struct Vector<T = f32> {
     pub dx: T,
     pub dy: T,
 }

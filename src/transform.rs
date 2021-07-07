@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
-pub struct Transform<T> {
+pub struct Transform<T = f32> {
     pub m11: T,
     pub m12: T,
     pub m21: T,

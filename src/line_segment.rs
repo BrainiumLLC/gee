@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
-pub struct LineSegment<T> {
+pub struct LineSegment<T = f32> {
     pub from: Point<T>,
     pub to: Point<T>,
 }
