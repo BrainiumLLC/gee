@@ -1,4 +1,4 @@
-# `gee`
+# gee
 
 [![crates.io badge](http://meritbadge.herokuapp.com/gee)](https://crates.io/crates/gee)
 [![docs.rs badge](https://docs.rs/gee/badge.svg)](https://docs.rs/gee)
