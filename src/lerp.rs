@@ -1,5 +1,3 @@
-use en;
-
 pub fn lerp<T: en::Float>(a: T, b: T, f: T) -> T {
     (b - a) * f + a
 }
