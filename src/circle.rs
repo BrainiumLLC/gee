@@ -63,6 +63,14 @@ impl<T: en::Num> Circle<T> {
         self.radius
     }
 
+    pub fn radius_squared(&self) -> T {
+        self.radius * self.radius
+    }
+
+    pub fn contains(&self, point: Point<T>) -> bool {
+        (point - self.center).magnitude_squared() <= self.radius_squared()
+    }
+
     pub fn bounding_rect(&self) -> Rect<T> {
         let offset = Vector::uniform(self.radius);
         let bottom_left = self.center - offset;
