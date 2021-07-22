@@ -72,16 +72,13 @@ impl<T: en::Num> Transform3d<T> {
         T: en::Float,
     {
         let _2 = T::two();
-        Self::from_translation(
-            -(right + left) / (right - left),
-            -(top + bottom) / (top - bottom),
-            -(far + near) / (far - near),
+        Self::from_scale(_2 / (right - left), _2 / (top - bottom), -_2 / (far - near)).post_mul(
+            Self::from_translation(
+                -(right + left) / (right - left),
+                -(top + bottom) / (top - bottom),
+                -(far + near) / (far - near),
+            ),
         )
-        .post_mul(Self::from_scale(
-            _2 / (right - left),
-            _2 / (top - bottom),
-            -_2 / (far - near),
-        ))
     }
 
     /// Creates an orthographic projection matrix with the defaults you almost
