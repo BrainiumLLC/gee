@@ -32,19 +32,18 @@ impl<T: en::Num> Transform<T> {
         }
     }
 
+    /// Creates a multiplicative identity matrix.
     pub fn identity() -> Self {
-        Self::row_major(
-            T::one(),
-            T::zero(),
-            T::zero(),
-            T::one(),
-            T::zero(),
-            T::zero(),
-        )
+        let (_0, _1) = (T::zero(), T::one());
+        Self::row_major(_1, _0, _0, _1, _0, _0)
     }
 
     pub fn from_scale(x: T, y: T) -> Self {
-        Self::row_major(x, T::zero(), T::zero(), y, T::zero(), T::zero())
+        Self {
+            m11: x,
+            m22: y,
+            ..Self::identity()
+        }
     }
 
     pub fn from_scale_vector(scale: Vector<T>) -> Self {
@@ -56,7 +55,13 @@ impl<T: en::Num> Transform<T> {
         T: en::Float,
     {
         let (sin, cos) = theta.sin_cos();
-        Self::row_major(cos, sin, -sin, cos, T::zero(), T::zero())
+        Self {
+            m11: cos,
+            m12: sin,
+            m21: -sin,
+            m22: cos,
+            ..Self::identity()
+        }
     }
 
     pub fn from_rotation_with_fixed_point(theta: Angle<T>, point: Point<T>) -> Self
@@ -73,11 +78,19 @@ impl<T: en::Num> Transform<T> {
         T: en::Float,
     {
         let (sin, cos) = theta.sin_cos();
-        Self::row_major(T::one(), T::zero(), -sin, cos, T::zero(), T::zero())
+        Self {
+            m21: -sin,
+            m22: cos,
+            ..Self::identity()
+        }
     }
 
     pub fn from_translation(x: T, y: T) -> Self {
-        Self::row_major(T::one(), T::zero(), T::zero(), T::one(), x, y)
+        Self {
+            m31: x,
+            m32: y,
+            ..Self::identity()
+        }
     }
 
     pub fn from_translation_vector(translation: Vector<T>) -> Self {
@@ -120,7 +133,7 @@ impl<T: en::Num> Transform<T> {
         self.m11 * self.m22 - self.m12 * self.m21
     }
 
-    pub fn post_mul(&self, mat: &Self) -> Self {
+    pub fn post_mul(&self, mat: Self) -> Self {
         Self::row_major(
             self.m11 * mat.m11 + self.m12 * mat.m21,
             self.m11 * mat.m12 + self.m12 * mat.m22,
@@ -131,68 +144,68 @@ impl<T: en::Num> Transform<T> {
         )
     }
 
-    pub fn pre_mul(&self, mat: &Self) -> Self {
-        mat.post_mul(self)
+    pub fn pre_mul(&self, mat: Self) -> Self {
+        mat.post_mul(*self)
     }
 
     pub fn post_translate(&self, x: T, y: T) -> Self {
-        self.post_mul(&Self::from_translation(x, y))
+        self.post_mul(Self::from_translation(x, y))
     }
 
     pub fn post_translate_vector(&self, translation: Vector<T>) -> Self {
-        self.post_mul(&Self::from_translation_vector(translation))
+        self.post_mul(Self::from_translation_vector(translation))
     }
 
     pub fn pre_translate(&self, x: T, y: T) -> Self {
-        self.pre_mul(&Self::from_translation(x, y))
+        self.pre_mul(Self::from_translation(x, y))
     }
 
     pub fn pre_translate_vector(&self, translation: Vector<T>) -> Self {
-        self.pre_mul(&Self::from_translation_vector(translation))
+        self.pre_mul(Self::from_translation_vector(translation))
     }
 
     pub fn post_scale(&self, x: T, y: T) -> Self {
-        self.post_mul(&Self::from_scale(x, y))
+        self.post_mul(Self::from_scale(x, y))
     }
 
     pub fn post_scale_vector(&self, scale: Vector<T>) -> Self {
-        self.post_mul(&Self::from_scale_vector(scale))
+        self.post_mul(Self::from_scale_vector(scale))
     }
 
     pub fn pre_scale(&self, x: T, y: T) -> Self {
-        self.pre_mul(&Self::from_scale(x, y))
+        self.pre_mul(Self::from_scale(x, y))
     }
 
     pub fn pre_scale_vector(&self, scale: Vector<T>) -> Self {
-        self.pre_mul(&Self::from_scale_vector(scale))
+        self.pre_mul(Self::from_scale_vector(scale))
     }
 
     pub fn post_rotate(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.post_mul(&Self::from_rotation(theta))
+        self.post_mul(Self::from_rotation(theta))
     }
 
     pub fn pre_rotate(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.pre_mul(&Self::from_rotation(theta))
+        self.pre_mul(Self::from_rotation(theta))
     }
 
     pub fn post_skew(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.post_mul(&Self::from_skew(theta))
+        self.post_mul(Self::from_skew(theta))
     }
 
     pub fn pre_skew(&self, theta: Angle<T>) -> Self
     where
         T: en::Float,
     {
-        self.pre_mul(&Self::from_skew(theta))
+        self.pre_mul(Self::from_skew(theta))
     }
 
     pub fn inverse(&self) -> Option<Self> {

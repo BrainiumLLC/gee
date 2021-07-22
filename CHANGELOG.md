@@ -1,5 +1,7 @@
 # Unreleased
 
+- Added `Transform3d`.
+- `Transform::post_mul` no longer takes a reference.
 - `T` defaults to `f32`.
 - Added cast methods to `Transform`.
 - Added methods for decomposing and recomposing `Transform`.

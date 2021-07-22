@@ -12,11 +12,12 @@ mod rect;
 mod rect_position;
 mod size;
 mod transform;
+mod transform3d;
 mod vector;
 
 pub use self::{
     angle::*, circle::*, direction::*, lerp::*, line_segment::*, point::*, ray::*, rect::*,
-    rect_position::*, size::*, transform::*, vector::*,
+    rect_position::*, size::*, transform::*, transform3d::*, vector::*,
 };
 pub use en;
 
