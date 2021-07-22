@@ -2,6 +2,7 @@
 
 - Added `Transform3d`.
 - `Transform::post_mul` no longer takes a reference.
+- Added `Circle::radius_squared` and `Circle::contains`.
 - `T` defaults to `f32`.
 - Added cast methods to `Transform`.
 - Added methods for decomposing and recomposing `Transform`.
