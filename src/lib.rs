@@ -29,14 +29,25 @@ pub(crate) mod test {
 
     #[macro_export]
     macro_rules! assert_approx_eq {
-        ($lhs:expr, $rhs:expr $(, $t:tt)*) => {{
+        ($lhs:expr, $rhs:expr) => {
             let left = $lhs;
             let right = $rhs;
             assert!(
                 $crate::test::approx_eq(left, right),
-                "approx_eq check failed\n    left: {:?}, right: {:?}",
+                "assertion failed: `(left ≈≈ right)`\n  left: `{:?}`,\n right: `{:?}`",
                 left,
-                right
+                right,
+            )
+        };
+        ($lhs:expr, $rhs:expr, $msg:literal) => {{
+            let left = $lhs;
+            let right = $rhs;
+            assert!(
+                $crate::test::approx_eq(left, right),
+                "assertion failed: `(left ≈≈ right)`\n  left: `{:?}`,\n right: `{:?}`: {}",
+                left,
+                right,
+                $msg,
             )
         }};
     }

@@ -31,7 +31,11 @@ impl<T: en::Num> Vector<T> {
     }
 
     pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero())
+        Self::uniform(T::zero())
+    }
+
+    pub fn one() -> Self {
+        Self::uniform(T::one())
     }
 
     pub fn from_array([dx, dy]: [T; 2]) -> Self {
@@ -65,18 +69,11 @@ impl<T: en::Num> Vector<T> {
         self.magnitude_squared().sqrt()
     }
 
-    pub fn normalized(self) -> Self
+    pub fn normalize(self) -> Self
     where
         T: en::Float,
     {
         self / self.magnitude()
-    }
-
-    pub fn unit_from_angle(angle: Angle<T>) -> Self
-    where
-        T: en::Float,
-    {
-        angle.unit_vector()
     }
 
     pub fn angle(self) -> Angle<T>
@@ -259,32 +256,14 @@ impl<T: Neg<Output = T> + en::Num> Neg for Vector<T> {
     }
 }
 
-impl<T: en::Num> From<Direction> for Vector<T> {
+impl<T: en::Float> From<Direction> for Vector<T> {
     fn from(direction: Direction) -> Self {
-        use Direction::*;
-        match direction {
-            North => Vector::new(0, -1),
-            East => Vector::new(1, 0),
-            South => Vector::new(0, 1),
-            West => Vector::new(-1, 0),
-            Northeast => Vector::new(1, -1),
-            Southeast => Vector::new(1, 1),
-            Southwest => Vector::new(-1, 1),
-            Northwest => Vector::new(-1, -1),
-        }
-        .cast()
+        direction.angle().unit_vector()
     }
 }
 
-impl<T: en::Num> From<Cardinal> for Vector<T> {
+impl<T: en::Float> From<Cardinal> for Vector<T> {
     fn from(cardinal: Cardinal) -> Self {
-        use Cardinal::*;
-        match cardinal {
-            North => Vector::new(0, -1),
-            East => Vector::new(1, 0),
-            South => Vector::new(0, 1),
-            West => Vector::new(-1, 0),
-        }
-        .cast()
+        cardinal.angle().unit_vector()
     }
 }

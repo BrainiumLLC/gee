@@ -48,7 +48,7 @@ impl<T: en::Num> Rect<T> {
         Self::from_top_right_bottom_left(
             top_left.y,
             top_left.x + size.width(),
-            top_left.y - size.height(),
+            top_left.y + size.height(),
             top_left.x,
         )
     }
@@ -58,7 +58,7 @@ impl<T: en::Num> Rect<T> {
         Self::from_top_right_bottom_left(
             top_center.y,
             top_center.x + half_width,
-            top_center.y - size.height(),
+            top_center.y + size.height(),
             top_center.x - half_width,
         )
     }
@@ -67,7 +67,7 @@ impl<T: en::Num> Rect<T> {
         Self::from_top_right_bottom_left(
             top_right.y,
             top_right.x,
-            top_right.y - size.height(),
+            top_right.y + size.height(),
             top_right.x - size.width(),
         )
     }
@@ -75,9 +75,9 @@ impl<T: en::Num> Rect<T> {
     pub fn from_center_left(left_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
         Self::from_top_right_bottom_left(
-            left_center.y + half_height,
-            left_center.x + size.width(),
             left_center.y - half_height,
+            left_center.x + size.width(),
+            left_center.y + half_height,
             left_center.x,
         )
     }
@@ -86,9 +86,9 @@ impl<T: en::Num> Rect<T> {
         let half_width = size.width().halved();
         let half_height = size.height().halved();
         Self::from_top_right_bottom_left(
-            center.y + half_height,
-            center.x + half_width,
             center.y - half_height,
+            center.x + half_width,
+            center.y + half_height,
             center.x - half_width,
         )
     }
@@ -96,16 +96,16 @@ impl<T: en::Num> Rect<T> {
     pub fn from_center_right(right_center: Point<T>, size: Size<T>) -> Self {
         let half_height = size.height().halved();
         Self::from_top_right_bottom_left(
-            right_center.y + half_height,
-            right_center.x,
             right_center.y - half_height,
+            right_center.x,
+            right_center.y + half_height,
             right_center.x - size.width(),
         )
     }
 
     pub fn from_bottom_right(bottom_right: Point<T>, size: Size<T>) -> Self {
         Self::from_top_right_bottom_left(
-            bottom_right.y + size.height(),
+            bottom_right.y - size.height(),
             bottom_right.x,
             bottom_right.y,
             bottom_right.x - size.width(),
@@ -115,7 +115,7 @@ impl<T: en::Num> Rect<T> {
     pub fn from_bottom_center(bottom_center: Point<T>, size: Size<T>) -> Self {
         let half_width = size.width().halved();
         Self::from_top_right_bottom_left(
-            bottom_center.y + size.height(),
+            bottom_center.y - size.height(),
             bottom_center.x + half_width,
             bottom_center.y,
             bottom_center.x - half_width,
@@ -124,7 +124,7 @@ impl<T: en::Num> Rect<T> {
 
     pub fn from_bottom_left(bottom_left: Point<T>, size: Size<T>) -> Self {
         Self::from_top_right_bottom_left(
-            bottom_left.y + size.height(),
+            bottom_left.y - size.height(),
             bottom_left.x + size.width(),
             bottom_left.y,
             bottom_left.x,
@@ -159,7 +159,7 @@ impl<T: en::Num> Rect<T> {
                 max_y = p.y
             }
         }
-        Self::from_top_right_bottom_left(max_y, max_x, min_y, min_x)
+        Self::from_top_right_bottom_left(min_y, max_x, max_y, min_x)
     }
 
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
@@ -195,7 +195,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn height(&self) -> T {
-        self.top - self.bottom
+        self.bottom - self.top
     }
 
     pub fn top_left(&self) -> Point<T> {
@@ -270,7 +270,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn contains_y(&self, y: T) -> bool {
-        (self.bottom..self.top).contains(&y)
+        (self.top..self.bottom).contains(&y)
     }
 
     pub fn contains(&self, point: Point<T>) -> bool {
@@ -282,7 +282,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn contains_inclusive_y(&self, y: T) -> bool {
-        (self.bottom..=self.top).contains(&y)
+        (self.top..=self.bottom).contains(&y)
     }
 
     pub fn contains_inclusive(&self, point: Point<T>) -> bool {
@@ -346,8 +346,8 @@ impl<T: en::Num> Rect<T> {
                 left,
             } = *self;
             Some((
-                Self::from_top_right_bottom_left(y, right, bottom, left),
                 Self::from_top_right_bottom_left(top, right, y, left),
+                Self::from_top_right_bottom_left(y, right, bottom, left),
             ))
         } else {
             None
@@ -435,9 +435,9 @@ impl<T: en::Num> Rect<T> {
     // Inspired by https://api.flutter.dev/flutter/painting/EdgeInsets-class.html
     pub fn inset(&self, top: T, right: T, bottom: T, left: T) -> Self {
         Self::from_top_right_bottom_left(
-            self.top - top,
+            self.top + top,
             self.right - right,
-            self.bottom + bottom,
+            self.bottom - bottom,
             self.left + left,
         )
     }
@@ -452,9 +452,9 @@ impl<T: en::Num> Rect<T> {
 
     pub fn outset(&self, top: T, right: T, bottom: T, left: T) -> Self {
         Self::from_top_right_bottom_left(
-            self.top + top,
+            self.top - top,
             self.right + right,
-            self.bottom - bottom,
+            self.bottom + bottom,
             self.left - left,
         )
     }
@@ -488,17 +488,17 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn intersection(&self, other: &Self) -> Option<Self> {
-        let top = self.top.min(other.top);
+        let top = self.top.max(other.top);
         let right = self.right.min(other.right);
-        let bottom = self.bottom.max(other.bottom);
+        let bottom = self.bottom.min(other.bottom);
         let left = self.left.max(other.left);
         Some(Self::from_top_right_bottom_left(top, right, bottom, left)).filter(Self::has_area)
     }
 
     pub fn union(&self, other: &Self) -> Self {
-        let top = self.top.max(other.top);
+        let top = self.top.min(other.top);
         let right = self.right.max(other.right);
-        let bottom = self.bottom.min(other.bottom);
+        let bottom = self.bottom.max(other.bottom);
         let left = self.left.min(other.left);
         Self::from_top_right_bottom_left(top, left, bottom, right)
     }
@@ -546,13 +546,8 @@ impl<T: en::Num> Rect<T> {
         let total_margin = num_items * margin + margin;
         let items_height = self.height() - total_margin;
         let item_height = items_height / num_items;
-        let item_bottom = self.bottom + margin + index * (margin + item_height);
-        Self::from_top_right_bottom_left(
-            item_bottom + item_height,
-            self.right,
-            item_bottom,
-            self.left,
-        )
+        let item_top = self.top + margin + index * (margin + item_height);
+        Self::from_top_right_bottom_left(item_top, self.right, item_top + item_height, self.left)
     }
 
     pub fn height_slices_with_margin(
@@ -725,9 +720,9 @@ mod test {
 
     #[test]
     fn points() {
-        let top = 7;
+        let top = -1;
         let right = 4;
-        let bottom = -1;
+        let bottom = 7;
         let left = -2;
         let center_x = 1;
         let center_y = 3;
@@ -796,19 +791,19 @@ mod test {
 
     #[test]
     fn has_area() {
-        let normal = Rect::from_bottom_left(Point::zero(), Size::square(100));
+        let normal = Rect::from_top_left(Point::zero(), Size::square(100));
         assert!(
             normal.has_area(),
             "erroneously found `{:?}` to have no area",
             normal
         );
-        let empty = Rect::from_bottom_left(Point::new(50, 50), Size::zero());
+        let empty = Rect::from_top_left(Point::new(50, 50), Size::zero());
         assert!(
             !empty.has_area(),
             "erroneously found `{:?}` to have an area",
             empty
         );
-        let inverted = Rect::from_bottom_left(Point::zero(), Size::square(-100));
+        let inverted = Rect::from_top_left(Point::zero(), Size::square(-100));
         assert!(
             !inverted.has_area(),
             "erroneously found `{:?}` to have an area",
@@ -820,9 +815,9 @@ mod test {
     fn intersection() {
         let offset = Point::new(50, 50);
         let size = Size::square(100);
-        let a = Rect::from_bottom_left(Point::zero(), size);
-        let b = Rect::from_bottom_left(offset, size);
-        let c = Rect::from_bottom_left(offset, size - offset.to_vector());
+        let a = Rect::from_top_left(Point::zero(), size);
+        let b = Rect::from_top_left(offset, size);
+        let c = Rect::from_top_left(offset, size - offset.to_vector());
         assert_eq!(
             a.intersection(&b),
             Some(c),
@@ -834,14 +829,14 @@ mod test {
 
     #[test]
     fn grow_to() {
-        let rect = Rect::from_bottom_left(Point::new(10, 10), Size::new(10, 10));
+        let rect = Rect::from_top_left(Point::new(10, 10), Size::new(10, 10));
         assert_eq!(
             rect.grow_to(Point::new(0, 20)),
-            Rect::from_bottom_left(Point::new(0, 10), Size::new(20, 10))
+            Rect::from_top_left(Point::new(0, 10), Size::new(20, 10))
         );
         assert_eq!(
             rect.grow_to(Point::new(20, 0)),
-            Rect::from_bottom_left(Point::new(10, 0), Size::new(10, 20))
+            Rect::from_top_left(Point::new(10, 0), Size::new(10, 20))
         );
     }
 }

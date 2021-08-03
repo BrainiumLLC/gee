@@ -62,7 +62,7 @@ impl<T: en::Num> Point<T> {
     where
         T: en::Float,
     {
-        self + (to - self).normalized() * by
+        self + (to - self).normalize() * by
     }
 }
 

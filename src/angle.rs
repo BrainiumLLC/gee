@@ -1,4 +1,4 @@
-use crate::Vector;
+use crate::{Cardinal, Direction, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -74,7 +74,7 @@ impl<T: en::Float> Angle<T> {
 
     /// Returns an `Angle` in the range `(-PI,PI]`.
     pub fn from_xy(x: T, y: T) -> Self {
-        Self::from_radians(y.atan2(x))
+        Self::from_radians((-y).atan2(x))
     }
 
     /// Returns an `Angle` in the range `[-PI,PI)`.
@@ -94,7 +94,7 @@ impl<T: en::Float> Angle<T> {
 
     pub fn unit_vector(self) -> Vector<T> {
         let (y, x) = self.radians.sin_cos();
-        Vector::new(x, y)
+        Vector::new(x, -y)
     }
 
     pub fn sin(self) -> T {
@@ -193,6 +193,18 @@ impl<T: en::Float> Neg for Angle<T> {
     }
 }
 
+impl<T: en::Float> From<Cardinal> for Angle<T> {
+    fn from(cardinal: Cardinal) -> Angle<T> {
+        cardinal.angle()
+    }
+}
+
+impl<T: en::Float> From<Direction> for Angle<T> {
+    fn from(direction: Direction) -> Angle<T> {
+        direction.angle()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -227,5 +239,42 @@ mod test {
         let x = Angle::from_degrees(deg);
         assert_eq!(x, Angle::TAU());
         assert_eq!(x.degrees(), deg);
+    }
+
+    #[test]
+    fn unit_vector() {
+        macro_rules! check {
+            ($vec:expr, $deg:expr) => {
+                let a = Angle::from_degrees($deg).normalize();
+                let v_act = a.unit_vector();
+                let v_exp = Vector::from_tuple($vec).normalize();
+                assert_approx_eq!(
+                    v_act.dx,
+                    v_exp.dx,
+                    "angle didn't produce expected unit vector dx"
+                );
+                assert_approx_eq!(
+                    v_act.dy,
+                    v_exp.dy,
+                    "angle didn't produce expected unit vector dy"
+                );
+                assert_approx_eq!(
+                    a.degrees(),
+                    v_act.angle().normalize().degrees(),
+                    "angle lost in conversion"
+                );
+            };
+        }
+        check!((1.0, 0.0), 0.0);
+        check!((1.0, 0.0), 360.0);
+        check!((1.0, -1.0), 45.0);
+        check!((0.0, -1.0), 90.0);
+        check!((0.0, -1.0), -270.0);
+        check!((-1.0, -1.0), 135.0);
+        check!((-1.0, 0.0), 180.0);
+        check!((-1.0, 0.0), -180.0);
+        check!((-1.0, 1.0), -135.0);
+        check!((0.0, 1.0), -90.0);
+        check!((1.0, 1.0), -45.0);
     }
 }

@@ -288,16 +288,16 @@ impl<T: en::Num> RectPosition<T> {
         use VerticalLocation::*;
         match self.location.vertical {
             Top => self.point.y,
-            Center => self.point.y + height.halved(),
-            Bottom => self.point.y + height,
+            Center => self.point.y - height.halved(),
+            Bottom => self.point.y - height,
         }
     }
 
     pub(crate) fn bottom_with_height(self, height: T) -> T {
         use VerticalLocation::*;
         match self.location.vertical {
-            Top => self.point.y - height,
-            Center => self.point.y - height.halved(),
+            Top => self.point.y + height,
+            Center => self.point.y + height.halved(),
             Bottom => self.point.y,
         }
     }
@@ -373,10 +373,10 @@ mod test {
 
     #[test]
     fn rect_location_point_from_rect() {
-        let left = -1.0;
+        let left = -2.0;
         let top = 4.0;
         let right = 3.0;
-        let bottom = -2.0;
+        let bottom = -1.0;
         let center_x = (left + right) / 2.0;
         let center_y = (top + bottom) / 2.0;
         let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
@@ -414,42 +414,42 @@ mod test {
 
     #[test]
     fn rect_position_translation() {
-        let left = -1.0;
+        let left = -2.0;
         let top = 4.0;
         let right = 3.0;
-        let bottom = -2.0;
+        let bottom = -1.0;
         let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 
         let width_offset: Vector<f64> = Vector::new(rect.width(), 0.0);
         let height_offset: Vector<f64> = Vector::new(0.0, rect.height());
         let size_offset = width_offset + height_offset;
         assert_eq!(
-            (RectPosition::bottom_left_from_rect(rect) + size_offset).point,
-            RectPosition::top_right_from_rect(rect).point
+            (RectPosition::top_left_from_rect(rect) + size_offset).point,
+            RectPosition::bottom_right_from_rect(rect).point
         );
         assert_eq!(
             (RectPosition::center_right_from_rect(rect) - width_offset).point,
             RectPosition::center_left_from_rect(rect).point
         );
         assert_eq!(
-            (RectPosition::bottom_left_from_rect(rect) + height_offset + width_offset).point,
-            RectPosition::top_right_from_rect(rect).point
+            (RectPosition::top_left_from_rect(rect) + height_offset + width_offset).point,
+            RectPosition::bottom_right_from_rect(rect).point
         );
         assert_eq!(
-            (RectPosition::center_from_rect(rect) - height_offset / 2.0).point,
+            (RectPosition::center_from_rect(rect) + height_offset / 2.0).point,
             RectPosition::bottom_center_from_rect(rect).point
         );
         assert_eq!(
-            (RectPosition::bottom_center_from_rect(rect) + height_offset).point,
+            (RectPosition::bottom_center_from_rect(rect) - height_offset).point,
             RectPosition::top_center_from_rect(rect).point
         );
     }
 
     #[test]
     fn rect_position_rect_from_size() {
-        let top = 4.0;
+        let top = -2.0;
         let right = 3.0;
-        let bottom = -2.0;
+        let bottom = 4.0;
         let left = -1.0;
         let rect = Rect::from_top_right_bottom_left(top, right, bottom, left);
 

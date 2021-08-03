@@ -73,9 +73,9 @@ impl<T: en::Num> Circle<T> {
 
     pub fn bounding_rect(&self) -> Rect<T> {
         let offset = Vector::uniform(self.radius);
-        let bottom_left = self.center - offset;
-        let top_right = self.center + offset;
-        Rect::from_points(bottom_left, top_right)
+        let top_left = self.center - offset;
+        let bottom_right = self.center + offset;
+        Rect::from_points(top_left, bottom_right)
     }
 
     pub fn arc_points(

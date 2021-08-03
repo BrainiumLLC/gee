@@ -1,5 +1,9 @@
 # Unreleased
 
+- **Breaking:** Switched back to using a top-left origin.
+- Added `Vector::one`.
+- **Breaking:** Rename `Vector::normalized` to `Vector::normalize`.
+- **Breaking:** Removed redundant method `Vector::unit_from_angle`.
 - Added `Transform3d`.
 - **Breaking:** `Transform::post_mul` no longer takes a reference.
 - Added `Circle::radius_squared` and `Circle::contains`.

@@ -5,6 +5,33 @@ use serde::{Deserialize, Serialize};
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
+pub struct DecomposedTransform<T = f32> {
+    pub translation: Vector<T>,
+    pub scale: Vector<T>,
+    pub rotation: Angle<T>,
+    pub skew: Angle<T>,
+}
+
+impl<T: en::Float> Default for DecomposedTransform<T> {
+    fn default() -> Self {
+        Self::identity()
+    }
+}
+
+impl<T: en::Float> DecomposedTransform<T> {
+    pub fn identity() -> Self {
+        Self {
+            translation: Vector::zero(),
+            scale: Vector::one(),
+            rotation: Angle::ZERO(),
+            skew: Angle::ZERO(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct Transform<T = f32> {
     pub m11: T,
     pub m12: T,
@@ -57,8 +84,8 @@ impl<T: en::Num> Transform<T> {
         let (sin, cos) = theta.sin_cos();
         Self {
             m11: cos,
-            m12: sin,
-            m21: -sin,
+            m12: -sin,
+            m21: sin,
             m22: cos,
             ..Self::identity()
         }
@@ -97,11 +124,13 @@ impl<T: en::Num> Transform<T> {
         Self::from_translation(translation.dx, translation.dy)
     }
 
-    pub fn from_decomposition(
-        translation: Vector<T>,
-        rotation: Angle<T>,
-        skew: Angle<T>,
-        scale: Vector<T>,
+    pub fn from_decomposed(
+        DecomposedTransform {
+            translation,
+            scale,
+            rotation,
+            skew,
+        }: DecomposedTransform<T>,
     ) -> Self
     where
         T: en::Float,
@@ -110,17 +139,17 @@ impl<T: en::Num> Transform<T> {
 
         // Ensure skew angle has same meaning if there is a flip
         let k = if scale.dx * scale.dy < T::zero() {
-            Angle::from_radians(-skew.radians())
-        } else {
             skew
+        } else {
+            skew.map_radians(T::neg)
         };
 
         let (s2, c2) = (rotation + k).sin_cos();
 
         let m11 = c1 * scale.dx;
-        let m12 = s1 * scale.dx;
+        let m12 = -s1 * scale.dx;
 
-        let m21 = -s2 * scale.dy;
+        let m21 = s2 * scale.dy;
         let m22 = c2 * scale.dy;
 
         let m31 = translation.dx;
@@ -229,34 +258,34 @@ impl<T: en::Num> Transform<T> {
         ))
     }
 
-    pub fn decompose(&self) -> (Vector<T>, Angle<T>, Angle<T>, Vector<T>)
+    pub fn decompose(&self) -> DecomposedTransform<T>
     where
         T: en::Float,
     {
-        let mut y_flip = T::one();
-        let translation = Vector::new(self.m31, self.m32);
-
-        let rotation_x = Angle::from_xy(self.m11, self.m12);
-        let rotation_y = Angle::from_xy(self.m21, self.m22);
-        let mut skew = (rotation_y - rotation_x).normalize();
-
-        // The reflection axis is undefined, assume Y
-        // i.e. rotating   0º and flipping X
-        //    = rotating 180º and flipping Y
-        if skew.radians() < T::zero() {
-            skew = Angle::from_radians(skew.radians().abs());
-            y_flip = -T::one();
+        let row_x = Vector::new(self.m11, self.m12);
+        let row_y = Vector::new(self.m21, self.m22);
+        let row_z = Vector::new(self.m31, self.m32);
+        let rotation_x = row_x.angle();
+        let rotation_y = row_y.angle();
+        let (skew, y_flip) = {
+            let skew = (rotation_y - rotation_x).normalize();
+            // The reflection axis is undefined, assume Y
+            // i.e. rotating   0º and flipping X
+            //    = rotating 180º and flipping Y
+            let (skew, y_flip) = if skew.radians() < T::zero() {
+                (skew.map_radians(T::abs), T::one())
+            } else {
+                (skew, -T::one())
+            };
+            // 90º XY angle = 0 skew
+            (skew - Angle::FRAC_PI_2(), y_flip)
+        };
+        DecomposedTransform {
+            translation: row_z,
+            scale: Vector::new(row_x.magnitude(), row_y.magnitude() * y_flip),
+            rotation: rotation_x,
+            skew,
         }
-
-        // 90º XY angle = 0 skew
-        skew -= Angle::FRAC_PI_2();
-
-        let scale = Vector::new(
-            Vector::new(self.m11, self.m12).magnitude(),
-            Vector::new(self.m21, self.m22).magnitude() * y_flip,
-        );
-
-        (translation, rotation_x, skew, scale)
     }
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Transform<U> {
@@ -276,93 +305,166 @@ impl<T: en::Num> Transform<T> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{assert_approx_eq, Vector};
+    use crate::{assert_approx_eq, Direction};
 
     #[test]
     fn rotation() {
-        let original = Vector::new(1.0, 1.0).normalized();
-        let rotated = original.transform(Transform::from_rotation(Angle::from_degrees(-45.0)));
-        assert_approx_eq!(rotated.dx, 1.0);
-        assert_approx_eq!(rotated.dy, 0.0);
+        let v = Direction::East.unit_vector();
 
-        let rotated = original.transform(Transform::from_rotation(Angle::from_degrees(45.0)));
-        assert_approx_eq!(rotated.dx, 0.0);
-        assert_approx_eq!(rotated.dy, 1.0);
+        let r_act = v.transform(Transform::from_rotation(Angle::from_degrees(90.0)));
+        let r_exp = Direction::North.unit_vector();
+        assert_approx_eq!(
+            r_act.dx,
+            r_exp.dx,
+            "90º rotation didn't produce expected dx"
+        );
+        assert_approx_eq!(
+            r_act.dy,
+            r_exp.dy,
+            "90º rotation didn't produce expected dy"
+        );
+
+        let r_act = v.transform(Transform::from_rotation(Angle::from_degrees(-90.0)));
+        let r_exp = Direction::South.unit_vector();
+        assert_approx_eq!(
+            r_act.dx,
+            r_exp.dx,
+            "-90º rotation didn't produce expected dx"
+        );
+        assert_approx_eq!(
+            r_act.dy,
+            r_exp.dy,
+            "-90º rotation didn't produce expected dy"
+        );
+    }
+
+    macro_rules! check_decomposition {
+        ($transform:expr, $expected:expr) => {
+            let actual = $transform.decompose();
+            assert_approx_eq!(
+                actual.translation.dx,
+                $expected.translation.dx,
+                "decomposed translation dx didn't match input translation dx"
+            );
+            assert_approx_eq!(
+                actual.translation.dy,
+                $expected.translation.dy,
+                "decomposed translation dy didn't match input translation dy"
+            );
+            assert_approx_eq!(
+                actual.scale.dx,
+                $expected.scale.dx,
+                "decomposed scale dx didn't match input scale dx"
+            );
+            assert_approx_eq!(
+                actual.scale.dy,
+                $expected.scale.dy,
+                "decomposed scale dy didn't match input scale dy"
+            );
+            assert_approx_eq!(
+                actual.rotation.degrees(),
+                $expected.rotation.degrees(),
+                "decomposed angle didn't match input angle"
+            );
+            assert_approx_eq!(
+                actual.skew.degrees(),
+                $expected.skew.degrees(),
+                "decomposed skew didn't match input skew"
+            );
+        };
     }
 
     #[test]
     fn decompose_translation() {
-        let transform = Transform::from_translation(1.0, 2.0);
-        let (t, r, k, s) = transform.decompose();
-        assert_approx_eq!(t.dx, 1.0);
-        assert_approx_eq!(t.dy, 2.0);
-        assert_approx_eq!(s.dx, 1.0);
-        assert_approx_eq!(s.dy, 1.0);
-        assert_approx_eq!(r.radians(), 0.0);
-        assert_approx_eq!(k.radians(), 0.0);
+        let translation = Vector::new(1.0, 2.0);
+        check_decomposition!(
+            Transform::from_translation_vector(translation),
+            DecomposedTransform {
+                translation,
+                ..Default::default()
+            }
+        );
     }
 
     #[test]
     fn decompose_rotation() {
-        let angle = Angle::from_degrees(30.0);
-        let transform = Transform::from_rotation(angle);
-        let (t, r, k, s) = transform.decompose();
-        assert_approx_eq!(t.dx, 0.0);
-        assert_approx_eq!(t.dy, 0.0);
-        assert_approx_eq!(s.dx, 1.0);
-        assert_approx_eq!(s.dy, 1.0);
-        assert_approx_eq!(r.radians(), angle.radians());
-        assert_approx_eq!(k.radians(), 0.0);
+        let rotation = Angle::from_degrees(30.0);
+        check_decomposition!(
+            Transform::from_rotation(rotation),
+            DecomposedTransform {
+                rotation,
+                ..Default::default()
+            }
+        );
     }
 
     #[test]
     fn decompose_scale() {
-        let transform = Transform::from_scale(2.0, 3.0);
-        let (t, r, k, s) = transform.decompose();
-        assert_approx_eq!(t.dx, 0.0);
-        assert_approx_eq!(t.dy, 0.0);
-        assert_approx_eq!(s.dx, 2.0);
-        assert_approx_eq!(s.dy, 3.0);
-        assert_approx_eq!(r.radians(), 0.0);
-        assert_approx_eq!(k.radians(), 0.0);
+        let scale = Vector::new(2.0, 3.0);
+        check_decomposition!(
+            Transform::from_scale_vector(scale),
+            DecomposedTransform {
+                scale,
+                ..Default::default()
+            }
+        );
     }
 
     #[test]
     fn decompose_skew() {
-        let angle = Angle::from_degrees(30.0);
-        let transform = Transform::from_skew(angle);
-        let (t, r, k, s) = transform.decompose();
-        assert_approx_eq!(t.dx, 0.0);
-        assert_approx_eq!(t.dy, 0.0);
-        assert_approx_eq!(s.dx, 1.0);
-        assert_approx_eq!(s.dy, 1.0);
-        assert_approx_eq!(r.radians(), 0.0);
-        assert_approx_eq!(k.radians(), angle.radians());
+        let skew = Angle::from_degrees(30.0);
+        check_decomposition!(
+            Transform::from_skew(skew),
+            DecomposedTransform {
+                skew,
+                ..Default::default()
+            }
+        );
+    }
+
+    macro_rules! check_recomposition {
+        ($expected:expr) => {
+            let actual = Transform::from_decomposed($expected.decompose());
+            assert_approx_eq!(
+                actual.m11,
+                $expected.m11,
+                "output m11 didn't match input m11"
+            );
+            assert_approx_eq!(
+                actual.m12,
+                $expected.m12,
+                "output m12 didn't match input m12"
+            );
+            assert_approx_eq!(
+                actual.m21,
+                $expected.m21,
+                "output m21 didn't match input m21"
+            );
+            assert_approx_eq!(
+                actual.m22,
+                $expected.m22,
+                "output m22 didn't match input m22"
+            );
+            assert_approx_eq!(
+                actual.m31,
+                $expected.m31,
+                "output m31 didn't match input m31"
+            );
+            assert_approx_eq!(
+                actual.m32,
+                $expected.m32,
+                "output m32 didn't match input m32"
+            );
+        };
     }
 
     #[test]
     fn recompose() {
-        let input = Transform::row_major(1.0, 0.5, -0.5, 0.866025, 0.3, 0.6);
-        let (t, r, k, s) = input.decompose();
-        let output = Transform::from_decomposition(t, r, k, s);
-        assert_approx_eq!(input.m11, output.m11);
-        assert_approx_eq!(input.m12, output.m12);
-        assert_approx_eq!(input.m21, output.m21);
-        assert_approx_eq!(input.m22, output.m22);
-        assert_approx_eq!(input.m31, output.m31);
-        assert_approx_eq!(input.m32, output.m32);
+        check_recomposition!(Transform::row_major(1.0, 0.5, -0.5, 0.866025, 0.3, 0.6));
     }
 
     #[test]
     fn recompose_reflection() {
-        let input = Transform::row_major(1.0, 0.5, 0.5, -0.866025, 0.3, 0.6);
-        let (t, r, k, s) = input.decompose();
-        let output = Transform::from_decomposition(t, r, k, s);
-        assert_approx_eq!(input.m11, output.m11);
-        assert_approx_eq!(input.m12, output.m12);
-        assert_approx_eq!(input.m21, output.m21);
-        assert_approx_eq!(input.m22, output.m22);
-        assert_approx_eq!(input.m31, output.m31);
-        assert_approx_eq!(input.m32, output.m32);
+        check_recomposition!(Transform::row_major(1.0, 0.5, 0.5, -0.866025, 0.3, 0.6));
     }
 }
