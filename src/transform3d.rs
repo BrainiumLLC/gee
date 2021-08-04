@@ -72,10 +72,10 @@ impl<T: en::Num> Transform3d<T> {
         T: en::Float,
     {
         let _2 = T::two();
-        Self::from_scale(_2 / (right - left), _2 / (top - bottom), -_2 / (far - near)).post_mul(
+        Self::from_scale(_2 / (right - left), _2 / (bottom - top), -_2 / (far - near)).post_mul(
             Self::from_translation(
                 -(right + left) / (right - left),
-                -(top + bottom) / (top - bottom),
+                -(bottom + top) / (bottom - top),
                 -(far + near) / (far - near),
             ),
         )
@@ -88,7 +88,7 @@ impl<T: en::Num> Transform3d<T> {
         T: en::Float,
     {
         let (_0, _1) = (T::zero(), T::one());
-        Self::ortho(_0, size.width(), _0, size.height(), _1, -_1)
+        Self::ortho(_0, size.width(), size.height(), _0, _1, -_1)
     }
 
     /// Creates a perspective projection matrix for whatever 3D side project
@@ -98,12 +98,12 @@ impl<T: en::Num> Transform3d<T> {
     where
         T: en::Float,
     {
-        let (_0, _1, _2) = (T::zero(), T::one(), T::two());
-        let f = (fov.radians() / _2).tan().recip();
+        let (_0, _1) = (T::zero(), T::one());
+        let f = fov.radians().halved().tan().recip();
         let depth = near - far;
         Self::row_major(
             f / size.aspect_ratio(), _0, _0, _0,
-            _0, -f, _0, _0,
+            _0, f, _0, _0,
             _0, _0, far / depth, -_1,
             _0, _0, near * far / depth, _0,
         )
