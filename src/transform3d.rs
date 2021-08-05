@@ -72,10 +72,10 @@ impl<T: en::Num> Transform3d<T> {
         T: en::Float,
     {
         let _2 = T::two();
-        Self::from_scale(_2 / (right - left), _2 / (top - bottom), -_2 / (far - near)).post_mul(
+        Self::from_scale(_2 / (right - left), _2 / (bottom - top), -_2 / (far - near)).post_mul(
             Self::from_translation(
                 -(right + left) / (right - left),
-                -(top + bottom) / (top - bottom),
+                -(bottom + top) / (bottom - top),
                 -(far + near) / (far - near),
             ),
         )
@@ -103,7 +103,7 @@ impl<T: en::Num> Transform3d<T> {
         let depth = near - far;
         Self::row_major(
             f / size.aspect_ratio(), _0, _0, _0,
-            _0, -f, _0, _0,
+            _0, f, _0, _0,
             _0, _0, far / depth, -_1,
             _0, _0, near * far / depth, _0,
         )
