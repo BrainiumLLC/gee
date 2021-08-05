@@ -156,7 +156,7 @@ impl RectLocation {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct RectPosition<T> {
+pub struct RectPosition<T = f32> {
     pub location: RectLocation,
     pub point: Point<T>,
 }
