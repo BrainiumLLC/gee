@@ -1,4 +1,4 @@
-use crate::{Angle, Rect, Size, Transform};
+use crate::{Angle, Point, Rect, Size, Transform};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -83,7 +83,7 @@ impl<T: en::Num> Transform3d<T> {
 
     /// Creates an orthographic projection matrix with the defaults you almost
     /// always want.
-    pub fn easy_ortho(rect: Rect<T>) -> Self
+    pub fn ortho_from_rect(rect: Rect<T>) -> Self
     where
         T: en::Float,
     {
