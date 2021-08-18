@@ -1,5 +1,12 @@
 macro_rules! impl_casts_and_cast {
     ($hkt:ident) => {
+        pub fn round(self) -> Self
+        where
+            T: en::Float,
+        {
+            self.map(T::round)
+        }
+
         pub fn cast<U: en::Num>(self) -> $hkt<U> {
             self.map(en::cast)
         }

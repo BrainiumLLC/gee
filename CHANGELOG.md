@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added `round` convenience method to all types that have a `map` method.
 - **Breaking:** Switched back to using a top-left origin.
 - Added `Vector::one`.
 - **Breaking:** Rename `Vector::normalized` to `Vector::normalize`.

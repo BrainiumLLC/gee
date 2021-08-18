@@ -1,4 +1,4 @@
-use crate::{Angle, Point, Rect, Size, Transform};
+use crate::{Angle, Rect, Size, Transform};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
