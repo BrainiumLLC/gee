@@ -205,6 +205,20 @@ impl<T: en::Float> From<Direction> for Angle<T> {
     }
 }
 
+#[cfg(feature = "euclid")]
+impl<T> From<Angle<T>> for euclid::Angle<T> {
+    fn from(a: Angle<T>) -> euclid::Angle<T> {
+        Self::radians(a.radians)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T> From<euclid::Angle<T>> for Angle<T> {
+    fn from(a: euclid::Angle<T>) -> Angle<T> {
+        Self { radians: a.radians }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

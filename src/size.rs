@@ -272,3 +272,20 @@ impl<T: en::Num> From<Vector<T>> for Size<T> {
         Self::new(vector.dx, vector.dy)
     }
 }
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<Size<T>> for euclid::Size2D<T, U> {
+    fn from(s: Size<T>) -> euclid::Size2D<T, U> {
+        Self::new(s.width, s.height)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<euclid::Size2D<T, U>> for Size<T> {
+    fn from(s: euclid::Size2D<T, U>) -> Size<T> {
+        Self {
+            width: s.width,
+            height: s.height,
+        }
+    }
+}

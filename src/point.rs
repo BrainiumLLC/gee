@@ -185,3 +185,17 @@ impl<T: en::Num> RemAssign<Vector<T>> for Point<T> {
         *self = *self % rhs
     }
 }
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<Point<T>> for euclid::Point2D<T, U> {
+    fn from(p: Point<T>) -> euclid::Point2D<T, U> {
+        Self::new(p.x, p.y)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<euclid::Point2D<T, U>> for Point<T> {
+    fn from(p: euclid::Point2D<T, U>) -> Point<T> {
+        Self { x: p.x, y: p.y }
+    }
+}

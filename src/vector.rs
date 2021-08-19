@@ -267,3 +267,17 @@ impl<T: en::Float> From<Cardinal> for Vector<T> {
         cardinal.angle().unit_vector()
     }
 }
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<Vector<T>> for euclid::Vector2D<T, U> {
+    fn from(v: Vector<T>) -> euclid::Vector2D<T, U> {
+        Self::new(v.dx, v.dy)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T, U> From<euclid::Vector2D<T, U>> for Vector<T> {
+    fn from(v: euclid::Vector2D<T, U>) -> Vector<T> {
+        Self { dx: v.x, dy: v.y }
+    }
+}

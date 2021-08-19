@@ -302,6 +302,27 @@ impl<T: en::Num> Transform<T> {
     impl_casts_and_cast!(Transform);
 }
 
+#[cfg(feature = "euclid")]
+impl<T, Src, Dst> From<Transform<T>> for euclid::Transform2D<T, Src, Dst> {
+    fn from(t: Transform<T>) -> euclid::Transform2D<T, Src, Dst> {
+        Self::new(t.m11, t.m12, t.m21, t.m22, t.m31, t.m32)
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T, Src, Dst> From<euclid::Transform2D<T, Src, Dst>> for Transform<T> {
+    fn from(t: euclid::Transform2D<T, Src, Dst>) -> Transform<T> {
+        Self {
+            m11: t.m11,
+            m12: t.m12,
+            m21: t.m21,
+            m22: t.m22,
+            m31: t.m31,
+            m32: t.m32,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

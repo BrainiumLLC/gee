@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added `euclid` feature for conversions to and from [euclid](https://github.com/servo/euclid) types.
 - Added `round` convenience method to all types that have a `map` method.
 - **Breaking:** Switched back to using a top-left origin.
 - Added `Vector::one`.

@@ -268,3 +268,37 @@ impl<T: en::Num> From<[[T; 4]; 4]> for Transform3d<T> {
         )
     }
 }
+
+#[cfg(feature = "euclid")]
+impl<T, Src, Dst> From<Transform3d<T>> for euclid::Transform3D<T, Src, Dst> {
+    fn from(t: Transform3d<T>) -> euclid::Transform3D<T, Src, Dst> {
+        Self::new(
+            t.m11, t.m12, t.m13, t.m14, t.m21, t.m22, t.m23, t.m24, t.m31, t.m32, t.m33, t.m34,
+            t.m41, t.m42, t.m43, t.m44,
+        )
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T, Src, Dst> From<euclid::Transform3D<T, Src, Dst>> for Transform3d<T> {
+    fn from(t: euclid::Transform3D<T, Src, Dst>) -> Transform3d<T> {
+        Self {
+            m11: t.m11,
+            m12: t.m12,
+            m13: t.m13,
+            m14: t.m14,
+            m21: t.m21,
+            m22: t.m22,
+            m23: t.m23,
+            m24: t.m24,
+            m31: t.m31,
+            m32: t.m32,
+            m33: t.m33,
+            m34: t.m34,
+            m41: t.m41,
+            m42: t.m42,
+            m43: t.m43,
+            m44: t.m44,
+        }
+    }
+}

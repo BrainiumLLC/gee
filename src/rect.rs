@@ -714,6 +714,20 @@ impl<T: en::Num> RemAssign<Vector<T>> for Rect<T> {
     }
 }
 
+#[cfg(feature = "euclid")]
+impl<T: en::Num, U> From<Rect<T>> for euclid::Rect<T, U> {
+    fn from(r: Rect<T>) -> euclid::Rect<T, U> {
+        Self::new(r.top_left().into(), r.size().into())
+    }
+}
+
+#[cfg(feature = "euclid")]
+impl<T: en::Num, U> From<euclid::Rect<T, U>> for Rect<T> {
+    fn from(r: euclid::Rect<T, U>) -> Rect<T> {
+        Self::from_top_left(r.origin.into(), r.size.into())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
