@@ -1,6 +1,6 @@
 [package]
 name = "gee"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Brainium Studios LLC"]
 edition = "2018"
 description = "A convenience-first geometry library tailor-made for 2D games! 📐"
