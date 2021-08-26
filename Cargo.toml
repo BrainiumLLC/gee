@@ -15,8 +15,8 @@ license = "Apache-2.0/MIT"
 default = []
 
 [dependencies]
-en = "0.1.0"
+en = "0.1.5"
 euclid = { version = "0.22.6", optional = true }
 serde = { version = "1.0.115", features = ["serde_derive"], optional = true }
-strum = "0.19.2"
-strum_macros = "0.19.2"
+strum = "0.21.0"
+strum_macros = "0.21.1"
