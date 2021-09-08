@@ -163,7 +163,7 @@ impl<T: en::Num> Rect<T> {
     }
 
     pub fn from_points(a: Point<T>, b: Point<T>) -> Self {
-        Self::from_top_right_bottom_left(a.y.max(b.y), a.x.max(b.x), a.y.min(b.y), a.x.min(b.x))
+        Self::from_top_right_bottom_left(a.y.min(b.y), a.x.max(b.x), a.y.max(b.y), a.x.min(b.x))
     }
 
     pub fn top(&self) -> T {
