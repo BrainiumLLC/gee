@@ -77,11 +77,12 @@ impl<T: en::Num> Transform<T> {
         Self::from_scale(scale.dx, scale.dy)
     }
 
-    pub fn from_rotation(theta: Angle<T>) -> Self
+    pub fn from_rotation(theta: Angle<T>, center: Point<T>) -> Self
     where
         T: en::Float,
     {
         let (sin, cos) = theta.sin_cos();
+        let center = center.to_vector();
         Self {
             m11: cos,
             m12: -sin,
@@ -89,15 +90,8 @@ impl<T: en::Num> Transform<T> {
             m22: cos,
             ..Self::identity()
         }
-    }
-
-    pub fn from_rotation_with_fixed_point(theta: Angle<T>, point: Point<T>) -> Self
-    where
-        T: en::Float,
-    {
-        Self::from_rotation(theta)
-            .pre_translate(-point.x, -point.y)
-            .post_translate(point.x, point.y)
+        .pre_translate_vector(-center)
+        .post_translate_vector(center)
     }
 
     pub fn from_skew(theta: Angle<T>) -> Self
@@ -209,18 +203,18 @@ impl<T: en::Num> Transform<T> {
         self.pre_mul(Self::from_scale_vector(scale))
     }
 
-    pub fn post_rotate(&self, theta: Angle<T>) -> Self
+    pub fn post_rotate(&self, theta: Angle<T>, center: Point<T>) -> Self
     where
         T: en::Float,
     {
-        self.post_mul(Self::from_rotation(theta))
+        self.post_mul(Self::from_rotation(theta, center))
     }
 
-    pub fn pre_rotate(&self, theta: Angle<T>) -> Self
+    pub fn pre_rotate(&self, theta: Angle<T>, center: Point<T>) -> Self
     where
         T: en::Float,
     {
-        self.pre_mul(Self::from_rotation(theta))
+        self.pre_mul(Self::from_rotation(theta, center))
     }
 
     pub fn post_skew(&self, theta: Angle<T>) -> Self
@@ -332,7 +326,10 @@ mod test {
     fn rotation() {
         let v = Direction::East.unit_vector();
 
-        let r_act = v.transform(Transform::from_rotation(Angle::from_degrees(90.0)));
+        let r_act = v.transform(Transform::from_rotation(
+            Angle::from_degrees(90.0),
+            Point::zero(),
+        ));
         let r_exp = Direction::North.unit_vector();
         assert_approx_eq!(
             r_act.dx,
@@ -345,7 +342,10 @@ mod test {
             "90º rotation didn't produce expected dy"
         );
 
-        let r_act = v.transform(Transform::from_rotation(Angle::from_degrees(-90.0)));
+        let r_act = v.transform(Transform::from_rotation(
+            Angle::from_degrees(-90.0),
+            Point::zero(),
+        ));
         let r_exp = Direction::South.unit_vector();
         assert_approx_eq!(
             r_act.dx,
@@ -411,7 +411,7 @@ mod test {
     fn decompose_rotation() {
         let rotation = Angle::from_degrees(30.0);
         check_decomposition!(
-            Transform::from_rotation(rotation),
+            Transform::from_rotation(rotation, Point::zero()),
             DecomposedTransform {
                 rotation,
                 ..Default::default()

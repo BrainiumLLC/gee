@@ -1,12 +1,14 @@
 # Unreleased
 
+- **Breaking:** Renamed `Transform::rotation_with_fixed_point` to `Transform::rotation`. The previous `Transform::rotation` behavior can be achieved by specifying a center of `Point::zero()`. The signatures of `Transform::post_rotate` and `Transform::pre_rotate` have changed accordingly.
+
 # 0.3.0 (2021-08-26)
 
 - Added `euclid` feature for conversions to and from [euclid](https://github.com/servo/euclid) types.
 - Added `round` convenience method to all types that have a `map` method.
 - **Breaking:** Switched back to using a top-left origin.
 - Added `Vector::one`.
-- **Breaking:** Rename `Vector::normalized` to `Vector::normalize`.
+- **Breaking:** Renamed `Vector::normalized` to `Vector::normalize`.
 - **Breaking:** Removed redundant method `Vector::unit_from_angle`.
 - Added `Transform3d`.
 - **Breaking:** `Transform::post_mul` no longer takes a reference.
