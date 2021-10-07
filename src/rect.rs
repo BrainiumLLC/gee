@@ -450,6 +450,22 @@ impl<T: en::Num> Rect<T> {
         self.inset_symmetric(inset, inset)
     }
 
+    pub fn inset_top(&self, top: T) -> Self {
+        self.inset(top, T::zero(), T::zero(), T::zero())
+    }
+
+    pub fn inset_right(&self, right: T) -> Self {
+        self.inset(T::zero(), right, T::zero(), T::zero())
+    }
+
+    pub fn inset_bottom(&self, bottom: T) -> Self {
+        self.inset(T::zero(), T::zero(), bottom, T::zero())
+    }
+
+    pub fn inset_left(&self, left: T) -> Self {
+        self.inset(T::zero(), T::zero(), T::zero(), left)
+    }
+
     pub fn outset(&self, top: T, right: T, bottom: T, left: T) -> Self {
         Self::from_top_right_bottom_left(
             self.top - top,
@@ -465,6 +481,22 @@ impl<T: en::Num> Rect<T> {
 
     pub fn outset_uniform(&self, outset: T) -> Self {
         self.outset_symmetric(outset, outset)
+    }
+
+    pub fn outset_top(&self, top: T) -> Self {
+        self.outset(top, T::zero(), T::zero(), T::zero())
+    }
+
+    pub fn outset_right(&self, right: T) -> Self {
+        self.outset(T::zero(), right, T::zero(), T::zero())
+    }
+
+    pub fn outset_bottom(&self, bottom: T) -> Self {
+        self.outset(T::zero(), T::zero(), bottom, T::zero())
+    }
+
+    pub fn outset_left(&self, left: T) -> Self {
+        self.outset(T::zero(), T::zero(), T::zero(), left)
     }
 
     pub fn transform(self, transform: Transform<T>) -> Self {
