@@ -16,6 +16,14 @@ impl<T: en::Num> Point<T> {
         Self { x, y }
     }
 
+    pub fn from_x(x: T) -> Self {
+        Self::new(x, T::zero())
+    }
+
+    pub fn from_y(y: T) -> Self {
+        Self::new(T::zero(), y)
+    }
+
     pub fn zero() -> Self {
         Self::new(T::zero(), T::zero())
     }
@@ -42,6 +50,14 @@ impl<T: en::Num> Point<T> {
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Point<U> {
         Point::new(f(self.x), f(self.y))
+    }
+
+    pub fn map_x(&self, mut f: impl FnMut(T) -> T) -> Self {
+        self.with_x(f(self.x))
+    }
+
+    pub fn map_y(&self, mut f: impl FnMut(T) -> T) -> Self {
+        self.with_y(f(self.y))
     }
 
     impl_casts_and_cast!(Point);

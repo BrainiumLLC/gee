@@ -1,5 +1,6 @@
 # Unreleased
 
+- Added `from_x`, `from_y`, `map_x`, and `map_y` to `Point`.
 - Added `Rect::inset_` and `Rect::outset_` conveniences for each edge.
 - **Breaking:** Renamed `Transform::rotation_with_fixed_point` to `Transform::rotation`. The previous `Transform::rotation` behavior can be achieved by specifying a center of `Point::zero()`. The signatures of `Transform::post_rotate` and `Transform::pre_rotate` have changed accordingly.
 
