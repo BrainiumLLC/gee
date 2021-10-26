@@ -2,7 +2,7 @@
 name = "gee"
 version = "0.3.0"
 authors = ["Brainium Studios LLC"]
-edition = "2018"
+edition = "2021"
 description = "A convenience-first geometry library tailor-made for 2D games! 📐"
 documentation = "https://docs.rs/gee"
 repository = "https://github.com/BrainiumLLC/gee"
@@ -17,6 +17,6 @@ default = []
 [dependencies]
 en = "0.1.5"
 euclid = { version = "0.22.6", optional = true }
-serde = { version = "1.0.115", features = ["serde_derive"], optional = true }
+serde = { version = "1.0.115", features = ["derive"], optional = true }
 strum = "0.21.0"
 strum_macros = "0.21.1"
