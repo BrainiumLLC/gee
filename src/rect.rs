@@ -532,7 +532,7 @@ impl<T: en::Num> Rect<T> {
         let right = self.right.max(other.right);
         let bottom = self.bottom.max(other.bottom);
         let left = self.left.min(other.left);
-        Self::from_top_right_bottom_left(top, left, bottom, right)
+        Self::from_top_right_bottom_left(top, right, bottom, left)
     }
 
     pub fn width_slice(&self, num_items: usize, index: usize) -> Self {
