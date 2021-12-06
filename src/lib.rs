@@ -4,6 +4,7 @@ mod cast;
 mod angle;
 mod circle;
 mod direction;
+mod ellipse;
 mod lerp;
 mod line_segment;
 mod point;
@@ -16,8 +17,8 @@ mod transform3d;
 mod vector;
 
 pub use self::{
-    angle::*, circle::*, direction::*, lerp::*, line_segment::*, point::*, ray::*, rect::*,
-    rect_position::*, size::*, transform::*, transform3d::*, vector::*,
+    angle::*, circle::*, direction::*, ellipse::*, lerp::*, line_segment::*, point::*, ray::*,
+    rect::*, rect_position::*, size::*, transform::*, transform3d::*, vector::*,
 };
 pub use en;
 
