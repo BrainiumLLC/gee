@@ -67,11 +67,15 @@ impl<T: en::Num> Ellipse<T> {
         self.radius * self.radius.to_vector()
     }
 
-    pub fn contains(&self, point: Point<T>) -> bool {
+    pub fn contains(&self, point: Point<T>) -> bool
+    where
+        T: float_cmp::ApproxEq,
+    {
         let offset = point - self.center;
         let offset_squared = offset * offset;
         let r_squared = self.radius_squared();
-        offset_squared.dx / r_squared.width() + offset_squared.dy / r_squared.height() <= T::one()
+        let sum = offset_squared.dx / r_squared.width() + offset_squared.dy / r_squared.height();
+        sum < T::one() || float_cmp::approx_eq!(T, sum, T::one())
     }
 
     pub fn bounding_rect(&self) -> Rect<T> {
