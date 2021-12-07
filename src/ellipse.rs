@@ -163,3 +163,59 @@ impl<T: en::Num> SubAssign<Vector<T>> for Ellipse<T> {
         *self = *self - rhs
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::assert_approx_eq;
+
+    #[test]
+    fn bounding_rect() {
+        macro_rules! check {
+            ($center:expr, $radius:expr) => {
+                let expected = Rect::from_center($center, $radius * Vector::uniform(2.0));
+                let rect: Rect<f32> = Ellipse::new($center, $radius).bounding_rect();
+                assert_approx_eq!(expected.right(), rect.right());
+                assert_approx_eq!(expected.left(), rect.left());
+                assert_approx_eq!(expected.top(), rect.top());
+                assert_approx_eq!(expected.bottom(), rect.bottom());
+            };
+        }
+
+        check!(Point::zero(), Size::zero());
+        check!(Point::new(1.0, 1.0), Size::square(1.0));
+        check!(Point::from_x(2.0), Size::square(1.0));
+        check!(Point::from_y(6.0), Size::new(2.0, 3.0));
+        check!(Point::new(-2.0, 5.0), Size::new(4.0, 2.0));
+    }
+
+    #[test]
+    fn contains() {
+        macro_rules! check {
+            ($center:expr, $radius:expr) => {
+                let center = $center;
+                let radius = $radius;
+                let ellipse = Ellipse::new(center, radius);
+                assert!(ellipse.contains(center));
+                assert!(ellipse.contains(center.map_x(|x| x + radius.width())));
+                assert!(ellipse.contains(center.map_y(|y| y + radius.height())));
+                assert!(!ellipse.contains(center + radius.to_vector()));
+
+                let edge_points = ellipse.ellipse_points(5, Angle::ZERO());
+                assert!(edge_points.into_iter().all(|p| ellipse.contains(p)));
+
+                let out_of_bounds_points =
+                    Ellipse::new(center, radius * 2.0).ellipse_points(5, Angle::ZERO());
+                assert!(!out_of_bounds_points
+                    .into_iter()
+                    .all(|p| ellipse.contains(p)));
+            };
+        }
+
+        check!(Point::zero(), Size::square(1.0));
+        check!(Point::zero(), Size::square(2.0));
+        check!(Point::zero(), Size::new(2.0, 3.0));
+        check!(Point::new(-1.0, 4.5), Size::square(3.0));
+        check!(Point::new(3.0, -2.5), Size::new(2.5, 6.0));
+    }
+}
