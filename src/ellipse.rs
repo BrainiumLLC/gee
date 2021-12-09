@@ -69,13 +69,13 @@ impl<T: en::Num> Ellipse<T> {
 
     pub fn contains(&self, point: Point<T>) -> bool
     where
-        T: float_cmp::ApproxEq,
+        T: en::Float,
     {
         let offset = point - self.center;
         let offset_squared = offset * offset;
         let r_squared = self.radius_squared();
-        let sum = offset_squared.dx / r_squared.width() + offset_squared.dy / r_squared.height();
-        sum < T::one() || float_cmp::approx_eq!(T, sum, T::one())
+        offset_squared.dx / r_squared.width() + offset_squared.dy / r_squared.height()
+            <= T::one() + T::epsilon()
     }
 
     pub fn bounding_rect(&self) -> Rect<T> {
@@ -131,12 +131,7 @@ impl<T: en::Num> Ellipse<T> {
     }
 
     pub fn cast<U: en::Num>(self) -> Ellipse<U> {
-        self.map(move |center, radius| {
-            (
-                center.cast(),
-                Size::new(en::cast(radius.width()), en::cast(radius.height())),
-            )
-        })
+        self.map(move |center, radius| (center.cast(), radius.cast()))
     }
 
     impl_casts!(Ellipse);
