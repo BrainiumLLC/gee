@@ -79,10 +79,7 @@ impl<T: en::Num> Ellipse<T> {
     }
 
     pub fn bounding_rect(&self) -> Rect<T> {
-        let offset = self.radius.to_vector();
-        let top_left = self.center - offset;
-        let bottom_right = self.center + offset;
-        Rect::from_points(top_left, bottom_right)
+        Rect::from_center(self.center, self.radius.scale_uniform(en::cast(2)))
     }
 
     pub fn arc_points(
