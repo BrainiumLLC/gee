@@ -166,7 +166,7 @@ impl<T: en::Num> SubAssign<Vector<T>> for Ellipse<T> {
 
 impl<T: en::Num> From<Circle<T>> for Ellipse<T> {
     fn from(circle: Circle<T>) -> Ellipse<T> {
-        Ellipse::new(circle.center(), Size::square(circle.radius()))
+        Self::new(circle.center(), Size::square(circle.radius()))
     }
 }
 
