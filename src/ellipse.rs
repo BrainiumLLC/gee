@@ -1,4 +1,4 @@
-use crate::{Angle, Point, Rect, Size, Vector};
+use crate::{Angle, Circle, Point, Rect, Size, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
@@ -131,6 +131,10 @@ impl<T: en::Num> Ellipse<T> {
         self.map(move |center, radius| (center.cast(), radius.cast()))
     }
 
+    pub fn from_circle(circle: Circle<T>) -> Self {
+        circle.into()
+    }
+
     impl_casts!(Ellipse);
 }
 
@@ -157,6 +161,12 @@ impl<T: en::Num> Sub<Vector<T>> for Ellipse<T> {
 impl<T: en::Num> SubAssign<Vector<T>> for Ellipse<T> {
     fn sub_assign(&mut self, rhs: Vector<T>) {
         *self = *self - rhs
+    }
+}
+
+impl<T: en::Num> From<Circle<T>> for Ellipse<T> {
+    fn from(circle: Circle<T>) -> Ellipse<T> {
+        Ellipse::new(circle.center(), Size::square(circle.radius()))
     }
 }
 

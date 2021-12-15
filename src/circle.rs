@@ -1,4 +1,4 @@
-use crate::{Angle, Point, Rect, Vector};
+use crate::{Angle, Ellipse, Point, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
@@ -72,10 +72,7 @@ impl<T: en::Num> Circle<T> {
     }
 
     pub fn bounding_rect(&self) -> Rect<T> {
-        let offset = Vector::uniform(self.radius);
-        let top_left = self.center - offset;
-        let bottom_right = self.center + offset;
-        Rect::from_points(top_left, bottom_right)
+        self.to_ellipse().bounding_rect()
     }
 
     pub fn arc_points(
@@ -87,13 +84,7 @@ impl<T: en::Num> Circle<T> {
     where
         T: en::Float,
     {
-        let radius = self.radius;
-        let center = self.center;
-        let increment = (end_angle - start_angle) / en::cast(steps);
-        (0..steps).map(move |index| {
-            let unit = (increment * en::cast(index) + start_angle).unit_vector();
-            center + unit * radius
-        })
+        self.to_ellipse().arc_points(steps, start_angle, end_angle)
     }
 
     pub fn circle_points(
@@ -104,7 +95,7 @@ impl<T: en::Num> Circle<T> {
     where
         T: en::Float,
     {
-        self.arc_points(steps, start_angle, start_angle + Angle::TAU())
+        self.to_ellipse().ellipse_points(steps, start_angle)
     }
 
     pub fn map<U: en::Num>(self, f: impl FnOnce(Point<T>, T) -> (Point<U>, U)) -> Circle<U> {
@@ -122,6 +113,10 @@ impl<T: en::Num> Circle<T> {
 
     pub fn cast<U: en::Num>(self) -> Circle<U> {
         self.map(move |center, radius| (center.cast(), en::cast(radius)))
+    }
+
+    pub fn to_ellipse(self) -> Ellipse<T> {
+        self.into()
     }
 
     impl_casts!(Circle);
