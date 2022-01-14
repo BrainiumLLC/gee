@@ -17,6 +17,7 @@ default = []
 [dependencies]
 en = "0.1.5"
 euclid = { version = "0.22.6", optional = true }
+d6 = { git = "https://github.com/BrainiumLLC/d6", optional = true }
 serde = { version = "1.0.115", features = ["derive"], optional = true }
 strum = "0.22.0"
 strum_macros = "0.22.0"

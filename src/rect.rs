@@ -649,6 +649,19 @@ impl<T: en::Num> Rect<T> {
     }
 
     impl_casts_and_cast!(Rect);
+
+    #[cfg(feature = "d6")]
+    pub fn random_point(&self) -> Point<T>
+    where
+        T: d6::rand::distributions::uniform::SampleUniform,
+    {
+        let point = Point::new(
+            d6::range(self.left()..=self.right()),
+            d6::range(self.top()..=self.bottom()),
+        );
+        debug_assert!(self.contains_inclusive(point));
+        point
+    }
 }
 
 impl<T: en::Num> Add<Vector<T>> for Rect<T> {
