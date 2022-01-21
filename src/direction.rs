@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(u8)]
 pub enum Cardinal {
     North,
     East,
@@ -39,6 +40,7 @@ impl Neg for Cardinal {
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(u8)]
 pub enum Direction {
     North,
     Northeast,

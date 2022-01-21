@@ -5,6 +5,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct Circle<T = f32> {
     center: Point<T>,
     radius: T,

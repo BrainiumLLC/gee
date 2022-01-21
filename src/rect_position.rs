@@ -6,6 +6,7 @@ use strum_macros::EnumIter;
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub enum HorizontalLocation {
     Left,
     Center,
@@ -27,6 +28,7 @@ impl Neg for HorizontalLocation {
 
 #[derive(Clone, Copy, Debug, EnumIter, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub enum VerticalLocation {
     Top,
     Center,
@@ -64,6 +66,7 @@ impl Neg for VerticalLocation {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[repr(C)]
 pub struct RectLocation {
     pub horizontal: HorizontalLocation,
     pub vertical: VerticalLocation,
