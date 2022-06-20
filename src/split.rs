@@ -14,41 +14,47 @@ impl Div {
         match self {
             Div::Px(px) => *px,
             // Div::X(n) => x_px * n,
-            Div::Ratio(_) => 0.0, // This is the one smelly part of this API.
-            Div::Grow(_) => 0.0, // I experimented with a separate Dim class consisting of only X and Px, but it was less ergonomic.
+            _ => 0.0, // This is the one smelly part of this API.
+                      // I experimented with a separate Dim class consisting of only X and Px, but it was less ergonomic.
+        }
+    }
+
+    fn px_no_grow(&self, total_px: f32) -> f32 {
+        match self {
+            Div::Ratio(ratio) => total_px * ratio,
+            Div::Grow(_) => 0.0,
+            _ => self.px(),
         }
     }
 
     fn px_final(&self, total_px: f32, leftover: f32, flex_total: f32) -> f32 {
         match self {
-            Div::Px(px) => *px,
-            // Div::X(xs) => x_px * xs,
-            Div::Ratio(ratio) => ratio * total_px,
-            Div::Grow(flex) => {
+            Div::Grow(weight) => {
                 if leftover > 0.0 {
-                    leftover * flex / flex_total
+                    leftover * weight / flex_total
                 } else {
                     0.0
                 }
             }
+            _ => self.px_no_grow(total_px),
+        }
+    }
+
+    fn grow(&self) -> f32 {
+        match self {
+            Div::Grow(weight) => *weight,
+            _ => 0.0,
         }
     }
 }
 
 fn leftover(divs: impl IntoIterator<Item = Div>, total_px: f32) -> f32 {
-    divs.into_iter().fold(total_px, |acc, div| match div {
-        Div::Px(px) => (acc - px),
-        // Div::X(x) => (acc - x_px * x),
-        Div::Ratio(ratio) => (acc - ratio * total_px),
-        Div::Grow(_) => acc,
-    })
+    divs.into_iter()
+        .fold(total_px, |acc, div| acc - div.px_no_grow(total_px))
 }
 
 fn flex_total(divs: impl IntoIterator<Item = Div>) -> f32 {
-    divs.into_iter().fold(0.0, |acc, div| match div {
-        Div::Grow(weight) => acc + weight,
-        _ => acc,
-    })
+    divs.into_iter().fold(0.0, |acc, div| acc + div.grow())
 }
 
 fn map_to_px<const N: usize>(divs: [Div; N], total_px: f32) -> [f32; N] {
@@ -77,7 +83,7 @@ pub enum Align {
 impl Rect {
     pub fn split_row<const N: usize>(&self, divs: [Div; N], align: Align) -> [Rect; N] {
         let widths = map_to_px(divs, self.width());
-        let total = widths.iter().fold(0.0, |acc, width| acc + width);
+        let total = total(widths.iter());
 
         let top = self.top();
         let left = self.left();
@@ -98,7 +104,7 @@ impl Rect {
 
     pub fn split_column<const N: usize>(&self, divs: [Div; N], align: Align) -> [Rect; N] {
         let heights = map_to_px(divs, self.height());
-        let total = heights.iter().fold(0.0, |acc, height| acc + height);
+        let total = total(heights.iter());
 
         let top = self.top();
         let left = self.left();
@@ -123,7 +129,7 @@ impl Rect {
         align: Align,
     ) -> Vec<Rect> {
         let widths = map_to_px_iter(divs, self.width());
-        let total = widths.iter().fold(0.0, |acc, width| acc + width);
+        let total = total(widths.iter());
 
         let top = self.top();
         let left = self.left();
@@ -151,7 +157,7 @@ impl Rect {
         align: Align,
     ) -> Vec<Rect> {
         let heights = map_to_px_iter(divs, self.height());
-        let total = heights.iter().fold(0.0, |acc, height| acc + height);
+        let total = total(heights.iter());
 
         let top = self.top();
         let left = self.left();
@@ -172,4 +178,8 @@ impl Rect {
             })
             .collect()
     }
+}
+
+fn total<'a>(vals: impl Iterator<Item = &'a f32>) -> f32 {
+    vals.fold(0.0, |acc, val| acc + val)
 }
