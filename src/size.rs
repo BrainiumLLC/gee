@@ -91,7 +91,7 @@ impl<T: en::Num> Size<T> {
     pub fn scale_uniform(self, coeff: T) -> Self {
         self * coeff
     }
-    
+
     pub fn fits_in(self, rhs: Size<T>) -> bool {
         rhs.width >= self.width && rhs.height >= self.height
     }
