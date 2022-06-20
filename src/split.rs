@@ -48,28 +48,27 @@ impl Div {
     }
 }
 
-fn leftover(divs: impl IntoIterator<Item = Div>, total_px: f32) -> f32 {
+fn leftover<'a>(divs: impl Iterator<Item = &'a Div>, total_px: f32) -> f32 {
     divs.into_iter()
         .fold(total_px, |acc, div| acc - div.px_no_grow(total_px))
 }
 
-fn flex_total(divs: impl IntoIterator<Item = Div>) -> f32 {
+fn flex_total<'a>(divs: impl Iterator<Item = &'a Div>) -> f32 {
     divs.into_iter().fold(0.0, |acc, div| acc + div.grow())
 }
 
 fn map_to_px<const N: usize>(divs: [Div; N], total_px: f32) -> [f32; N] {
-    let leftover = leftover(divs, total_px);
-    let flex_total = flex_total(divs);
+    let leftover = leftover(divs.iter(), total_px);
+    let flex_total = flex_total(divs.iter());
 
     divs.map(|div| div.px_final(total_px, leftover, flex_total))
 }
 
-fn map_to_px_iter(divs: impl IntoIterator<Item = Div> + Clone, total_px: f32) -> Vec<f32> {
+fn map_to_px_iter<'a>(divs: impl Iterator<Item = &'a Div> + Clone, total_px: f32) -> Vec<f32> {
     let leftover = leftover(divs.clone(), total_px);
     let flex_total = flex_total(divs.clone());
 
-    divs.into_iter()
-        .map(|div| div.px_final(total_px, leftover, flex_total))
+    divs.map(|div| div.px_final(total_px, leftover, flex_total))
         .collect()
 }
 
@@ -123,9 +122,9 @@ impl Rect {
         })
     }
 
-    pub fn split_row_iter(
+    pub fn split_row_iter<'a>(
         &self,
-        divs: impl IntoIterator<Item = Div> + Clone,
+        divs: impl Iterator<Item = &'a Div> + Clone,
         align: Align,
     ) -> Vec<Rect> {
         let widths = map_to_px_iter(divs, self.width());
@@ -151,9 +150,9 @@ impl Rect {
             .collect()
     }
 
-    pub fn split_column_iter(
+    pub fn split_column_iter<'a>(
         &self,
-        divs: impl IntoIterator<Item = Div> + Clone,
+        divs: impl Iterator<Item = &'a Div> + Clone,
         align: Align,
     ) -> Vec<Rect> {
         let heights = map_to_px_iter(divs, self.height());
