@@ -1,3 +1,5 @@
+#![deny(unsafe_op_in_unsafe_fn)]
+
 #[macro_use]
 mod cast;
 
@@ -8,6 +10,7 @@ mod ellipse;
 mod lerp;
 mod line_segment;
 mod point;
+mod quad;
 mod ray;
 mod rect;
 mod rect_position;
@@ -19,8 +22,8 @@ mod vector;
 pub mod split;
 
 pub use self::{
-    angle::*, circle::*, direction::*, ellipse::*, lerp::*, line_segment::*, point::*, ray::*,
-    rect::*, rect_position::*, size::*, transform::*, transform3d::*, vector::*,
+    angle::*, circle::*, direction::*, ellipse::*, lerp::*, line_segment::*, point::*, quad::*,
+    ray::*, rect::*, rect_position::*, size::*, transform::*, transform3d::*, vector::*,
 };
 pub use en;
 
