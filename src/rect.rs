@@ -2,7 +2,6 @@ use crate::{
     HorizontalLocation, LineSegment, Point, Quad, RectLocation, RectPosition, Size, Transform,
     Vector, VerticalLocation,
 };
-use derive_more::{Deref, DerefMut, From};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -769,21 +768,6 @@ impl<T: en::Num, U> From<Rect<T>> for euclid::Rect<T, U> {
 impl<T: en::Num, U> From<euclid::Rect<T, U>> for Rect<T> {
     fn from(r: euclid::Rect<T, U>) -> Rect<T> {
         Self::from_top_left(r.origin.into(), r.size.into())
-    }
-}
-
-/// An axis-aligned bounding box. Identical to `Rect`, but newtyped to flag it as a different concept.
-/// The `Rect` API is accessible through `Deref`/`DerefMut`.
-#[derive(
-    Clone, Copy, Debug, Default, Deref, DerefMut, From, Eq, Hash, Ord, PartialEq, PartialOrd,
-)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[repr(transparent)]
-pub struct AABB<T>(Rect<T>);
-
-impl<T: en::Num> From<AABB<T>> for Rect<T> {
-    fn from(a: AABB<T>) -> Self {
-        *a
     }
 }
 

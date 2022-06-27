@@ -15,7 +15,6 @@ license = "Apache-2.0/MIT"
 default = []
 
 [dependencies]
-derive_more = "0.99.17"
 en = "0.1.5"
 euclid = { version = "0.22.6", optional = true }
 d6 = { git = "https://github.com/BrainiumLLC/d6", optional = true }

@@ -1,4 +1,4 @@
-use crate::{Point, Rect, Vector, AABB};
+use crate::{Point, Rect, Vector};
 use itertools::{Itertools, MinMaxResult};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -18,11 +18,11 @@ pub struct Quad<T = f32> {
 
 impl<T: en::Float> Quad<T> {
     /// Computes the axis-aligned bounding box of the quad.
-    pub fn aabb(&self) -> AABB<T> {
+    pub fn aabb(&self) -> Rect<T> {
         let verts = [self.a, self.b, self.c, self.d];
         let (min_x, max_x) = unsafe { min_max(verts.iter().map(|v| v.x)) };
         let (min_y, max_y) = unsafe { min_max(verts.iter().map(|v| v.y)) };
-        Rect::from_top_right_bottom_left(min_y, max_x, max_y, min_x).into()
+        Rect::from_top_right_bottom_left(min_y, max_x, max_y, min_x)
     }
 }
 
