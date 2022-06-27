@@ -4,6 +4,9 @@
 - Added `from_x`, `from_y`, `map_x`, and `map_y` to `Point`.
 - Added `Rect::inset_` and `Rect::outset_` conveniences for each edge.
 - **Breaking:** Renamed `Transform::rotation_with_fixed_point` to `Transform::rotation`. The previous `Transform::rotation` behavior can be achieved by specifying a center of `Point::zero()`. The signatures of `Transform::post_rotate` and `Transform::pre_rotate` have changed accordingly.
+- Added `transform_point`, `transform_vector`, and `transform_rect` to both `Transform` and `Transform3d`. These are equivalent to calling e.g. `point.transform(tx)`, but may be more convenient (and more discoverable) in some cases.
+- **Breaking:** `Rect::transform` now returns a `Quad` to preserve more information for the caller. The previous behavior can be achieved by calling `.aabb()` on the resulting `Quad` (and then `Deref`ing the result).
+- **Breaking:** `Vector::transform` now takes `self` by value for consistency with `Point::transform` and `Rect::transform`.
 
 # 0.3.0 (2021-08-26)
 

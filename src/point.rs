@@ -45,7 +45,7 @@ impl<T: en::Num> Point<T> {
     }
 
     pub fn transform(self, transform: Transform<T>) -> Self {
-        self.to_vector().transform(transform).to_point()
+        transform.transform_point(self)
     }
 
     pub fn map<U: en::Num>(self, mut f: impl FnMut(T) -> U) -> Point<U> {

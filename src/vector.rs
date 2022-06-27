@@ -98,11 +98,8 @@ impl<T: en::Num> Vector<T> {
         Self::new(self.dy, self.dx)
     }
 
-    pub fn transform(&self, transform: Transform<T>) -> Self {
-        Self::new(
-            self.dx * transform.m11 + self.dy * transform.m21 + transform.m31,
-            self.dx * transform.m12 + self.dy * transform.m22 + transform.m32,
-        )
+    pub fn transform(self, transform: Transform<T>) -> Self {
+        transform.transform_vector(self)
     }
 
     pub fn map<U: en::Num>(&self, mut f: impl FnMut(T) -> U) -> Vector<U> {

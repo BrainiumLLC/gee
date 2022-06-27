@@ -1,4 +1,4 @@
-use crate::{Angle, Point, Vector};
+use crate::{Angle, Point, Quad, Rect, Vector};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -294,6 +294,28 @@ impl<T: en::Num> Transform<T> {
     }
 
     impl_casts_and_cast!(Transform);
+}
+
+impl<T: en::Num> Transform<T> {
+    pub fn transform_vector(&self, v: Vector<T>) -> Vector<T> {
+        Vector::new(
+            v.dx * self.m11 + v.dy * self.m21 + self.m31,
+            v.dx * self.m12 + v.dy * self.m22 + self.m32,
+        )
+    }
+
+    pub fn transform_point(&self, p: Point<T>) -> Point<T> {
+        self.transform_vector(p.to_vector()).to_point()
+    }
+
+    pub fn transform_rect(&self, rect: Rect<T>) -> Quad<T> {
+        Quad {
+            a: self.transform_point(rect.top_left()),
+            b: self.transform_point(rect.top_right()),
+            c: self.transform_point(rect.bottom_right()),
+            d: self.transform_point(rect.bottom_left()),
+        }
+    }
 }
 
 #[cfg(feature = "euclid")]

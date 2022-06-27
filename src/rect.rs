@@ -1,6 +1,6 @@
 use crate::{
-    HorizontalLocation, LineSegment, Point, RectLocation, RectPosition, Size, Transform, Vector,
-    VerticalLocation,
+    HorizontalLocation, LineSegment, Point, Quad, RectLocation, RectPosition, Size, Transform,
+    Vector, VerticalLocation,
 };
 use derive_more::{Deref, DerefMut, From};
 #[cfg(feature = "serde")]
@@ -501,11 +501,8 @@ impl<T: en::Num> Rect<T> {
         self.outset(T::zero(), T::zero(), T::zero(), left)
     }
 
-    pub fn transform(self, transform: Transform<T>) -> Self {
-        Self::from_iter(
-            self.clockwise_points()
-                .map(|point| point.transform(transform)),
-        )
+    pub fn transform(self, transform: Transform<T>) -> Quad<T> {
+        transform.transform_rect(self)
     }
 
     pub fn line_segments(&self) -> [LineSegment<T>; 4] {
