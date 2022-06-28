@@ -1,4 +1,4 @@
-use crate::{Angle, Rect, Size, Transform};
+use crate::{Angle, Point, Quad, Rect, Size, Transform, Vector, Vector4d};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -236,6 +236,43 @@ impl<T: en::Num> Transform3d<T> {
     impl_casts_and_cast!(Transform3d);
 }
 
+impl<T: en::Num> Transform3d<T> {
+    pub fn transform_vector(&self, v: Vector<T>) -> Vector<T> {
+        self.transform_vector_impl(v).truncate()
+    }
+
+    pub fn transform_point(&self, p: Point<T>) -> Point<T> {
+        self.transform_vector(p.to_vector()).to_point()
+    }
+
+    pub fn transform_rect(&self, rect: Rect<T>) -> Quad<T> {
+        Quad {
+            a: self.transform_point(rect.top_left()),
+            b: self.transform_point(rect.top_right()),
+            c: self.transform_point(rect.bottom_right()),
+            d: self.transform_point(rect.bottom_left()),
+        }
+    }
+
+    fn transform_vector_impl(&self, v: Vector<T>) -> Vector4d<T> {
+        self.transform_vector4d(Vector4d {
+            dx: v.dx,
+            dy: v.dy,
+            dz: T::zero(),
+            dw: T::one(),
+        })
+    }
+
+    fn transform_vector4d(&self, v: Vector4d<T>) -> Vector4d<T> {
+        Vector4d {
+            dx: self.m11 * v.dx + self.m21 * v.dy + self.m31 * v.dz + self.m41 * v.dw,
+            dy: self.m12 * v.dx + self.m22 * v.dy + self.m32 * v.dz + self.m42 * v.dw,
+            dz: self.m13 * v.dx + self.m23 * v.dy + self.m33 * v.dz + self.m43 * v.dw,
+            dw: self.m14 * v.dx + self.m24 * v.dy + self.m34 * v.dz + self.m44 * v.dw,
+        }
+    }
+}
+
 impl<T: en::Num> From<Transform<T>> for Transform3d<T> {
     fn from(
         Transform {
@@ -299,6 +336,48 @@ impl<T, Src, Dst> From<euclid::Transform3D<T, Src, Dst>> for Transform3d<T> {
             m42: t.m42,
             m43: t.m43,
             m44: t.m44,
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::assert_approx_eq;
+
+    #[test]
+    fn transforming_some_vectors() {
+        assert_eq!(
+            Transform3d::default().transform_vector(Vector::<f32>::zero()),
+            Vector { dx: 0.0, dy: 0.0 }
+        );
+        assert_eq!(
+            Transform3d::default().transform_vector(Vector::new(42.0f32, -12.0)),
+            Vector {
+                dx: 42.0,
+                dy: -12.0,
+            }
+        );
+        assert_eq!(
+            Transform3d::from(Transform::from_translation(1.0f32, 2.0))
+                .transform_vector(Vector::zero()),
+            Vector { dx: 1.0, dy: 2.0 }
+        );
+        assert_eq!(
+            Transform3d::from(Transform::from_scale(1.0, 2.0))
+                .transform_vector(Vector::new(3.0f32, 4.0)),
+            Vector { dx: 3.0, dy: 8.0 }
+        );
+        {
+            let transformed = Transform3d::from(Transform::from_rotation(
+                Angle::from_degrees(90.0),
+                Point::zero(),
+            ))
+            .transform_vector(Vector::new(1.0, 1.0));
+            let result = Vector { dx: 1.0, dy: -1.0 };
+            // float precision makes these not exactly equal
+            assert_approx_eq!(transformed.dx, result.dx);
+            assert_approx_eq!(transformed.dy, result.dy);
         }
     }
 }
